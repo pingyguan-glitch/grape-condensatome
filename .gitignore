@@ -13,3 +13,7 @@ data/UP000009183.fasta
 *.egg-info/
 dist/
 build/
+# large enrichment caches (scripts re-download / resume)
+data/alphafold/*.json
+data/orthologs/*.tsv.gz
+data/benchmarks/metapredict_proteome.checkpoint.json

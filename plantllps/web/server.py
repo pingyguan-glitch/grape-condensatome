@@ -74,11 +74,12 @@ def _layout(title: str, body: str, *, query: str = "") -> str:
       <a href="/tiers/D">Tier D</a>
       <a href="/score">Score FASTA</a>
     </nav>
+    <!-- Compare / hooks: prefer Node UI (server.js) for /compare and /hooks -->
   </header>
   <div class="banner">
     PlantLLPS hybrid model (v13; hard disordered negatives). Disorder defaults to a composition proxy;
-    optional metapredict via <span class="mono">--use-metapredict</span>.
-    UniProt + Expression Atlas (E-MTAB-8758) joins included — treat ranks as hypotheses. Tool v{_esc(__version__)}.
+    metapredict + AlphaFold pLDDT where joined; Ath/rice OrthoDB orthologs; gold PSAP/LLPhyScore + proteome PLAAC-approx.
+    Treat ranks as hypotheses. Tool v{_esc(__version__)}.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -109,6 +110,7 @@ def _protein_table(rows: List[Dict[str, Any]], *, empty: str = "No proteins foun
             tpm = f"{float(tpm_v):.2f}" if tpm_v is not None else "—"
         except (TypeError, ValueError):
             tpm = "—"
+        ath = _esc(r.get("ortholog_ath_gene") or r.get("ortholog_ath") or "—")
         cells.append(
             f"<tr>"
             f'<td class="mono"><a href="/protein/{pid}">{pid}</a></td>'
@@ -118,6 +120,10 @@ def _protein_table(rows: List[Dict[str, Any]], *, empty: str = "No proteins foun
             f"<td>{_fmt_pct(r.get('percentile'))}</td>"
             f"<td>{_fmt_score(r.get('map65_tail_like'))}</td>"
             f"<td>{_fmt_score(r.get('frac_disorder_proxy'))}</td>"
+            f"<td>{_fmt_score(r.get('frac_disorder_metapredict'))}</td>"
+            f"<td>{_fmt_score(r.get('af_frac_very_low'))}</td>"
+            f"<td>{_fmt_score(r.get('plaac_nllr_approx'))}</td>"
+            f'<td class="mono">{ath}</td>'
             f"<td>{_esc(tpm)}</td>"
             f"<td class='muted'>{pname}</td>"
             f"</tr>"
@@ -127,8 +133,9 @@ def _protein_table(rows: List[Dict[str, Any]], *, empty: str = "No proteins foun
       <table>
         <thead>
           <tr>
-            <th>Protein</th><th>Gene</th><th>Tier</th><th>Score</th><th>Percentile</th>
-            <th>MAP65-like</th><th>Disorder proxy</th><th>Mean TPM</th><th>Protein name</th>
+            <th>Protein</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th><th>Percentile</th>
+            <th>MAP65-like</th><th>Disorder proxy</th><th>metapredict</th><th>AF pLDDT&lt;50</th>
+            <th>PLAAC≈</th><th>Ath ortholog</th><th>Mean TPM</th><th>Protein name</th>
           </tr>
         </thead>
         <tbody>
@@ -394,6 +401,16 @@ def make_handler(state: AppState) -> Callable:
                 <p>MAP65-tail-like: {_fmt_score(p.get('map65_tail_like'))}</p>
                 <p>Disorder proxy: {_fmt_score(p.get('frac_disorder_proxy'))}</p>
                 <p>metapredict frac: {_fmt_score(p.get('frac_disorder_metapredict'))}</p>
+                <p>AF mean pLDDT: {_fmt_score(p.get('af_mean_plddt'))}
+                   · frac&lt;50: {_fmt_score(p.get('af_frac_very_low'))}</p>
+                <p>PLAAC-approx NLLR: {_fmt_score(p.get('plaac_nllr_approx'))}</p>
+                <p>PSAP: {_fmt_score(p.get('score_psap'))}
+                   · LLPhyScore %ile: {_fmt_score(p.get('score_llphyscore_percentile'))}</p>
+                <p>Ath: <span class="mono">{_esc(p.get('ortholog_ath') or '—')}</span>
+                   ({_esc(p.get('ortholog_ath_gene') or '')})
+                   · Rice: <span class="mono">{_esc(p.get('ortholog_osa') or '—')}</span>
+                   ({_esc(p.get('ortholog_osa_gene') or '')})
+                   · family {_esc(p.get('cross_crop_family') or '—')}</p>
                 <p>Expr. mean TPM: {
                     f"{float(p['expr_mean_tpm']):.2f}"
                     if p.get("expr_mean_tpm") is not None

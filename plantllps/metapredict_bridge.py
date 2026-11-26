@@ -37,11 +37,16 @@ def metapredict_available() -> bool:
         return False
 
 
+def _meta_clean(sequence: str) -> str:
+    """Keep canonical amino acids only (metapredict rejects X/U/O/B/Z)."""
+    return "".join(ch for ch in sequence.upper() if ch in "ACDEFGHIKLMNPQRSTVWY")
+
+
 def disorder_fraction(sequence: str, *, threshold: float = 0.5) -> float:
     """Fraction of residues with metapredict disorder score ≥ threshold."""
     import metapredict as meta
 
-    seq = "".join(ch for ch in sequence.upper() if ch.isalpha())
+    seq = _meta_clean(sequence)
     if not seq:
         return 0.0
     scores = meta.predict_disorder(seq)
@@ -55,7 +60,7 @@ def percent_disorder(sequence: str) -> float:
     """metapredict.percent_disorder (0–100) normalized to 0–1 when possible."""
     import metapredict as meta
 
-    seq = "".join(ch for ch in sequence.upper() if ch.isalpha())
+    seq = _meta_clean(sequence)
     if not seq:
         return 0.0
     try:

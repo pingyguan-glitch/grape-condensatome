@@ -1,5 +1,31 @@
 # Release notes
 
+## v0.4.0 (2026-11-26)
+
+Atlas enrichments for user priorities 1–3 + 6 (honest compute scope).
+
+### AlphaFold pLDDT
+
+- `scripts/enrich_alphafold_plddt.py` — API mean pLDDT + fraction bins into SQLite; optional low-pLDDT segments (gold + Tier A by default).
+- UI protein pages show AF mean / frac&lt;50 and segment lists when present.
+- Network-bound; cache under `data/alphafold/` (gitignored). Full proteome summaries are resumable.
+
+### metapredict proteome
+
+- `scripts/score_metapredict_proteome.py` — batched, checkpointed scoring of DB IDs; joins `frac_disorder_metapredict`.
+- On a warm 4-core CPU, ~5–15 min for ~26k sequences once metapredict is installed; cold starts / memory pressure can be longer — use `--limit` / `--batch-size`.
+
+### Orthologs + cross-crop hooks
+
+- `scripts/enrich_orthologs.py` — UniProt OrthoDB streams for grape / Arabidopsis / rice; curated `data/cross_crop_hooks.json`.
+- UI `/hooks` + Ath/rice columns in tables.
+
+### Side-by-side comparators
+
+- `scripts/enrich_comparator_scores.py` + `plantllps/plaac_approx.py`.
+- Gold PSAP / LLPhyScore joined; PLAAC-approx for full proteome; UI `/compare`.
+- Full-proteome PSAP/LLPhyScore **not** claimed (env + CPU limits).
+
 ## v0.3.1 (2026-11-26)
 
 Submission-readiness follow-on (base: v0.3.0 / PR #1 branch).

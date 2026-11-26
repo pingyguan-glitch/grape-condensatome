@@ -262,7 +262,9 @@ def _row_to_protein(row: sqlite3.Row) -> Dict[str, Any]:
     d["percentile"] = feats.get("percentile")
     d["map65_tail_like"] = feats.get("map65_tail_like", 0)
     d["frac_disorder_proxy"] = feats.get("frac_disorder_proxy")
-    d["frac_disorder_metapredict"] = feats.get("frac_disorder_metapredict")
+    d["frac_disorder_metapredict"] = d.get("frac_disorder_metapredict")
+    if d["frac_disorder_metapredict"] is None:
+        d["frac_disorder_metapredict"] = feats.get("frac_disorder_metapredict")
     ann_obj: Dict[str, Any] = {}
     ann_raw = d.get("annotations") or ""
     if ann_raw.startswith("{"):
@@ -293,4 +295,23 @@ def _row_to_protein(row: sqlite3.Row) -> Dict[str, Any]:
             d["expr_tpm"] = None
     else:
         d["expr_tpm"] = None
+    # AlphaFold / ortholog / comparator enrichments (columns may be absent on old DBs)
+    segs_raw = d.get("af_disorder_segments_json") or ""
+    if segs_raw:
+        try:
+            d["af_disorder_segments"] = json.loads(segs_raw)
+        except json.JSONDecodeError:
+            d["af_disorder_segments"] = []
+    else:
+        d["af_disorder_segments"] = []
+    ortho_raw = d.get("ortholog_json") or ""
+    if ortho_raw:
+        try:
+            d["ortholog_obj"] = json.loads(ortho_raw)
+        except json.JSONDecodeError:
+            d["ortholog_obj"] = None
+    else:
+        d["ortholog_obj"] = None
+    if d.get("plaac_nllr_approx") is None:
+        d["plaac_nllr_approx"] = feats.get("plaac_nllr_approx")
     return d

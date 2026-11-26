@@ -2,7 +2,7 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 0.3.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+**Version:** 0.4.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
 
 Author: Pingyin Guan (College of Horticulture, China Agricultural University; ORCID [0000-0003-4890-3412](https://orcid.org/0000-0003-4890-3412)).
 
@@ -22,7 +22,10 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 
 ## Honesty (read before citing metrics)
 
-- Default disorder is a **composition proxy**. Optional **metapredict** fractions are available via `--use-metapredict` / `scripts/score_metapredict_subset.py` (v13 logistic weights still expect the proxy unless you retrain).
+- Default disorder is a **composition proxy**. **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed; v13 logistic weights still expect the proxy unless you retrain).
+- **AlphaFold pLDDT** summaries (+ Tier A / gold low-pLDDT segments) via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache).
+- **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
+- Side-by-side **PSAP / LLPhyScore** (gold) + **PLAAC-approx** (proteome) via `scripts/enrich_comparator_scores.py`. Full-proteome PSAP/LLPhyScore need external envs.
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
 - Gold-standard PlantLLPS AUCs are **partially in-sample** (IDs overlap the training corpus). LLPhyScore / PSAP are out-of-the-box.
 - **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
@@ -113,11 +116,13 @@ Experiment **E-MTAB-8758** (Pinot Noir berry baseline) TPMs joined on `gene_name
 ## Version tag notes
 
 Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.  
-**`v0.3.1`** = metapredict wiring, native PSAP gold AUC, Expression Atlas joins, hosting docs.
+**`v0.3.1`** = metapredict wiring, native PSAP gold AUC, Expression Atlas joins, hosting docs.  
+**`v0.4.0`** = AlphaFold pLDDT joins, batched proteome metapredict, Ath/rice OrthoDB + cross-crop hooks, side-by-side PSAP/LLPhyScore/PLAAC-approx UI.
 
 ## Still open (not claimed done)
 
-- AlphaFold pLDDT features; full-proteome metapredict by default  
+- Full-proteome **native** PSAP / LLPhyScore columns (gold joined; proteome needs external envs + hours–days)  
 - MAP-screen table deposit (ρ vs PSAP)  
 - Exact RBGD4 AGI; family-held-out PlantLLPS transfer AUC  
 - Confirmed public URL after publish-app / Railway / Render / Fly deploy  
+
