@@ -1,0 +1,8 @@
+{
+  "n": 25972,
+  "threshold": 0.5,
+  "out": "/agent/repos/grape-condensatome/data/benchmarks/metapredict_proteome.tsv",
+  "mean_frac": 0.2559,
+  "elapsed_sec_this_run": 290.8,
+  "pending_this_run": 24972
+}

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "note": "Curated cross-crop condensatome anchors (companion MAP/LLPS + literature). Used to seed UI links even when OrthoDB groups are broad/missing.",
+  "hooks": [
+    {
+      "family": "MAP65-1",
+      "grape": ["F6HET4"],
+      "arabidopsis": ["Q9FLP0"],
+      "rice": ["Q7X8B4", "Q0D4Q4"],
+      "other_crops": {
+        "soybean": [],
+        "maize": [],
+        "tomato": []
+      },
+      "note": "Proven LLPS driver (Sahu et al. 2023); Ser-rich C-terminal grammar"
+    },
+    {
+      "family": "TPX2-like",
+      "grape": [],
+      "arabidopsis": ["Q9C5Y0"],
+      "rice": [],
+      "note": "Animal paradigm extension; often Tier A in grape MAP screen"
+    },
+    {
+      "family": "ELF3",
+      "grape": [],
+      "arabidopsis": ["O82804"],
+      "rice": [],
+      "note": "Prion-like thermosensor"
+    },
+    {
+      "family": "FLOE1",
+      "grape": [],
+      "arabidopsis": ["Q8VZR8"],
+      "rice": [],
+      "note": "Hydration-dependent condensate"
+    },
+    {
+      "family": "WVD2/WDL",
+      "grape": ["A0ACT1LGI9"],
+      "arabidopsis": ["Q9LZ18"],
+      "rice": [],
+      "note": "Plant-specific disordered MAP family; top of extended grape screen"
+    }
+  ]
+}

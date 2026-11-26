@@ -5,7 +5,7 @@
  */
 
 import express from "express";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -79,13 +79,15 @@ function layout(title, body, query = "") {
       <a href="/tiers/B">Tier B</a>
       <a href="/tiers/C">Tier C</a>
       <a href="/tiers/D">Tier D</a>
+      <a href="/compare">Compare</a>
+      <a href="/hooks">Cross-crop</a>
       <a href="/score">Score FASTA</a>
     </nav>
   </header>
   <div class="banner">
-    PlantLLPS hybrid model (v13 weights; hard disordered negatives). Disorder defaults to a composition proxy;
-    optional metapredict fractions when scored with <span class="mono">--use-metapredict</span>.
-    UniProt + Expression Atlas (E-MTAB-8758) joins included — treat ranks as hypotheses for experiment.
+    PlantLLPS hybrid model (v13). Disorder: composition proxy by default; metapredict + AlphaFold pLDDT
+    joined where computed. Orthologs (Ath/rice via OrthoDB) and side-by-side PSAP/LLPhyScore/PLAAC-approx
+    on gold (+ proteome PLAAC). Treat ranks as hypotheses for experiment.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -113,6 +115,7 @@ function proteinTable(rows, empty = "No proteins found.") {
         r.expr_mean_tpm != null && Number.isFinite(Number(r.expr_mean_tpm))
           ? Number(r.expr_mean_tpm).toFixed(2)
           : "—";
+      const ath = esc(r.ortholog_ath_gene || r.ortholog_ath || "—");
       return `<tr>
         <td class="mono"><a href="/protein/${pid}">${pid}</a></td>
         <td class="mono">${gene}</td>
@@ -121,6 +124,10 @@ function proteinTable(rows, empty = "No proteins found.") {
         <td>${fmtPct(r.percentile)}</td>
         <td>${fmtScore(r.map65_tail_like)}</td>
         <td>${fmtScore(r.frac_disorder_proxy)}</td>
+        <td>${fmtScore(r.frac_disorder_metapredict)}</td>
+        <td>${fmtScore(r.af_frac_very_low)}</td>
+        <td>${fmtScore(r.plaac_nllr_approx)}</td>
+        <td class="mono">${ath}</td>
         <td>${esc(tpm)}</td>
         <td class="muted">${pname}</td>
       </tr>`;
@@ -129,8 +136,9 @@ function proteinTable(rows, empty = "No proteins found.") {
   return `<div class="card" style="overflow-x:auto">
     <table>
       <thead><tr>
-        <th>Protein</th><th>Gene</th><th>Tier</th><th>Score</th><th>Percentile</th>
-        <th>MAP65-like</th><th>Disorder proxy</th><th>Mean TPM</th><th>Protein name</th>
+        <th>Protein</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th><th>Percentile</th>
+        <th>MAP65-like</th><th>Disorder proxy</th><th>metapredict</th><th>AF pLDDT&lt;50</th>
+        <th>PLAAC≈</th><th>Ath ortholog</th><th>Mean TPM</th><th>Protein name</th>
       </tr></thead>
       <tbody>${cells}</tbody>
     </table>
@@ -296,6 +304,12 @@ app.get("/protein/:id", (req, res) => {
         <p>MAP65-tail-like: ${fmtScore(p.map65_tail_like)}</p>
         <p>Disorder proxy: ${fmtScore(p.frac_disorder_proxy)}</p>
         <p>metapredict frac: ${fmtScore(p.frac_disorder_metapredict)}</p>
+        <p>AF mean pLDDT: ${fmtScore(p.af_mean_plddt)}
+           · frac&lt;50: ${fmtScore(p.af_frac_very_low)}</p>
+        <p>PLAAC-approx NLLR: ${fmtScore(p.plaac_nllr_approx)}</p>
+        <p>PSAP: ${fmtScore(p.score_psap)}
+           · LLPhyScore %ile: ${fmtScore(p.score_llphyscore_percentile)}
+           ${p.comparator_set ? `(<span class="mono">${esc(p.comparator_set)}</span>)` : "<span class='muted'>(gold only)</span>"}</p>
         <p>Expr. mean TPM: ${
           p.expr_mean_tpm != null && Number.isFinite(Number(p.expr_mean_tpm))
             ? Number(p.expr_mean_tpm).toFixed(2)
@@ -309,6 +323,40 @@ app.get("/protein/:id", (req, res) => {
         }</p>
       </div>
     </div>
+    <div class="card" style="margin-top:1rem">
+      <h3>Orthologs / cross-crop</h3>
+      <p>Family: <strong>${esc(p.cross_crop_family || "—")}</strong>
+         · OrthoDB: <span class="mono">${esc(p.orthodb_id || "—")}</span></p>
+      <p>Arabidopsis: <span class="mono">${esc(p.ortholog_ath || "—")}</span>
+         ${p.ortholog_ath_gene ? `(${esc(p.ortholog_ath_gene)})` : ""}
+         ${
+           p.ortholog_ath
+             ? `· <a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.ortholog_ath)}/entry" target="_blank" rel="noopener">UniProt</a>`
+             : ""
+         }</p>
+      <p>Rice: <span class="mono">${esc(p.ortholog_osa || "—")}</span>
+         ${p.ortholog_osa_gene ? `(${esc(p.ortholog_osa_gene)})` : ""}
+         ${
+           p.ortholog_osa
+             ? `· <a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.ortholog_osa)}/entry" target="_blank" rel="noopener">UniProt</a>`
+             : ""
+         }</p>
+    </div>
+    ${
+      p.af_disorder_segments && p.af_disorder_segments.length
+        ? `<div class="card" style="margin-top:1rem"><h3>AlphaFold low-pLDDT segments (&lt;50)</h3>
+           <p class="muted">${esc(p.af_n_disorder_residues ?? "")} residues in
+           ${p.af_disorder_segments.length} segment(s)
+           ${p.af_model_id ? `· <span class="mono">${esc(p.af_model_id)}</span>` : ""}</p>
+           <div class="features">${p.af_disorder_segments
+             .slice(0, 40)
+             .map(
+               (s) =>
+                 `<div><span class="k">${esc(s.start)}–${esc(s.end)}</span><span class="v">len ${esc(s.length)}</span></div>`
+             )
+             .join("")}</div></div>`
+        : ""
+    }
     ${
       p.expr_tpm
         ? `<div class="card" style="margin-top:1rem"><h3>Expression Atlas TPM by condition</h3>
@@ -325,6 +373,134 @@ app.get("/protein/:id", (req, res) => {
       <div class="features">${featHtml}</div>
     </div>`;
   res.type("html").send(layout(p.protein_id, body));
+});
+
+app.get("/compare", (_req, res) => {
+  // Prefer deposited gold side-by-side (includes Ath/human IDs not in grape proteome)
+  const sidePath = join(__dirname, "data", "benchmarks", "comparator_side_by_side.json");
+  let goldRows = [];
+  if (existsSync(sidePath)) {
+    try {
+      goldRows = JSON.parse(readFileSync(sidePath, "utf8")).rows || [];
+    } catch {
+      goldRows = [];
+    }
+  }
+  const goldCells = goldRows
+    .map((r) => {
+      const pid = esc(r.protein_id);
+      const inDb = getProtein(db, r.protein_id);
+      const link = inDb
+        ? `<a href="/protein/${pid}">${pid}</a>`
+        : `<span title="not in grape proteome DB">${pid}</span>`;
+      return `<tr>
+        <td class="mono">${link}</td>
+        <td>${esc(r.label || "—")}</td>
+        <td class="muted">${esc(r.note || "")}</td>
+        <td>${fmtScore(r.score_plantllps)}</td>
+        <td>${fmtScore(r.score_psap)}</td>
+        <td>${fmtScore(r.score_llphyscore_percentile)}</td>
+        <td>${fmtScore(r.plaac_nllr_approx)}</td>
+        <td>${fmtScore(r.frac_disorder_metapredict)}</td>
+        <td>${fmtScore(r.af_frac_very_low)}</td>
+      </tr>`;
+    })
+    .join("");
+  // Proteome sample with PLAAC (top scores) for side-by-side vs PlantLLPS
+  const proteomeSample = db
+    .prepare(
+      `SELECT protein_id, gene_name, tier, score, plaac_nllr_approx, frac_disorder_metapredict,
+              af_frac_very_low FROM proteins
+       WHERE plaac_nllr_approx IS NOT NULL
+       ORDER BY score DESC LIMIT 40`
+    )
+    .all();
+  const protCells = proteomeSample
+    .map((r) => {
+      const pid = esc(r.protein_id);
+      return `<tr>
+        <td class="mono"><a href="/protein/${pid}">${pid}</a></td>
+        <td class="mono">${esc(r.gene_name || "—")}</td>
+        <td><span class="tier ${esc(r.tier || "?")}">${esc(r.tier || "?")}</span></td>
+        <td>${fmtScore(r.score)}</td>
+        <td class="muted">—</td>
+        <td class="muted">—</td>
+        <td>${fmtScore(r.plaac_nllr_approx)}</td>
+        <td>${fmtScore(r.frac_disorder_metapredict)}</td>
+        <td>${fmtScore(r.af_frac_very_low)}</td>
+      </tr>`;
+    })
+    .join("");
+  const body = `
+    <div class="card">
+      <h2>Side-by-side comparators</h2>
+      <p class="muted">Gold panel: PlantLLPS vs native PSAP / LLPhyScore + PLAAC-approx.
+      Proteome-wide PSAP/LLPhyScore are <strong>not</strong> shipped (external envs + CPU);
+      PLAAC-approx and disorder tracks cover the atlas. See
+      <span class="mono">docs/EXTERNAL_TOOLS.md</span>.</p>
+    </div>
+    <h2 style="font-family:var(--font-display)">Gold standard (13+15)</h2>
+    <div class="card" style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Protein</th><th>Label</th><th>Note</th><th>PlantLLPS</th>
+          <th>PSAP</th><th>LLPhyScore %ile</th><th>PLAAC≈</th>
+          <th>metapredict</th><th>AF pLDDT&lt;50</th>
+        </tr></thead>
+        <tbody>${goldCells || `<tr><td colspan="9" class="muted">Run scripts/enrich_comparator_scores.py</td></tr>`}</tbody>
+      </table>
+    </div>
+    <h2 style="font-family:var(--font-display)">Proteome top-40 (PLAAC≈ / disorder)</h2>
+    <div class="card" style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>Protein</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th>
+          <th>PSAP</th><th>LLPhyScore %ile</th><th>PLAAC≈</th>
+          <th>metapredict</th><th>AF pLDDT&lt;50</th>
+        </tr></thead>
+        <tbody>${protCells}</tbody>
+      </table>
+    </div>`;
+  res.type("html").send(layout("Compare", body));
+});
+
+app.get("/hooks", (_req, res) => {
+  const meta = getMeta(db);
+  let hooks = { hooks: [] };
+  try {
+    hooks = meta.cross_crop_hooks ? JSON.parse(meta.cross_crop_hooks) : hooks;
+  } catch {
+    /* ignore */
+  }
+  const dbHooks = db
+    .prepare(
+      `SELECT protein_id, gene_name, tier, score, cross_crop_family, ortholog_ath, ortholog_ath_gene,
+              ortholog_osa, ortholog_osa_gene
+       FROM proteins WHERE cross_crop_family IS NOT NULL AND cross_crop_family != ''
+       ORDER BY cross_crop_family, score DESC`
+    )
+    .all();
+  const hookCards = (hooks.hooks || [])
+    .map((h) => {
+      const g = (h.grape || []).map((x) => `<a class="mono" href="/protein/${esc(x)}">${esc(x)}</a>`).join(", ") || "—";
+      const a = (h.arabidopsis || []).map((x) => esc(x)).join(", ") || "—";
+      const r = (h.rice || []).map((x) => esc(x)).join(", ") || "—";
+      return `<div class="card" style="margin-bottom:0.75rem">
+        <h3>${esc(h.family)}</h3>
+        <p class="muted">${esc(h.note || "")}</p>
+        <p>Grape: ${g}</p>
+        <p>Arabidopsis: <span class="mono">${a}</span></p>
+        <p>Rice: <span class="mono">${r}</span></p>
+      </div>`;
+    })
+    .join("");
+  const body = `
+    <div class="card"><h2>Cross-crop condensatome hooks</h2>
+    <p class="muted">Curated family anchors plus OrthoDB-joined Ath/rice columns on proteome rows.</p></div>
+    ${hookCards || `<p class="muted">No hooks in meta — load data/cross_crop_hooks.json via enrich_orthologs.py</p>`}
+    <h2 style="font-family:var(--font-display)">Proteome rows with family tag</h2>
+    ${proteinTable(dbHooks.map((r) => getProtein(db, r.protein_id)).filter(Boolean))}`;
+  res.type("html").send(layout("Cross-crop", body));
 });
 
 function scoreForm(resultHtml = "") {

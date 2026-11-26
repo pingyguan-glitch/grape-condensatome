@@ -1,0 +1,313 @@
+{
+  "n": 28,
+  "rows": [
+    {
+      "protein_id": "Q9FLP0",
+      "label": "positive",
+      "note": "AtMAP65-1",
+      "score_plantllps": 0.8433303175064484,
+      "score_psap": 0.015833333333333335,
+      "score_llphyscore_percentile": 26.462785556374357,
+      "plaac_nllr_approx": 0.004401,
+      "frac_disorder_metapredict": 0.25724,
+      "af_frac_very_low": 0.179
+    },
+    {
+      "protein_id": "O82804",
+      "label": "positive",
+      "note": "ELF3",
+      "score_plantllps": 0.9511976606612692,
+      "score_psap": 0.019166666666666665,
+      "score_llphyscore_percentile": 98.42053549496438,
+      "plaac_nllr_approx": 0.050795,
+      "frac_disorder_metapredict": 0.858993,
+      "af_frac_very_low": 0.683
+    },
+    {
+      "protein_id": "Q8VZR8",
+      "label": "positive",
+      "note": "FLOE1",
+      "score_plantllps": 0.84751847958857,
+      "score_psap": 0.0175,
+      "score_llphyscore_percentile": 98.33456153279293,
+      "plaac_nllr_approx": 0.06349,
+      "frac_disorder_metapredict": 0.737903,
+      "af_frac_very_low": 0.609
+    },
+    {
+      "protein_id": "Q7DZS7",
+      "label": "positive",
+      "note": "RBGD2",
+      "score_plantllps": 0.6587457859905532,
+      "score_psap": 0.03166666666666667,
+      "score_llphyscore_percentile": 99.56767379022354,
+      "plaac_nllr_approx": 2.2e-05,
+      "frac_disorder_metapredict": 0.641089,
+      "af_frac_very_low": null
+    },
+    {
+      "protein_id": "Q8W234",
+      "label": "positive",
+      "note": "SEUSS",
+      "score_plantllps": 0.8773982989383967,
+      "score_psap": 0.03833333333333333,
+      "score_llphyscore_percentile": 99.46941783345616,
+      "plaac_nllr_approx": 0.752913,
+      "frac_disorder_metapredict": 0.706956,
+      "af_frac_very_low": 0.596
+    },
+    {
+      "protein_id": "O04425",
+      "label": "positive",
+      "note": "FCA",
+      "score_plantllps": 0.8921505832285292,
+      "score_psap": 0.0225,
+      "score_llphyscore_percentile": 99.29255711127487,
+      "plaac_nllr_approx": 0.120755,
+      "frac_disorder_metapredict": 0.756359,
+      "af_frac_very_low": 0.624
+    },
+    {
+      "protein_id": "P35637",
+      "label": "positive",
+      "note": "FUS",
+      "score_plantllps": 0.9214102538719939,
+      "score_psap": 0.025833333333333333,
+      "score_llphyscore_percentile": 99.80348808646525,
+      "plaac_nllr_approx": 0.051574,
+      "frac_disorder_metapredict": 0.811787,
+      "af_frac_very_low": 0.681
+    },
+    {
+      "protein_id": "O43663",
+      "label": "positive",
+      "note": "PRC1",
+      "score_plantllps": 0.8386778945535276,
+      "score_psap": 0.0125,
+      "score_llphyscore_percentile": 29.209039548022602,
+      "plaac_nllr_approx": 0.000355,
+      "frac_disorder_metapredict": 0.270968,
+      "af_frac_very_low": 0.229
+    },
+    {
+      "protein_id": "Q9ULW0",
+      "label": "positive",
+      "note": "TPX2",
+      "score_plantllps": 0.6709018508309963,
+      "score_psap": 0.015,
+      "score_llphyscore_percentile": 44.546794399410466,
+      "plaac_nllr_approx": 0.001033,
+      "frac_disorder_metapredict": 0.733601,
+      "af_frac_very_low": 0.3
+    },
+    {
+      "protein_id": "P09651",
+      "label": "positive",
+      "note": "hnRNPA1",
+      "score_plantllps": 0.9162051799912783,
+      "score_psap": 0.049166666666666664,
+      "score_llphyscore_percentile": 99.53819700319333,
+      "plaac_nllr_approx": 0.002728,
+      "frac_disorder_metapredict": 0.534946,
+      "af_frac_very_low": 0.47
+    },
+    {
+      "protein_id": "Q9NQI0",
+      "label": "positive",
+      "note": "DDX4",
+      "score_plantllps": 0.6106591745337913,
+      "score_psap": 0.03166666666666667,
+      "score_llphyscore_percentile": 97.64676983542128,
+      "plaac_nllr_approx": 0.004336,
+      "frac_disorder_metapredict": 0.396409,
+      "af_frac_very_low": 0.383
+    },
+    {
+      "protein_id": "P10636",
+      "label": "positive",
+      "note": "tau",
+      "score_plantllps": 0.7850365667392784,
+      "score_psap": 0.025,
+      "score_llphyscore_percentile": 99.21640874478015,
+      "plaac_nllr_approx": 0.074666,
+      "frac_disorder_metapredict": 1.0,
+      "af_frac_very_low": 0.656
+    },
+    {
+      "protein_id": "Q9NP74",
+      "label": "positive",
+      "note": "BuGZ/ZNF207",
+      "score_plantllps": 0.8678627172578122,
+      "score_psap": 0.011666666666666667,
+      "score_llphyscore_percentile": 78.3075411446819,
+      "plaac_nllr_approx": 0.000123,
+      "frac_disorder_metapredict": 0.666062,
+      "af_frac_very_low": 0.316
+    },
+    {
+      "protein_id": "A0ACT1EZG2",
+      "label": "negative",
+      "note": "Vv tubulin alpha",
+      "score_plantllps": 0.41300678524240597,
+      "score_psap": 0.015833333333333335,
+      "score_llphyscore_percentile": 48.85040530582167,
+      "plaac_nllr_approx": 0.035703,
+      "frac_disorder_metapredict": 0.04,
+      "af_frac_very_low": null
+    },
+    {
+      "protein_id": "P04350",
+      "label": "negative",
+      "note": "human tubulin beta",
+      "score_plantllps": 0.5628439254221256,
+      "score_psap": 0.015833333333333335,
+      "score_llphyscore_percentile": 82.72905919921396,
+      "plaac_nllr_approx": 0.000733,
+      "frac_disorder_metapredict": 0.038288,
+      "af_frac_very_low": 0.027
+    },
+    {
+      "protein_id": "P0DP23",
+      "label": "negative",
+      "note": "calmodulin",
+      "score_plantllps": 0.6119914078966859,
+      "score_psap": 0.01,
+      "score_llphyscore_percentile": 90.28002947678704,
+      "plaac_nllr_approx": 0.003337,
+      "frac_disorder_metapredict": 0.0,
+      "af_frac_very_low": 0.013
+    },
+    {
+      "protein_id": "P25858",
+      "label": "negative",
+      "note": "At GAPDH",
+      "score_plantllps": 0.2408011491658068,
+      "score_psap": 0.015833333333333335,
+      "score_llphyscore_percentile": 57.18496683861459,
+      "plaac_nllr_approx": 0.071832,
+      "frac_disorder_metapredict": 0.0,
+      "af_frac_very_low": 0.006
+    },
+    {
+      "protein_id": "Q0WL56",
+      "label": "negative",
+      "note": "At tubulin alpha",
+      "score_plantllps": 0.2893159686705163,
+      "score_psap": 0.018333333333333333,
+      "score_llphyscore_percentile": 54.367477278310005,
+      "plaac_nllr_approx": 0.063982,
+      "frac_disorder_metapredict": 0.028953,
+      "af_frac_very_low": 0.002
+    },
+    {
+      "protein_id": "Q9FLN4",
+      "label": "negative",
+      "note": "ribosomal",
+      "score_plantllps": 0.33580201127356035,
+      "score_psap": 0.015,
+      "score_llphyscore_percentile": 85.92729059199215,
+      "plaac_nllr_approx": 0.010406,
+      "frac_disorder_metapredict": 0.419192,
+      "af_frac_very_low": 0.182
+    },
+    {
+      "protein_id": "Q9FNK4",
+      "label": "negative",
+      "note": "At OAT enzyme",
+      "score_plantllps": 0.348989210578464,
+      "score_psap": 0.0125,
+      "score_llphyscore_percentile": 41.46401375583395,
+      "plaac_nllr_approx": 0.045851,
+      "frac_disorder_metapredict": 0.090526,
+      "af_frac_very_low": 0.074
+    },
+    {
+      "protein_id": "P29514",
+      "label": "negative",
+      "note": "tubulin beta-6",
+      "score_plantllps": 0.6154531675452131,
+      "score_psap": 0.016666666666666666,
+      "score_llphyscore_percentile": 75.52444116924589,
+      "plaac_nllr_approx": 0.000101,
+      "frac_disorder_metapredict": 0.048998,
+      "af_frac_very_low": 0.031
+    },
+    {
+      "protein_id": "Q96292",
+      "label": "negative",
+      "note": "actin-2",
+      "score_plantllps": 0.3545083023185779,
+      "score_psap": 0.014166666666666666,
+      "score_llphyscore_percentile": 51.00957995578482,
+      "plaac_nllr_approx": 0.054753,
+      "frac_disorder_metapredict": 0.007958,
+      "af_frac_very_low": 0.008
+    },
+    {
+      "protein_id": "P24100",
+      "label": "negative",
+      "note": "CDKA;1",
+      "score_plantllps": 0.2583229815880096,
+      "score_psap": 0.015,
+      "score_llphyscore_percentile": 47.86538933922869,
+      "plaac_nllr_approx": 0.054526,
+      "frac_disorder_metapredict": 0.0,
+      "af_frac_very_low": 0.027
+    },
+    {
+      "protein_id": "P25696",
+      "label": "negative",
+      "note": "enolase2/LOS2",
+      "score_plantllps": 0.2877873198947972,
+      "score_psap": 0.028333333333333332,
+      "score_llphyscore_percentile": 52.56693687054778,
+      "plaac_nllr_approx": 0.003789,
+      "frac_disorder_metapredict": 0.0,
+      "af_frac_very_low": 0.0
+    },
+    {
+      "protein_id": "P04778",
+      "label": "negative",
+      "note": "LHCB1.3",
+      "score_plantllps": 0.21092056418791522,
+      "score_psap": 0.004166666666666667,
+      "score_llphyscore_percentile": 80.29968066814051,
+      "plaac_nllr_approx": 0.039914,
+      "frac_disorder_metapredict": 0.187266,
+      "af_frac_very_low": 0.154
+    },
+    {
+      "protein_id": "O48549",
+      "label": "negative",
+      "note": "ribosomal S6A",
+      "score_plantllps": 0.4476823928816276,
+      "score_psap": 0.015,
+      "score_llphyscore_percentile": 75.52444116924589,
+      "plaac_nllr_approx": 0.015843,
+      "frac_disorder_metapredict": 0.564,
+      "af_frac_very_low": 0.016
+    },
+    {
+      "protein_id": "P49040",
+      "label": "negative",
+      "note": "sucrose synthase SUS1",
+      "score_plantllps": 0.32263267837044995,
+      "score_psap": 0.0175,
+      "score_llphyscore_percentile": 7.656595431098011,
+      "plaac_nllr_approx": 0.035716,
+      "frac_disorder_metapredict": 0.0,
+      "af_frac_very_low": 0.014
+    },
+    {
+      "protein_id": "Q96528",
+      "label": "negative",
+      "note": "catalase-1",
+      "score_plantllps": 0.3647396564652221,
+      "score_psap": 0.034166666666666665,
+      "score_llphyscore_percentile": 46.56841070989929,
+      "plaac_nllr_approx": 0.001179,
+      "frac_disorder_metapredict": 0.022358,
+      "af_frac_very_low": 0.0
+    }
+  ]
+}
