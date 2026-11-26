@@ -83,12 +83,12 @@ function layout(title, body, query = "") {
     </nav>
   </header>
   <div class="banner">
-    PlantLLPS hybrid model (v12 weights). Disorder is a composition proxy (not metapredict).
-    Sample / research prototype scores — treat ranks as hypotheses for experiment.
+    PlantLLPS hybrid model (v13 weights; hard disordered negatives). Disorder is a composition proxy (not metapredict).
+    UniProt gene / GO / keyword joins included — treat ranks as hypotheses for experiment.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
-    <label for="q" class="muted">Search UniProt ID or keyword</label>
-    <input id="q" type="text" name="q" value="${esc(query)}" placeholder="e.g. F6HET4 or MAP65"/>
+    <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
+    <input id="q" type="text" name="q" value="${esc(query)}" placeholder="e.g. F6HET4, MAP65, VIT_19s0090g01230"/>
     <button type="submit">Search</button>
   </form>
   ${body}
@@ -106,22 +106,25 @@ function proteinTable(rows, empty = "No proteins found.") {
     .map((r) => {
       const pid = esc(r.protein_id);
       const tier = esc(r.tier || "?");
+      const gene = esc(r.gene_name || "—");
+      const pname = esc((r.protein_name || "").slice(0, 72) || "—");
       return `<tr>
         <td class="mono"><a href="/protein/${pid}">${pid}</a></td>
+        <td class="mono">${gene}</td>
         <td><span class="tier ${tier}">${tier}</span></td>
         <td>${fmtScore(r.score)}</td>
         <td>${fmtPct(r.percentile)}</td>
         <td>${fmtScore(r.map65_tail_like)}</td>
         <td>${fmtScore(r.frac_disorder_proxy)}</td>
-        <td class="muted">${esc((r.annotations || "").slice(0, 80))}</td>
+        <td class="muted">${pname}</td>
       </tr>`;
     })
     .join("");
   return `<div class="card" style="overflow-x:auto">
     <table>
       <thead><tr>
-        <th>Protein</th><th>Tier</th><th>Score</th><th>Percentile</th>
-        <th>MAP65-like</th><th>Disorder proxy</th><th>Notes</th>
+        <th>Protein</th><th>Gene</th><th>Tier</th><th>Score</th><th>Percentile</th>
+        <th>MAP65-like</th><th>Disorder proxy</th><th>Protein name</th>
       </tr></thead>
       <tbody>${cells}</tbody>
     </table>
@@ -157,10 +160,14 @@ app.get("/api/search", (req, res) => {
     total,
     results: rows.map((r) => ({
       protein_id: r.protein_id,
+      gene_name: r.gene_name || "",
+      protein_name: r.protein_name || "",
       score: r.score,
       tier: r.tier,
       percentile: r.percentile,
       map65_tail_like: r.map65_tail_like,
+      go_terms: r.go_terms || [],
+      keywords: r.keywords || [],
     })),
   });
 });
@@ -249,14 +256,19 @@ app.get("/protein/:id", (req, res) => {
     )
     .join("");
   const uniprot = `https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.protein_id)}/entry`;
+  const go = (p.go_terms || []).slice(0, 24).map((g) => esc(g)).join(", ") || "—";
+  const kw = (p.keywords || []).slice(0, 24).map((g) => esc(g)).join(", ") || "—";
   const body = `
     <div class="detail-hero">
       <div class="card">
         <h2 class="mono">${esc(p.protein_id)}</h2>
-        <p><span class="tier ${esc(p.tier)}">${esc(p.tier)}</span>
+        <p><strong>${esc(p.gene_name || "—")}</strong>
+           · <span class="tier ${esc(p.tier)}">${esc(p.tier)}</span>
            · length ${esc(p.length)}
            · <a href="${uniprot}" rel="noopener" target="_blank">UniProt</a></p>
-        <p>${esc(p.annotations || "No annotation text in DB.")}</p>
+        <p>${esc(p.protein_name || "No UniProt protein name in DB.")}</p>
+        <p><span class="muted">GO:</span> ${go}</p>
+        <p><span class="muted">Keywords:</span> ${kw}</p>
         <p class="muted mono">hash=${esc(p.sequence_hash)} · source=${esc(p.source)}</p>
       </div>
       <div class="card">
@@ -280,7 +292,7 @@ function scoreForm(resultHtml = "") {
   return `
     <div class="card">
       <h2>Score a sequence</h2>
-      <p class="muted">Paste FASTA or raw amino-acid sequence. Scored with the bundled PlantLLPS v12 model
+      <p class="muted">Paste FASTA or raw amino-acid sequence. Scored with the bundled PlantLLPS v13 model
       (not written back to the proteome DB).</p>
       <form method="post" action="/score">
         <p><label>Optional ID<br/>
