@@ -1,0 +1,19 @@
+{
+  "name": "grape-condensatome",
+  "version": "1.0.0",
+  "description": "GrapeCondensatome — browse PlantLLPS grapevine proteome scores",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "build": "node -e \"console.log('No build step; Express serves from source + data/')\"",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
