@@ -1,10 +1,15 @@
 # PlantLLPS core scoring/training is stdlib-only (Python ≥3.10).
-# Optional extras:
+# Optional extras for annotation / analysis notebooks:
 # biopython>=1.81
 # pandas>=1.5
 # numpy>=1.24
 # scikit-learn>=1.3
 #
-# External tools (not pip-installed by this repo):
-# - LLPhyScore standalone 20220627: https://github.com/julie-forman-kay-lab/LLPhyScore
-# - PSAP (van Mierlo et al. 2021): PyPI `psap` — requires older sklearn; not verified on Py3.12
+# --- External tools (separate envs; see docs/EXTERNAL_TOOLS.md) ---
+# metapredict (Python 3.11 + PyTorch recommended):
+#   pip install metapredict
+# PSAP (must use Python ≤3.9; pin numpy/scipy):
+#   pip install 'psap' 'numpy<1.24' 'scipy<1.11'
+#
+# LLPhyScore standalone 20220627:
+#   https://github.com/julie-forman-kay-lab/LLPhyScore

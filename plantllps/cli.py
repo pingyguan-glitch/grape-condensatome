@@ -34,6 +34,7 @@ DEFAULT_PROTEOME = PACKAGE_ROOT / "data" / "UP000009183.fasta.gz"
 TSV_COLUMNS: List[str] = (
     ["protein_id", "score_plantllps", "score_companion", "score_logistic", "tier", "percentile"]
     + FEATURE_NAMES
+    + ["frac_disorder_metapredict"]  # optional; filled when --use-metapredict
 )
 
 
@@ -74,6 +75,23 @@ def cmd_train(args: argparse.Namespace) -> int:
     return 0
 
 
+def _maybe_metapredict_map(args: argparse.Namespace, records):
+    """Precompute metapredict fractions when --use-metapredict is set."""
+    if not getattr(args, "use_metapredict", False):
+        return {}
+    from .metapredict_bridge import resolve_metapredict_scores
+
+    print(
+        f"Computing metapredict disorder for {len(records)} sequences …",
+        file=sys.stderr,
+    )
+    return resolve_metapredict_scores(
+        records,
+        threshold=float(getattr(args, "metapredict_threshold", 0.5)),
+        python_exe=getattr(args, "metapredict_python", None),
+    )
+
+
 def cmd_score(args: argparse.Namespace) -> int:
     fasta = Path(args.fasta)
     out_tsv = Path(args.out_tsv)
@@ -90,10 +108,16 @@ def cmd_score(args: argparse.Namespace) -> int:
 
     min_len = int(args.min_length)
     records = [(p, s) for p, s in records if len(s) >= min_len]
+    meta_map = _maybe_metapredict_map(args, records)
     out_tsv.parent.mkdir(parents=True, exist_ok=True)
     rows = []
     for pid, seq in records:
-        scored = model.score(seq)
+        scored = model.score(
+            seq,
+            use_metapredict=False,
+            replace_disorder_proxy=bool(getattr(args, "metapredict_replace_proxy", False)),
+            metapredict_frac=meta_map.get(pid) if meta_map else None,
+        )
         row = {"protein_id": pid, "percentile": "", **scored}
         rows.append(row)
 
@@ -214,11 +238,17 @@ def cmd_score_proteome(args: argparse.Namespace) -> int:
             clean.append((p, s))
     records = clean
     print(f"Scoring {len(records)} proteins (min_length={min_len}) …", file=sys.stderr)
+    meta_map = _maybe_metapredict_map(args, records)
 
     t0 = time.time()
     rows = []
     for i, (pid, seq) in enumerate(records, 1):
-        scored = model.score(seq)
+        scored = model.score(
+            seq,
+            use_metapredict=False,
+            replace_disorder_proxy=bool(getattr(args, "metapredict_replace_proxy", False)),
+            metapredict_frac=meta_map.get(pid) if meta_map else None,
+        )
         rows.append({"protein_id": pid, "percentile": "", **scored})
         if i % 2000 == 0:
             elapsed = time.time() - t0
@@ -269,12 +299,15 @@ def cmd_score_proteome(args: argparse.Namespace) -> int:
     set_meta(conn, "proteome", "UniProt UP000009183 Vitis vinifera")
     set_meta(conn, "n_scored", str(len(rows)))
     set_meta(conn, "tier_cutoffs", json.dumps(cutoffs))
-    set_meta(
-        conn,
-        "disclaimer",
-        "Whole-proteome prototype scores with composition-proxy disorder. "
-        "Not a finished atlas with Expression Atlas / metapredict.",
+    disclaimer = (
+        "Whole-proteome prototype scores. Default disorder is a composition proxy; "
+        "optional metapredict fractions appear when scored with --use-metapredict. "
+        "Expression Atlas TPM joins are optional (scripts/enrich_expression_atlas.py)."
     )
+    if getattr(args, "use_metapredict", False):
+        disclaimer += " This run included metapredict disorder fractions."
+        set_meta(conn, "metapredict", "enabled")
+    set_meta(conn, "disclaimer", disclaimer)
     for (pid, seq), row in zip(records, rows):
         upsert_protein(
             conn,
@@ -352,6 +385,31 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--folds", type=int, default=5)
     t.set_defaults(func=cmd_train)
 
+    def _add_metapredict_flags(ap: argparse.ArgumentParser) -> None:
+        ap.add_argument(
+            "--use-metapredict",
+            action="store_true",
+            help="Also compute frac_disorder_metapredict (requires metapredict install "
+            "or METAPREDICT_PYTHON / --metapredict-python)",
+        )
+        ap.add_argument(
+            "--metapredict-python",
+            default=None,
+            help="Interpreter with metapredict installed (default: METAPREDICT_PYTHON or current)",
+        )
+        ap.add_argument(
+            "--metapredict-threshold",
+            type=float,
+            default=0.5,
+            help="Per-residue disorder threshold for frac_disorder_metapredict",
+        )
+        ap.add_argument(
+            "--metapredict-replace-proxy",
+            action="store_true",
+            help="Overwrite frac_disorder_proxy with metapredict fraction (affects companion/tiers; "
+            "logistic weights still expect composition proxy unless you retrain)",
+        )
+
     s = sub.add_parser("score", help="Score FASTA → TSV (+ optional SQLite)")
     s.add_argument("fasta", help="Input FASTA")
     s.add_argument("-o", "--out-tsv", required=True, help="Output TSV path")
@@ -360,6 +418,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--mode", choices=["hybrid", "companion_composite", "logistic_stub"])
     s.add_argument("--min-length", type=int, default=1)
     s.add_argument("--db-status", default="custom_score")
+    _add_metapredict_flags(s)
     s.set_defaults(func=cmd_score)
 
     i = sub.add_parser("init-db", help="Score seed grapevine FASTA → prototype SQLite")
@@ -393,6 +452,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--summary-json",
         default=str(PACKAGE_ROOT / "data" / "proteome_summary.json"),
     )
+    _add_metapredict_flags(sp)
     sp.set_defaults(func=cmd_score_proteome)
 
     sv = sub.add_parser(

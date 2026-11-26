@@ -1,5 +1,30 @@
 # Release notes
 
+## v0.3.1 (2026-11-26)
+
+Submission-readiness follow-on (base: v0.3.0 / PR #1 branch).
+
+### metapredict
+
+- Optional `--use-metapredict` on `score` / `score-proteome` (+ `METAPREDICT_PYTHON`).
+- `plantllps/metapredict_bridge.py` + `scripts/score_metapredict_subset.py` (29 sequences scored; mean frac ≈ 0.35).
+- Install / pin notes in `docs/EXTERNAL_TOOLS.md`.
+
+### Native PSAP
+
+- Runnable in Python 3.9 env (`numpy<1.24`, `scipy<1.11`); `scripts/run_psap_gold.py`.
+- Gold-standard AUC ≈ **0.718** (companion cited 0.692). Side-by-side in `data/benchmarks/gold_standard_comparison.json`.
+- MAP-screen ρ still blocked (208-protein table missing).
+
+### Expression Atlas
+
+- `scripts/enrich_expression_atlas.py` joins **E-MTAB-8758** TPMs → SQLite (`expr_*` columns).
+- **25 810 / 25 972** proteins matched (99.4%); Node + Python UIs show mean TPM + per-condition.
+
+### Hosting
+
+- `docs/HOSTING.md`: Cursor publish-app on `:8765`; GitHub Pages unsuitable; Railway/Render/Fly alternatives.
+
 ## v0.3.0 (2026-11-26)
 
 Submission-oriented resource packaging (still composition-proxy disorder; not metapredict).

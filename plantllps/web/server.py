@@ -76,8 +76,9 @@ def _layout(title: str, body: str, *, query: str = "") -> str:
     </nav>
   </header>
   <div class="banner">
-    PlantLLPS hybrid model (v13; hard disordered negatives). Disorder is a composition proxy (not metapredict).
-    UniProt gene / GO / keyword joins included — treat ranks as hypotheses for experiment. Tool v{_esc(__version__)}.
+    PlantLLPS hybrid model (v13; hard disordered negatives). Disorder defaults to a composition proxy;
+    optional metapredict via <span class="mono">--use-metapredict</span>.
+    UniProt + Expression Atlas (E-MTAB-8758) joins included — treat ranks as hypotheses. Tool v{_esc(__version__)}.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -103,6 +104,11 @@ def _protein_table(rows: List[Dict[str, Any]], *, empty: str = "No proteins foun
         tier = _esc(r.get("tier", "?"))
         gene = _esc(r.get("gene_name") or "—")
         pname = _esc((r.get("protein_name") or "")[:72] or "—")
+        tpm_v = r.get("expr_mean_tpm")
+        try:
+            tpm = f"{float(tpm_v):.2f}" if tpm_v is not None else "—"
+        except (TypeError, ValueError):
+            tpm = "—"
         cells.append(
             f"<tr>"
             f'<td class="mono"><a href="/protein/{pid}">{pid}</a></td>'
@@ -112,6 +118,7 @@ def _protein_table(rows: List[Dict[str, Any]], *, empty: str = "No proteins foun
             f"<td>{_fmt_pct(r.get('percentile'))}</td>"
             f"<td>{_fmt_score(r.get('map65_tail_like'))}</td>"
             f"<td>{_fmt_score(r.get('frac_disorder_proxy'))}</td>"
+            f"<td>{_esc(tpm)}</td>"
             f"<td class='muted'>{pname}</td>"
             f"</tr>"
         )
@@ -121,7 +128,7 @@ def _protein_table(rows: List[Dict[str, Any]], *, empty: str = "No proteins foun
         <thead>
           <tr>
             <th>Protein</th><th>Gene</th><th>Tier</th><th>Score</th><th>Percentile</th>
-            <th>MAP65-like</th><th>Disorder proxy</th><th>Protein name</th>
+            <th>MAP65-like</th><th>Disorder proxy</th><th>Mean TPM</th><th>Protein name</th>
           </tr>
         </thead>
         <tbody>
@@ -386,8 +393,36 @@ def make_handler(state: AppState) -> Callable:
                 <p>Percentile: {_fmt_pct(p.get('percentile'))}</p>
                 <p>MAP65-tail-like: {_fmt_score(p.get('map65_tail_like'))}</p>
                 <p>Disorder proxy: {_fmt_score(p.get('frac_disorder_proxy'))}</p>
+                <p>metapredict frac: {_fmt_score(p.get('frac_disorder_metapredict'))}</p>
+                <p>Expr. mean TPM: {
+                    f"{float(p['expr_mean_tpm']):.2f}"
+                    if p.get("expr_mean_tpm") is not None
+                    else "—"
+                }{
+                    f' (<span class="mono">{_esc(p.get("expr_experiment"))}</span>)'
+                    if p.get("expr_experiment")
+                    else ""
+                }</p>
+                <p>Expr. max TPM: {
+                    f"{float(p['expr_max_tpm']):.2f}"
+                    if p.get("expr_max_tpm") is not None
+                    else "—"
+                }</p>
               </div>
             </div>
+            {
+                (
+                    '<div class="card" style="margin-top:1rem"><h3>Expression Atlas TPM by condition</h3>'
+                    '<div class="features">'
+                    + "".join(
+                        f'<div><span class="k">{_esc(k)}</span><span class="v">{_esc(v)}</span></div>'
+                        for k, v in sorted((p.get("expr_tpm") or {}).items())
+                    )
+                    + "</div></div>"
+                )
+                if p.get("expr_tpm")
+                else ""
+            }
             <div class="card" style="margin-top:1rem">
               <h3>Features</h3>
               <div class="features">{feat_html}</div>

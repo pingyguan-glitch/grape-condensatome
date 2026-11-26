@@ -2,7 +2,7 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 0.3.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+**Version:** 0.3.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
 
 Author: Pingyin Guan (College of Horticulture, China Agricultural University; ORCID [0000-0003-4890-3412](https://orcid.org/0000-0003-4890-3412)).
 
@@ -10,22 +10,23 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 
 | Piece | Path | Notes |
 |-------|------|-------|
-| Python package / CLI | `plantllps/` | train, score, score-proteome, serve |
+| Python package / CLI | `plantllps/` | train, score, score-proteome, serve; optional `--use-metapredict` |
 | Training history | `data/train_formal_v*.csv`, `data/training/` | v1–v13 snapshots + metrics |
 | Model weights | `data/model_formal.json` | **v13** hybrid logistic + companion |
-| Proteome SQLite | `data/grape_condensatome.sqlite` | 25 972 scored rows + UniProt joins |
+| Proteome SQLite | `data/grape_condensatome.sqlite` | 25 972 scored rows + UniProt + Expression Atlas |
 | Proteome TSV | `data/grape_condensatome.proteome.tsv` | flat table |
 | Node web UI | `server.js` + `lib/` + `public/` | Express + `node:sqlite` (Node ≥22) |
-| Benchmarks | `data/benchmarks/` | gold-standard vs LLPhyScore |
-| Hard-neg curation | `data/hard_neg_v13/`, `scripts/expand_v13_hard_negatives.py` | disordered non-LLPS negatives |
+| Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + metapredict subset |
+| External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
+| Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | publish-app + Railway/Render/Fly; not GitHub Pages |
 
 ## Honesty (read before citing metrics)
 
-- Disorder is a **composition proxy**, not metapredict / AlphaFold pLDDT.
+- Default disorder is a **composition proxy**. Optional **metapredict** fractions are available via `--use-metapredict` / `scripts/score_metapredict_subset.py` (v13 logistic weights still expect the proxy unless you retrain).
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
 - Gold-standard PlantLLPS AUCs are **partially in-sample** (IDs overlap the training corpus). LLPhyScore / PSAP are out-of-the-box.
-- **PSAP** could not be executed here (PyPI `psap` / sklearn-json incompatible with Python 3.12). Companion-reported PSAP gold AUC = 0.692 and MAP-screen Spearman ρ = 0.368 are cited, not re-run.
-- The companion **208-protein MAP screen table** (with PSAP columns) is not in this repo; MAP ρ cannot be recomputed until that table is deposited.
+- **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
+- The companion **208-protein MAP screen table** (with PSAP columns) is not in this repo; MAP ρ cannot be recomputed until that table is deposited (companion ρ = 0.368).
 
 ## Install
 
@@ -34,9 +35,10 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 ```bash
 git clone https://github.com/pingyguan-glitch/grape-condensatome.git
 cd grape-condensatome
-# optional: pip install -r requirements.txt  # only needed for optional extras
 python3 -m plantllps --version
 ```
+
+Optional extras / external tools: [`requirements.txt`](./requirements.txt), [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md).
 
 ### Node web UI (Node ≥22)
 
@@ -49,77 +51,73 @@ npm start
 ## Train
 
 ```bash
-# Canonical v13 set (already trained weights in data/model_formal.json)
 python3 -m plantllps train \
   --train-csv data/train_formal_v13.csv \
   --model-out data/model_formal.json
 
-# Rebuild v13 from v12 + hard negatives (needs data/hard_neg_v13/seqs/)
-python3 scripts/expand_v13_hard_negatives.py
+python3 scripts/expand_v13_hard_negatives.py   # rebuild v13 from v12 + hard negs
 ```
-
-Historical rounds v3–v12: `python3 scripts/expand_rounds_v3_v12.py` (needs cached FASTA under `/tmp/plantllps_*/seqs`).
 
 ## Score a proteome
 
 ```bash
-# Uses bundled UP000009183.fasta.gz when present
 python3 -m plantllps score-proteome \
   --fasta data/UP000009183.fasta.gz \
   --model data/model_formal.json \
   -o data/grape_condensatome.proteome.tsv \
   --db data/grape_condensatome.sqlite
 
-# Join UniProt gene names / GO / keywords into SQLite
 python3 scripts/enrich_uniprot_annotations.py --db data/grape_condensatome.sqlite
+python3 scripts/enrich_expression_atlas.py --db data/grape_condensatome.sqlite
 ```
 
-Single FASTA:
+Optional metapredict (subset recommended on CPU):
 
 ```bash
-python3 -m plantllps score path/to/proteins.fasta -o scores.tsv --model data/model_formal.json
+export METAPREDICT_PYTHON=/path/to/meta311/bin/python
+python3 scripts/score_metapredict_subset.py
+# or: python3 -m plantllps score proteins.fasta -o out.tsv --use-metapredict
 ```
 
 ## Serve
 
 ```bash
-# Python stdlib UI
 python3 -m plantllps serve --host 0.0.0.0 --port 8765
-
 # Or Node UI (publishable Express app)
 npm start
 ```
 
+Public hosting: see [`docs/HOSTING.md`](./docs/HOSTING.md). **GitHub Pages will not work** (needs a SQLite server).
+
 ## Benchmarks vs PSAP / LLPhyScore
 
 ```bash
-# Requires LLPhyScore standalone unpacked; set LLPHYSCORE_HOME if not at the default path
 export LLPHYSCORE_HOME=/path/to/LLPhyScore/standalone_package/LLPhyScore
 python3 scripts/compare_gold_standard.py
+
+export PSAP_PYTHON=/path/to/psap39/bin/python
+python3 scripts/run_psap_gold.py
 # → data/benchmarks/gold_standard_comparison.json
 ```
 
-On this release machine: LLPhyScore gold AUC ≈ **0.769**; PlantLLPS hybrid AUC ≈ **0.990** (**in-sample** — do not claim as independent transfer). PSAP not runnable — see JSON `psap_status`.
+| Predictor | Gold AUC (13+15) | Notes |
+|-----------|----------------:|-------|
+| PlantLLPS hybrid | ≈ 0.990 | **In-sample** — do not claim as transfer |
+| LLPhyScore | ≈ 0.769 | Runnable; companion cited 0.774 |
+| PSAP (native) | ≈ 0.718 | Runnable in py3.9 env; companion cited 0.692 |
 
-## Re-fetch base data
+## Expression Atlas
 
-```bash
-curl -L -o data/UP000009183.fasta.gz \
-  'https://rest.uniprot.org/uniprotkb/stream?compressed=true&format=fasta&query=%28proteome%3AUP000009183%29'
-```
+Experiment **E-MTAB-8758** (Pinot Noir berry baseline) TPMs joined on `gene_name` = Atlas `GeneID` (`VIT_*`): **25 810 / 25 972** proteins matched (99.4%). UI shows mean/max TPM and per-condition values on protein pages.
 
 ## Version tag notes
 
-Tag **`v0.3.0`** marks the submission-packaging cut: hard negatives, LLPhyScore gold compare, UniProt annotation joins, dual UI, MIT + CITATION. See [`RELEASE_NOTES.md`](./RELEASE_NOTES.md).
-
-```bash
-git tag -a v0.3.0 -m "PlantLLPS/GrapeCondensatome v0.3.0"
-git push origin v0.3.0
-```
+Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.  
+**`v0.3.1`** = metapredict wiring, native PSAP gold AUC, Expression Atlas joins, hosting docs.
 
 ## Still open (not claimed done)
 
-- metapredict / AlphaFold pLDDT features  
-- Native PSAP re-run (older sklearn env) and MAP-screen table deposit  
-- Expression Atlas joins; public hosted deployment beyond local/`publish-app`  
-- Exact RBGD4 AGI resolution  
+- AlphaFold pLDDT features; full-proteome metapredict by default  
+- MAP-screen table deposit (ρ vs PSAP)  
+- Exact RBGD4 AGI; family-held-out PlantLLPS transfer AUC  
+- Confirmed public URL after publish-app / Railway / Render / Fly deploy  

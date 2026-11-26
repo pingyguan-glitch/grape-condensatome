@@ -128,8 +128,27 @@ class PlantLLPSModel:
         z = sum(wj * xj for wj, xj in zip(self.weights, scaled)) + self.bias
         return _sigmoid(z)
 
-    def score(self, sequence: str) -> Dict[str, float]:
-        feats = extract_features(sequence)
+    def score(
+        self,
+        sequence: str,
+        *,
+        use_metapredict: bool = False,
+        replace_disorder_proxy: bool = False,
+        metapredict_threshold: float = 0.5,
+        metapredict_frac: float | None = None,
+    ) -> Dict[str, float]:
+        feats = extract_features(
+            sequence,
+            use_metapredict=use_metapredict and metapredict_frac is None,
+            replace_disorder_proxy=replace_disorder_proxy and metapredict_frac is None,
+            metapredict_threshold=metapredict_threshold,
+        )
+        if metapredict_frac is not None:
+            from .metapredict_bridge import attach_metapredict
+
+            feats = attach_metapredict(
+                feats, float(metapredict_frac), replace_proxy=replace_disorder_proxy
+            )
         comp = self.companion_score(feats)
         logi = self.logistic_score(feats) if self.trained else comp
         if self.mode == "companion_composite":

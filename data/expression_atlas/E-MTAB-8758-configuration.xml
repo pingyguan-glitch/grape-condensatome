@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration experimentType="rnaseq_mrna_baseline" r_data="1">
+    <analytics>
+        <assay_groups>
+            <assay_group id="g1" label="Pinot Noir ENTAV115/1103 Paulsen; E-L 34">
+                <assay>ERR3863129</assay>
+                <assay>ERR3863130</assay>
+                <assay>ERR3863131</assay>
+            </assay_group>
+            <assay_group id="g2" label="Pinot Noir ENTAV115/1103 Paulsen; E-L 35">
+                <assay>ERR3863126</assay>
+                <assay>ERR3863128</assay>
+                <assay>ERR3863127</assay>
+            </assay_group>
+            <assay_group id="g3" label="Pinot Noir ENTAV115/Mgt 101-14; E-L 34">
+                <assay>ERR3863123</assay>
+                <assay>ERR3863125</assay>
+                <assay>ERR3863124</assay>
+            </assay_group>
+            <assay_group id="g4" label="Pinot Noir ENTAV115/Mgt 101-14; E-L 35">
+                <assay>ERR3863121</assay>
+                <assay>ERR3863122</assay>
+                <assay>ERR3863120</assay>
+            </assay_group>
+            <assay_group id="g5" label="Pinot Noir ENTAV115; E-L 34">
+                <assay>ERR3863117</assay>
+                <assay>ERR3863118</assay>
+                <assay>ERR3863119</assay>
+            </assay_group>
+            <assay_group id="g6" label="Pinot Noir ENTAV115; E-L 35">
+                <assay>ERR3863116</assay>
+                <assay>ERR3863114</assay>
+                <assay>ERR3863115</assay>
+            </assay_group>
+        </assay_groups>
+    </analytics>
+</configuration>
