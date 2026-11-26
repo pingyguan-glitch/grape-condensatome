@@ -1,0 +1,72 @@
+{
+  "n": 28,
+  "n_pos": 13,
+  "n_neg": 15,
+  "n_in_plantllps_train": 28,
+  "plantllps_train_overlap_warning": "Gold-standard IDs overlap the PlantLLPS training corpus; PlantLLPS AUCs below are partially in-sample and must not be claimed as independent transfer benchmarks. LLPhyScore/PSAP are out-of-the-box.",
+  "auc": {
+    "plantllps_hybrid": 0.9897435897435898,
+    "plantllps_logistic": 0.9794871794871794,
+    "companion_composite": 0.9641025641025641,
+    "llphyscore_percentile": 0.7692307692307693,
+    "psap": null
+  },
+  "companion_reported_baselines": {
+    "psap_auc_gold": 0.692,
+    "llphyscore_auc_gold": 0.774,
+    "psap_spearman_map208": 0.368,
+    "llphyscore_spearman_map208": 0.232,
+    "companion_composite_auc_gold_insample": 1.0
+  },
+  "psap_status": {
+    "runnable": false,
+    "reason": "PyPI package `psap` 1.0.7 requires sklearn~=0.21 and sklearn-json; sklearn-json fails to import on scikit-learn bundled with Python 3.12 (cannot import `_gb_losses`). Wheel extracts but model JSON cannot load.",
+    "cited_auc_gold": 0.692,
+    "cited_spearman_map208": 0.368
+  },
+  "llphyscore_status": {
+    "runnable": true,
+    "n_scored": 28,
+    "error": null,
+    "home": "/tmp/LLPhyScore/standalone_package/LLPhyScore",
+    "cited_auc_gold": 0.774
+  },
+  "map_screen_status": {
+    "runnable": false,
+    "reason": "Companion grapevine MAP screen table (208 proteins with PSAP / LLPhyScore / composite columns) is not present in the Project store or GitHub repo; only narrative metrics in the manuscript docx. Cannot recompute Spearman \u03c1 vs PSAP without that table.",
+    "cited_psap_rho": 0.368,
+    "cited_llphyscore_rho": 0.232
+  },
+  "anchor_ranks": {
+    "Q9FLP0": {
+      "rank_plantllps": 8,
+      "n": 28,
+      "score": 0.8433303175064484,
+      "map65_tail_like": 1.0,
+      "llphyscore_percentile": 26.462785556374357
+    },
+    "O43663": {
+      "rank_plantllps": 9,
+      "n": 28,
+      "score": 0.8386778945535276,
+      "map65_tail_like": 1.0,
+      "llphyscore_percentile": 29.209039548022602
+    },
+    "P35637": {
+      "rank_plantllps": 2,
+      "n": 28,
+      "score": 0.9214102538719939,
+      "map65_tail_like": 0.0,
+      "llphyscore_percentile": 99.80348808646525
+    },
+    "F6HET4_not_in_gold": {
+      "score_plantllps": 0.7617666478640973,
+      "map65_tail_like": 1.0,
+      "note": "VvMAP65-1 scored with PlantLLPS but not part of 13+15 gold set"
+    }
+  },
+  "files": {
+    "gold_csv": "/agent/repos/grape-condensatome/data/benchmarks/gold_standard_reconstructed.csv",
+    "scores_tsv": "/agent/repos/grape-condensatome/data/benchmarks/gold_standard_scores.tsv"
+  }
+}

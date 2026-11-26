@@ -3,3 +3,13 @@ node_modules/
 *.log
 .env
 .env.*
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+# uncompressed proteome FASTA (keep .gz)
+data/UP000009183.fasta
+*.egg-info/
+dist/
+build/

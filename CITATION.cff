@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+title: "PlantLLPS and GrapeCondensatome"
+message: "If you use this software or atlas, please cite the companion grapevine MAP/LLPS study and this resource."
+type: software
+authors:
+  - family-names: Guan
+    given-names: Pingyin
+    orcid: "https://orcid.org/0000-0003-4890-3412"
+    affiliation: "College of Horticulture, China Agricultural University, Beijing 100193, China"
+version: "0.3.0"
+date-released: "2026-11-26"
+license: MIT
+repository-code: "https://github.com/pingyguan-glitch/grape-condensatome"
+abstract: >-
+  PlantLLPS is a plant-aware sequence scorer for liquid–liquid phase separation
+  propensity. GrapeCondensatome is the PlantLLPS-scored UniProt UP000009183
+  Vitis vinifera proteome atlas with confidence tiers and UniProt annotation joins.
+keywords:
+  - liquid-liquid phase separation
+  - condensatome
+  - Vitis vinifera
+  - PlantLLPS
+  - microtubule-associated proteins
+preferred-citation:
+  type: article
+  title: "PlantLLPS: a plant-trained predictor of liquid–liquid phase separation and a grapevine whole-proteome condensatome atlas"
+  authors:
+    - family-names: Guan
+      given-names: Pingyin
+  notes: "Manuscript in preparation; cite this software release and the companion MAP/LLPS screen when available."

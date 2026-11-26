@@ -1,0 +1,180 @@
+{
+  "n_scored": 25972,
+  "min_length": 80,
+  "tier_counts": {
+    "D": 12535,
+    "C": 9605,
+    "B": 2728,
+    "A": 1104
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8227724764869205,
+    "score_C": 0.4743908325654904,
+    "disorder_A": 0.45
+  },
+  "elapsed_sec": 91.1,
+  "top20": [
+    {
+      "protein_id": "F6GUY6",
+      "score": 1.0,
+      "tier": "A",
+      "percentile": 100.0,
+      "disorder_proxy": 0.8905,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "F6HC22",
+      "score": 0.9973,
+      "tier": "A",
+      "percentile": 99.996,
+      "disorder_proxy": 0.9375,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "F6HY04",
+      "score": 0.9947,
+      "tier": "A",
+      "percentile": 99.992,
+      "disorder_proxy": 0.8275,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "F6I2C4",
+      "score": 0.9931,
+      "tier": "A",
+      "percentile": 99.988,
+      "disorder_proxy": 0.9474,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "F6HBJ1",
+      "score": 0.9923,
+      "tier": "A",
+      "percentile": 99.985,
+      "disorder_proxy": 0.8707,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "F6H708",
+      "score": 0.9911,
+      "tier": "A",
+      "percentile": 99.981,
+      "disorder_proxy": 1.0,
+      "map65_tail_like": 0.0
+    },
+    {
+      "protein_id": "F6H2X4",
+      "score": 0.9908,
+      "tier": "A",
+      "percentile": 99.977,
+      "disorder_proxy": 0.9173,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "F6HQW9",
+      "score": 0.9848,
+      "tier": "A",
+      "percentile": 99.973,
+      "disorder_proxy": 0.9398,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "A0ACM8QN55",
+      "score": 0.9836,
+      "tier": "A",
+      "percentile": 99.969,
+      "disorder_proxy": 0.9079,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "F6H0I1",
+      "score": 0.9797,
+      "tier": "A",
+      "percentile": 99.965,
+      "disorder_proxy": 0.751,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "F6HJT2",
+      "score": 0.9788,
+      "tier": "A",
+      "percentile": 99.961,
+      "disorder_proxy": 1.0,
+      "map65_tail_like": 0.0
+    },
+    {
+      "protein_id": "F6HUL8",
+      "score": 0.978,
+      "tier": "A",
+      "percentile": 99.958,
+      "disorder_proxy": 0.9431,
+      "map65_tail_like": 0.5
+    },
+    {
+      "protein_id": "D7SVX8",
+      "score": 0.9778,
+      "tier": "A",
+      "percentile": 99.954,
+      "disorder_proxy": 0.8696,
+      "map65_tail_like": 0.5
+    },
+    {
+      "protein_id": "F6HS48",
+      "score": 0.9776,
+      "tier": "A",
+      "percentile": 99.95,
+      "disorder_proxy": 0.8645,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "D7T2H7",
+      "score": 0.9772,
+      "tier": "A",
+      "percentile": 99.946,
+      "disorder_proxy": 0.8434,
+      "map65_tail_like": 0.5
+    },
+    {
+      "protein_id": "F6GWQ6",
+      "score": 0.9761,
+      "tier": "A",
+      "percentile": 99.942,
+      "disorder_proxy": 0.8077,
+      "map65_tail_like": 0.5
+    },
+    {
+      "protein_id": "D7T0J3",
+      "score": 0.9752,
+      "tier": "A",
+      "percentile": 99.938,
+      "disorder_proxy": 0.8287,
+      "map65_tail_like": 0.5
+    },
+    {
+      "protein_id": "A0ACM8QPR0",
+      "score": 0.9744,
+      "tier": "A",
+      "percentile": 99.935,
+      "disorder_proxy": 0.7538,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "D7SMQ7",
+      "score": 0.9741,
+      "tier": "A",
+      "percentile": 99.931,
+      "disorder_proxy": 0.9369,
+      "map65_tail_like": 1.0
+    },
+    {
+      "protein_id": "F6H3U3",
+      "score": 0.9724,
+      "tier": "A",
+      "percentile": 99.927,
+      "disorder_proxy": 0.9121,
+      "map65_tail_like": 0.5
+    }
+  ],
+  "tsv": "data/grape_condensatome.proteome.tsv",
+  "sqlite": "data/grape_condensatome.sqlite"
+}

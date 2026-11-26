@@ -1,0 +1,26 @@
+{
+  "n": 66,
+  "n_pos": 38,
+  "n_neg": 28,
+  "by_source": {
+    "companion": 7,
+    "companion_animal": 7,
+    "companion_map65": 8,
+    "literature": 9,
+    "llpsdb_v2": 7,
+    "companion_negative": 7,
+    "hard_folded": 19,
+    "llpsdb_v2_nops": 2
+  },
+  "by_kingdom_label": {
+    "plant/positive": 31,
+    "animal/positive": 7,
+    "mixed/negative": 7,
+    "plant/negative": 21
+  },
+  "identity_threshold": 0.9,
+  "prev_n": 32,
+  "prev_n_pos": 22,
+  "prev_n_neg": 10,
+  "cry2_holdout": "eval_mechanism_special.csv"
+}

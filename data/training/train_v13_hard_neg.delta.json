@@ -1,0 +1,53 @@
+{
+  "version": 13,
+  "theme": "Disordered non-LLPS hard negatives (extensin/PRP/AGP/LRX/H1 + PTMA)",
+  "n": 162,
+  "n_pos": 76,
+  "n_neg": 86,
+  "added_attempted": 19,
+  "added_raw": 19,
+  "added_kept": 19,
+  "skipped": [],
+  "dropped_identity": [],
+  "v12": {
+    "n": 143,
+    "n_pos": 76,
+    "n_neg": 67,
+    "mean_auc_logistic": 0.8591300366300366,
+    "mean_auc_companion": 0.861419413919414,
+    "oof_auc_logistic": 0.8534956794972506,
+    "oof_auc_companion": 0.8692065985860172
+  },
+  "v13": {
+    "mean_auc_logistic": 0.8626633986928105,
+    "mean_auc_companion": 0.7737091503267973,
+    "oof_auc_logistic": 0.868421052631579,
+    "oof_auc_companion": 0.7671358629130967,
+    "spearman": 0.5597104554159767
+  },
+  "delta_mean_auc_logistic": 0.0035333620627738815,
+  "delta_oof_auc_logistic": 0.014925373134328401,
+  "delta_mean_auc_companion": -0.08771026359261669,
+  "hard_neg_ids": [
+    "Q38913",
+    "A0A1P8AM70",
+    "Q9FZ35",
+    "Q9LZJ7",
+    "Q9XIP3",
+    "Q9FZA2",
+    "O22194",
+    "Q9ZT16",
+    "P26569",
+    "F4IPK9",
+    "Q3ECQ3",
+    "Q9T0K5",
+    "O65375",
+    "F4J0B5",
+    "Q9STN0",
+    "A0ACS1AHG4",
+    "Q9LHF1",
+    "Q9FS16",
+    "P06454"
+  ],
+  "honesty": "Adding hard disordered negatives typically lowers AUC vs folded-heavy v12; that drop is expected and more informative for submission claims."
+}
