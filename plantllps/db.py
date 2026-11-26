@@ -262,6 +262,7 @@ def _row_to_protein(row: sqlite3.Row) -> Dict[str, Any]:
     d["percentile"] = feats.get("percentile")
     d["map65_tail_like"] = feats.get("map65_tail_like", 0)
     d["frac_disorder_proxy"] = feats.get("frac_disorder_proxy")
+    d["frac_disorder_metapredict"] = feats.get("frac_disorder_metapredict")
     ann_obj: Dict[str, Any] = {}
     ann_raw = d.get("annotations") or ""
     if ann_raw.startswith("{"):
@@ -284,4 +285,12 @@ def _row_to_protein(row: sqlite3.Row) -> Dict[str, Any]:
         d["keywords_list"] = [x for x in str(kw).split(";") if x]
     else:
         d["keywords_list"] = list(ann_obj.get("keywords") or [])
+    expr_raw = d.get("expr_tpm_json") or ""
+    if expr_raw:
+        try:
+            d["expr_tpm"] = json.loads(expr_raw)
+        except json.JSONDecodeError:
+            d["expr_tpm"] = None
+    else:
+        d["expr_tpm"] = None
     return d

@@ -9,7 +9,7 @@
     "plantllps_logistic": 0.9794871794871794,
     "companion_composite": 0.9641025641025641,
     "llphyscore_percentile": 0.7692307692307693,
-    "psap": null
+    "psap": 0.717948717948718
   },
   "companion_reported_baselines": {
     "psap_auc_gold": 0.692,
@@ -19,10 +19,14 @@
     "companion_composite_auc_gold_insample": 1.0
   },
   "psap_status": {
-    "runnable": false,
-    "reason": "PyPI package `psap` 1.0.7 requires sklearn~=0.21 and sklearn-json; sklearn-json fails to import on scikit-learn bundled with Python 3.12 (cannot import `_gb_losses`). Wheel extracts but model JSON cannot load.",
+    "runnable": true,
+    "n_scored": 28,
+    "psap_python": "/tmp/mamba/envs/psap39/bin/python",
+    "prediction_csv": "/agent/repos/grape-condensatome/data/benchmarks/psap_gold_prediction.csv",
+    "auc_gold": 0.717948717948718,
     "cited_auc_gold": 0.692,
-    "cited_spearman_map208": 0.368
+    "cited_spearman_map208": 0.368,
+    "note": "Native PSAP 1.0.7 (van Mierlo et al.) on reconstructed 13+15 gold set. Requires Python \u22643.9 + numpy<1.24 + scipy<1.11. MAP-screen Spearman \u03c1 still blocked (208-protein table not deposited)."
   },
   "llphyscore_status": {
     "runnable": true,

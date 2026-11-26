@@ -160,12 +160,27 @@ def _sp_tp_density(seq: str) -> float:
     return count / (len(seq) - 1)
 
 
-def extract_features(sequence: str) -> Dict[str, float]:
-    """Return a dict of plant-LLPS-relevant features for one protein sequence."""
+def extract_features(
+    sequence: str,
+    *,
+    use_metapredict: bool = False,
+    replace_disorder_proxy: bool = False,
+    metapredict_threshold: float = 0.5,
+) -> Dict[str, float]:
+    """Return a dict of plant-LLPS-relevant features for one protein sequence.
+
+    When ``use_metapredict=True`` and metapredict is importable (or reachable via
+    ``METAPREDICT_PYTHON``), also sets ``frac_disorder_metapredict``. Pass
+    ``replace_disorder_proxy=True`` to overwrite ``frac_disorder_proxy`` with that
+    value (does **not** change logistic weights trained on the composition proxy
+    unless you retrain).
+    """
     seq = _clean_seq(sequence)
     n = len(seq)
     if n == 0:
-        return {name: 0.0 for name in FEATURE_NAMES}
+        empty = {name: 0.0 for name in FEATURE_NAMES}
+        empty["frac_disorder_metapredict"] = 0.0
+        return empty
 
     counts = Counter(seq)
     frac = {aa: counts.get(aa, 0) / n for aa in AA}
@@ -207,9 +222,10 @@ def extract_features(sequence: str) -> Dict[str, float]:
     elif c_ser >= 0.10 and c_ncpr > 0.0 and n >= 150:
         map65_like = 0.5
 
+    disorder_proxy = _disorder_proxy_fraction(seq)
     feats = {
         "length": float(n),
-        "frac_disorder_proxy": _disorder_proxy_fraction(seq),
+        "frac_disorder_proxy": disorder_proxy,
         "min_entropy_12": min_ent,
         "low_complexity_score": lc_score,
         "ncpr": _ncpr(seq),
@@ -227,6 +243,17 @@ def extract_features(sequence: str) -> Dict[str, float]:
         "c_term_ncpr_100": c_ncpr,
         "map65_tail_like": map65_like,
     }
+    if use_metapredict:
+        from .metapredict_bridge import attach_metapredict, resolve_metapredict_scores
+
+        meta_map = resolve_metapredict_scores(
+            [("query", seq)], threshold=metapredict_threshold
+        )
+        feats = attach_metapredict(
+            feats,
+            meta_map.get("query", 0.0),
+            replace_proxy=replace_disorder_proxy,
+        )
     return feats
 
 

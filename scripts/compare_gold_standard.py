@@ -3,8 +3,9 @@
 
 Reconstructs the 13 disorder-driven positives + 15 folded negatives described in the
 companion MAP/LLPS manuscript (Table S5 not shipped as a numeric table in the store).
-PSAP (van Mierlo et al. 2021) cannot be executed here (PyPI `psap` pins sklearn~=0.21 /
-sklearn-json incompatible with Python 3.12); companion-reported PSAP AUC=0.692 is cited.
+Native PSAP (van Mierlo et al. 2021) runs in a pinned Python 3.9 env
+(``PSAP_PYTHON`` / ``scripts/run_psap_gold.py``; see ``docs/EXTERNAL_TOOLS.md``).
+When that env is unavailable, companion-reported PSAP AUC=0.692 is cited.
 The 208-protein grapevine MAP screen with PSAP scores is not present in the Project store,
 so MAP-screen Spearman ρ cannot be re-computed — companion ρ=0.368 is cited as limitation.
 
@@ -246,6 +247,16 @@ def main() -> None:
     )
     ap.add_argument("--skip-llphyscore", action="store_true")
     ap.add_argument(
+        "--run-psap",
+        action="store_true",
+        help="After scoring, invoke scripts/run_psap_gold.py (needs PSAP_PYTHON)",
+    )
+    ap.add_argument(
+        "--psap-python",
+        default=os.environ.get("PSAP_PYTHON"),
+        help="Python 3.9+psap interpreter (also used when --run-psap)",
+    )
+    ap.add_argument(
         "--model",
         default=str(DATA / "model_formal.json"),
     )
@@ -273,7 +284,7 @@ def main() -> None:
                 r["llphyscore_percentile"] = None
 
     for r in scored:
-        r["psap_score"] = None  # not runnable in this environment
+        r["psap_score"] = None  # filled by --run-psap / scripts/run_psap_gold.py
 
     # write per-protein table
     tsv = out_dir / "gold_standard_scores.tsv"
@@ -320,9 +331,8 @@ def main() -> None:
         "psap_status": {
             "runnable": False,
             "reason": (
-                "PyPI package `psap` 1.0.7 requires sklearn~=0.21 and sklearn-json; "
-                "sklearn-json fails to import on scikit-learn bundled with Python 3.12 "
-                "(cannot import `_gb_losses`). Wheel extracts but model JSON cannot load."
+                "Not run in this pass. Use scripts/run_psap_gold.py with a Python 3.9 env "
+                "(psap + numpy<1.24 + scipy<1.11); system Python 3.12 cannot import sklearn-json."
             ),
             "cited_auc_gold": COMPANION_BASELINES["psap_auc_gold"],
             "cited_spearman_map208": COMPANION_BASELINES["psap_spearman_map208"],
@@ -384,6 +394,13 @@ def main() -> None:
     print(f"Wrote {tsv}\nWrote {out_json}")
     if llphy_error:
         print("LLPhyScore error:", llphy_error)
+
+    if args.run_psap or args.psap_python:
+        cmd = [sys.executable, str(ROOT / "scripts" / "run_psap_gold.py")]
+        if args.psap_python:
+            cmd.extend(["--psap-python", args.psap_python])
+        print("Running native PSAP …", flush=True)
+        subprocess.run(cmd, check=False)
 
 
 if __name__ == "__main__":

@@ -83,8 +83,9 @@ function layout(title, body, query = "") {
     </nav>
   </header>
   <div class="banner">
-    PlantLLPS hybrid model (v13 weights; hard disordered negatives). Disorder is a composition proxy (not metapredict).
-    UniProt gene / GO / keyword joins included — treat ranks as hypotheses for experiment.
+    PlantLLPS hybrid model (v13 weights; hard disordered negatives). Disorder defaults to a composition proxy;
+    optional metapredict fractions when scored with <span class="mono">--use-metapredict</span>.
+    UniProt + Expression Atlas (E-MTAB-8758) joins included — treat ranks as hypotheses for experiment.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -108,6 +109,10 @@ function proteinTable(rows, empty = "No proteins found.") {
       const tier = esc(r.tier || "?");
       const gene = esc(r.gene_name || "—");
       const pname = esc((r.protein_name || "").slice(0, 72) || "—");
+      const tpm =
+        r.expr_mean_tpm != null && Number.isFinite(Number(r.expr_mean_tpm))
+          ? Number(r.expr_mean_tpm).toFixed(2)
+          : "—";
       return `<tr>
         <td class="mono"><a href="/protein/${pid}">${pid}</a></td>
         <td class="mono">${gene}</td>
@@ -116,6 +121,7 @@ function proteinTable(rows, empty = "No proteins found.") {
         <td>${fmtPct(r.percentile)}</td>
         <td>${fmtScore(r.map65_tail_like)}</td>
         <td>${fmtScore(r.frac_disorder_proxy)}</td>
+        <td>${esc(tpm)}</td>
         <td class="muted">${pname}</td>
       </tr>`;
     })
@@ -124,7 +130,7 @@ function proteinTable(rows, empty = "No proteins found.") {
     <table>
       <thead><tr>
         <th>Protein</th><th>Gene</th><th>Tier</th><th>Score</th><th>Percentile</th>
-        <th>MAP65-like</th><th>Disorder proxy</th><th>Protein name</th>
+        <th>MAP65-like</th><th>Disorder proxy</th><th>Mean TPM</th><th>Protein name</th>
       </tr></thead>
       <tbody>${cells}</tbody>
     </table>
@@ -184,6 +190,16 @@ app.get("/", (_req, res) => {
          <div class="l"><a href="/tiers/${t}">Tier ${t}</a></div></div>`
     )
     .join("");
+  let exprMeta = "";
+  try {
+    const ea = meta.expression_atlas ? JSON.parse(meta.expression_atlas) : null;
+    if (ea) {
+      exprMeta = ` · Expression Atlas <span class="mono">${esc(ea.experiment || "")}</span>
+        matched ${esc(ea.n_proteins_matched || "—")} / ${esc(summary.n_proteins)}`;
+    }
+  } catch {
+    /* ignore */
+  }
   const body = `
     <div class="grid stats">
       <div class="card stat"><div class="n">${summary.n_proteins}</div><div class="l">Proteins in DB</div></div>
@@ -193,7 +209,7 @@ app.get("/", (_req, res) => {
       <h2>Atlas</h2>
       <p>Status: <strong>${esc(meta.status || "unknown")}</strong>
          · ${esc(meta.proteome || "—")}
-         · n_scored: ${esc(meta.n_scored || "—")}</p>
+         · n_scored: ${esc(meta.n_scored || "—")}${exprMeta}</p>
       <p class="muted">${esc(meta.disclaimer || "")}</p>
     </div>
     <h2 style="font-family:var(--font-display)">Top scores</h2>
@@ -279,8 +295,31 @@ app.get("/protein/:id", (req, res) => {
         <p>Percentile: ${fmtPct(p.percentile)}</p>
         <p>MAP65-tail-like: ${fmtScore(p.map65_tail_like)}</p>
         <p>Disorder proxy: ${fmtScore(p.frac_disorder_proxy)}</p>
+        <p>metapredict frac: ${fmtScore(p.frac_disorder_metapredict)}</p>
+        <p>Expr. mean TPM: ${
+          p.expr_mean_tpm != null && Number.isFinite(Number(p.expr_mean_tpm))
+            ? Number(p.expr_mean_tpm).toFixed(2)
+            : "—"
+        }
+           ${p.expr_experiment ? `(<span class="mono">${esc(p.expr_experiment)}</span>)` : ""}</p>
+        <p>Expr. max TPM: ${
+          p.expr_max_tpm != null && Number.isFinite(Number(p.expr_max_tpm))
+            ? Number(p.expr_max_tpm).toFixed(2)
+            : "—"
+        }</p>
       </div>
     </div>
+    ${
+      p.expr_tpm
+        ? `<div class="card" style="margin-top:1rem"><h3>Expression Atlas TPM by condition</h3>
+           <div class="features">${Object.entries(p.expr_tpm)
+             .map(
+               ([k, v]) =>
+                 `<div><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`
+             )
+             .join("")}</div></div>`
+        : ""
+    }
     <div class="card" style="margin-top:1rem">
       <h3>Features</h3>
       <div class="features">${featHtml}</div>
