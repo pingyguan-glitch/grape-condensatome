@@ -1,5 +1,15 @@
 # Release notes
 
+## v1.2.0 (2026-11-27)
+
+NAR+ omics layer: condensatome × stress DE enrichment + high-tier response modules.
+
+- `scripts/enrich_stress_condensatome_modules.py` — hypergeometric enrichment of PlantLLPS Tier A∪B among significant DE genes from **E-MTAB-4324** and **E-GEOD-67932** (per contrast × direction; BH FDR); response-pattern modules among Tier A∪B (shared signed DE calls); Tier A seed coexpression neighborhoods (Pearson r on stress log2FC profiles).
+- Deposits under `data/stress_modules/`: `de_enrichment.tsv`, `coexpression_modules.tsv`, `seed_neighborhoods.tsv.gz`, `module_members.tsv.gz`, `gene_sets.gmt.gz` (**1 198** gene sets), `ui_tables.json`, `summary.json`.
+- UI `/modules` table (enrichment + pattern modules); `/expression` links through; `/api/health.stress_modules`.
+- Headline: **18** enrichment tests; **1** at FDR &lt; 0.05 (E-GEOD-67932 stage-3 Botrytis down; fold ≈ 1.17); **42** pattern modules (size ≥ 5); **1 120** seed neighborhoods.
+- Honesty: descriptive overlap / short stress log2FC vectors — not WGCNA; berry TPM (E-MTAB-8758) has only 6 assay groups and is not the primary module signal. SQLite stays under GitHub 100 MiB (sidecars).
+
 ## v1.1.1 (2026-11-27)
 
 Figure 3 feature-ablation panels + optional experimental disorder retrains (composition production weights unchanged).

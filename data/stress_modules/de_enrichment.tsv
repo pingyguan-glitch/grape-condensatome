@@ -1,0 +1,19 @@
+accession	contrast_id	contrast_label	direction	n_background	n_tier_ab_background	background_tier_ab_rate	n_de	n_de_tier_ab	frac_de_tier_ab	enrichment_fold	hypergeom_pvalue	bh_fdr	gene_set_id	full_de_set_id
+E-GEOD-67932	g1_g4	control; control vs stage 3; Botrytis cinerea	down	25810	3857	0.149438	2825	493	0.174513	1.167796	5.6e-05	0.001	DE_E-GEOD-67932_g1_g4_down_TierAB	DE_E-GEOD-67932_g1_g4_down
+E-GEOD-67932	g1_g3	control; control vs stage 2; Botrytis cinerea	down	25810	3857	0.149438	2914	474	0.162663	1.088497	0.018663	0.16797	DE_E-GEOD-67932_g1_g3_down_TierAB	DE_E-GEOD-67932_g1_g3_down
+E-GEOD-67932	g1_g4	control; control vs stage 3; Botrytis cinerea	any	25810	3857	0.149438	5198	806	0.15506	1.037617	0.105896	0.635375	DE_E-GEOD-67932_g1_g4_any_TierAB	DE_E-GEOD-67932_g1_g4_any
+E-MTAB-4324	g4_g3	none vs Trichoderma harzianum and Plasmopara viticola	down	25810	3857	0.149438	2396	375	0.156511	1.047328	0.161182	0.72532	DE_E-MTAB-4324_g4_g3_down_TierAB	DE_E-MTAB-4324_g4_g3_down
+E-MTAB-4324	g4_g2	none vs Trichoderma harzianum	down	25810	3857	0.149438	801	126	0.157303	1.052632	0.2772	0.996007	DE_E-MTAB-4324_g4_g2_down_TierAB	DE_E-MTAB-4324_g4_g2_down
+E-MTAB-4324	g4_g1	none vs Plasmopara viticola	down	25810	3857	0.149438	1957	291	0.148697	0.99504	0.548631	0.996007	DE_E-MTAB-4324_g4_g1_down_TierAB	DE_E-MTAB-4324_g4_g1_down
+E-GEOD-67932	g1_g3	control; control vs stage 2; Botrytis cinerea	any	25810	3857	0.149438	5651	842	0.149	0.997069	0.548899	0.996007	DE_E-GEOD-67932_g1_g3_any_TierAB	DE_E-GEOD-67932_g1_g3_any
+E-MTAB-4324	g4_g2	none vs Trichoderma harzianum	any	25810	3857	0.149438	1186	175	0.147555	0.987397	0.586878	0.996007	DE_E-MTAB-4324_g4_g2_any_TierAB	DE_E-MTAB-4324_g4_g2_any
+E-GEOD-67932	g1_g2	control; control vs stage 1; Botrytis cinerea	down	25810	3857	0.149438	230	32	0.13913	0.931023	0.697689	0.996007	DE_E-GEOD-67932_g1_g2_down_TierAB	DE_E-GEOD-67932_g1_g2_down
+E-MTAB-4324	g4_g3	none vs Trichoderma harzianum and Plasmopara viticola	any	25810	3857	0.149438	4193	606	0.144527	0.967133	0.840966	0.996007	DE_E-MTAB-4324_g4_g3_any_TierAB	DE_E-MTAB-4324_g4_g3_any
+E-GEOD-67932	g1_g2	control; control vs stage 1; Botrytis cinerea	up	25810	3857	0.149438	1346	185	0.137444	0.91974	0.905441	0.996007	DE_E-GEOD-67932_g1_g2_up_TierAB	DE_E-GEOD-67932_g1_g2_up
+E-MTAB-4324	g4_g2	none vs Trichoderma harzianum	up	25810	3857	0.149438	385	49	0.127273	0.851675	0.905551	0.996007	DE_E-MTAB-4324_g4_g2_up_TierAB	DE_E-MTAB-4324_g4_g2_up
+E-GEOD-67932	g1_g2	control; control vs stage 1; Botrytis cinerea	any	25810	3857	0.149438	1576	217	0.13769	0.921387	0.918302	0.996007	DE_E-GEOD-67932_g1_g2_any_TierAB	DE_E-GEOD-67932_g1_g2_any
+E-MTAB-4324	g4_g1	none vs Plasmopara viticola	any	25810	3857	0.149438	3539	496	0.140153	0.937863	0.955594	0.996007	DE_E-MTAB-4324_g4_g1_any_TierAB	DE_E-MTAB-4324_g4_g1_any
+E-MTAB-4324	g4_g1	none vs Plasmopara viticola	up	25810	3857	0.149438	1582	205	0.129583	0.867133	0.99081	0.996007	DE_E-MTAB-4324_g4_g1_up_TierAB	DE_E-MTAB-4324_g4_g1_up
+E-GEOD-67932	g1_g3	control; control vs stage 2; Botrytis cinerea	up	25810	3857	0.149438	2737	368	0.134454	0.899728	0.991319	0.996007	DE_E-GEOD-67932_g1_g3_up_TierAB	DE_E-GEOD-67932_g1_g3_up
+E-GEOD-67932	g1_g4	control; control vs stage 3; Botrytis cinerea	up	25810	3857	0.149438	2373	313	0.131901	0.882643	0.995037	0.996007	DE_E-GEOD-67932_g1_g4_up_TierAB	DE_E-GEOD-67932_g1_g4_up
+E-MTAB-4324	g4_g3	none vs Trichoderma harzianum and Plasmopara viticola	up	25810	3857	0.149438	1797	231	0.128548	0.860206	0.996007	0.996007	DE_E-MTAB-4324_g4_g3_up_TierAB	DE_E-MTAB-4324_g4_g3_up

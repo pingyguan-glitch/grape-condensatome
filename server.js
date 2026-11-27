@@ -25,6 +25,9 @@ import {
   stringNetworkMeta,
   loadStringTopNeighbors,
   loadStressSidecar,
+  loadStressModulesUi,
+  getStressModulesUi,
+  stressModulesMeta,
   listLlpsGold,
   DEFAULT_DB,
 } from "./lib/db.js";
@@ -222,6 +225,7 @@ function layout(title, body, query = "") {
       <a href="/hooks">Cross-crop</a>
       <a href="/network">STRING</a>
       <a href="/expression">Expression</a>
+      <a href="/modules">Stress modules</a>
       <a href="/download">Download</a>
       <a href="/score">Score FASTA</a>
     </nav>
@@ -230,7 +234,8 @@ function layout(title, body, query = "") {
     PlantLLPS hybrid model (v13). Disorder: composition proxy by default; metapredict + AlphaFold pLDDT
     joined where computed. Curated LLPS gold badges + reconstructed MAP-screen ρ on /gold and /map.
     Orthologs (Ath/rice + soybean via OrthoDB), STRING Vitis neighborhoods (/network),
-    and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
+    stress DE × condensatome enrichment + modules (/modules), and side-by-side
+    PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
     Second-crop soybean condensatome on /hooks. Treat ranks as hypotheses.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
@@ -336,6 +341,7 @@ function secondCropMeta() {
 
 app.get("/api/health", (_req, res) => {
   const sn = stringNetworkMeta(db);
+  const sm = stressModulesMeta(db);
   res.json({
     ok: true,
     version: APP_VERSION,
@@ -349,6 +355,15 @@ app.get("/api/health", (_req, res) => {
           min_score: sn.min_score,
           mapped: sn.mapped,
           seed_edges: sn.seed_edges,
+        }
+      : null,
+    stress_modules: sm
+      ? {
+          n_modules: sm.n_modules,
+          n_enrichment_tests: sm.n_enrichment_tests,
+          n_enrichment_fdr_lt_0_05: sm["n_enrichment_fdr_lt_0.05"],
+          n_gene_sets: sm.n_gene_sets,
+          accessions: sm.accessions,
         }
       : null,
   });
@@ -482,8 +497,145 @@ app.get("/expression", (_req, res) => {
       }
     </div>
     ${baseline}
-    ${stressCards || '<p class="muted">No stress RNA-seq join yet.</p>'}`;
+    ${stressCards || '<p class="muted">No stress RNA-seq join yet.</p>'}
+    <div class="card" style="margin-top:1rem">
+      <h3>Condensatome × stress enrichment</h3>
+      <p class="muted">DE ∩ Tier A∪B hypergeometric tests and response-pattern modules
+         for high-tier proteins are on
+         <a href="/modules">/modules</a>
+         (gene sets under <span class="mono">data/stress_modules/</span>).</p>
+    </div>`;
   res.type("html").send(layout("Expression", body));
+});
+
+app.get("/modules", (req, res) => {
+  const sm = stressModulesMeta(db);
+  const ui = getStressModulesUi();
+  const tab = String(req.query.tab || "enrichment") === "modules" ? "modules" : "enrichment";
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const params = ui?.parameters || sm?.parameters || {};
+  const honesty = sm?.honesty || ui?.honesty || "";
+
+  if (!ui && !sm) {
+    const body = `
+      <div class="card">
+        <h2>Stress condensatome modules</h2>
+        <p class="muted">Not deposited yet. Run
+          <span class="mono">python3 scripts/enrich_stress_condensatome_modules.py</span>.</p>
+      </div>`;
+    return res.type("html").send(layout("Stress modules", body));
+  }
+
+  const enrich = ui?.enrichment || sm?.top_enrichment || [];
+  const modules = ui?.modules || [];
+  const rows = tab === "modules" ? modules : enrich;
+  const total = rows.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const slice = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  let tableHtml = "";
+  if (tab === "enrichment") {
+    const trs = slice
+      .map((r) => {
+        const fold =
+          r.enrichment_fold != null && Number.isFinite(Number(r.enrichment_fold))
+            ? Number(r.enrichment_fold).toFixed(3)
+            : "—";
+        const fdr =
+          r.bh_fdr != null && Number.isFinite(Number(r.bh_fdr))
+            ? Number(r.bh_fdr) < 0.001
+              ? Number(r.bh_fdr).toExponential(2)
+              : Number(r.bh_fdr).toFixed(4)
+            : "—";
+        return `<tr>
+          <td class="mono">${esc(r.accession)}</td>
+          <td class="mono">${esc(r.contrast_id)}</td>
+          <td>${esc(r.direction)}</td>
+          <td>${esc(r.n_de)}</td>
+          <td>${esc(r.n_de_tier_ab)}</td>
+          <td>${fold}</td>
+          <td>${fmtP(r.hypergeom_pvalue)}</td>
+          <td>${esc(fdr)}</td>
+          <td class="mono">${esc(r.gene_set_id || "")}</td>
+        </tr>`;
+      })
+      .join("");
+    tableHtml = `<div class="table-wrap"><table>
+      <thead><tr>
+        <th>Accession</th><th>Contrast</th><th>Dir</th>
+        <th>n DE</th><th>∩ A∪B</th><th>Fold</th><th>p</th><th>FDR</th><th>Gene set</th>
+      </tr></thead>
+      <tbody>${trs || '<tr><td colspan="9" class="muted">No enrichment rows.</td></tr>'}</tbody>
+    </table></div>`;
+  } else {
+    const trs = slice
+      .map((r) => {
+        const hub = r.hub_protein_id
+          ? `<a class="mono" href="/protein/${esc(r.hub_protein_id)}">${esc(
+              r.hub_protein_id
+            )}</a>`
+          : "—";
+        const tops = String(r.top_members || "")
+          .split(",")
+          .filter(Boolean)
+          .slice(0, 5)
+          .map(
+            (id) =>
+              `<a class="mono" href="/protein/${esc(id.trim())}">${esc(id.trim())}</a>`
+          )
+          .join(" ");
+        return `<tr>
+          <td class="mono">${esc(r.module_id)}</td>
+          <td>${esc(r.n_members)}</td>
+          <td>${esc(r.n_tier_a)} / ${esc(r.n_tier_b)}</td>
+          <td class="mono">${esc(r.pattern || "")}</td>
+          <td>${esc(r.pattern_label || "")}</td>
+          <td>${hub}</td>
+          <td>${tops}</td>
+        </tr>`;
+      })
+      .join("");
+    tableHtml = `<div class="table-wrap"><table>
+      <thead><tr>
+        <th>Module</th><th>n</th><th>A / B</th><th>Pattern</th>
+        <th>Label</th><th>Hub</th><th>Top members</th>
+      </tr></thead>
+      <tbody>${trs || '<tr><td colspan="7" class="muted">No modules.</td></tr>'}</tbody>
+    </table></div>`;
+  }
+
+  const body = `
+    <div class="card">
+      <h2>Stress condensatome modules</h2>
+      <p>Condensatome × stress DE enrichment for
+         <span class="mono">${esc((params.accessions || sm?.accessions || []).join(", "))}</span>
+         and response-pattern modules among Tier A∪B proteins.</p>
+      <p class="muted">Background stress-matched <strong>${esc(
+        params.n_background || "—"
+      )}</strong>
+         · Tier A∪B rate ≈ <strong>${esc(params.background_tier_ab_rate ?? "—")}</strong>
+         · enrichment tests <strong>${esc(sm?.n_enrichment_tests ?? enrich.length)}</strong>
+         (FDR&lt;0.05: <strong>${esc(sm?.["n_enrichment_fdr_lt_0.05"] ?? "—")}</strong>)
+         · pattern modules <strong>${esc(sm?.n_modules ?? modules.length)}</strong>
+         · gene sets <strong>${esc(sm?.n_gene_sets ?? "—")}</strong>
+         · seed neighborhoods <strong>${esc(sm?.n_seed_neighborhoods ?? "—")}</strong>.</p>
+      <p class="muted">${esc(honesty)}</p>
+      <p>Deposits:
+        <span class="mono">data/stress_modules/de_enrichment.tsv</span> ·
+        <span class="mono">coexpression_modules.tsv</span> ·
+        <span class="mono">gene_sets.gmt.gz</span> ·
+        <span class="mono">module_members.tsv.gz</span>
+      </p>
+      <p>
+        Table:
+        <a href="/modules?tab=enrichment">DE enrichment</a> ·
+        <a href="/modules?tab=modules">Pattern modules</a>
+      </p>
+      <p class="muted">${esc(total)} rows (page ${esc(page)} / ${esc(pages)}).</p>
+      ${tableHtml}
+      ${pagerHtml("/modules", page, pages, { tab })}
+    </div>`;
+  res.type("html").send(layout("Stress modules", body));
 });
 
 app.get("/search", (req, res) => {
@@ -1405,6 +1557,7 @@ Promise.all([
   loadStressSidecar().catch((err) => {
     console.error("Stress sidecar failed:", err);
   }),
+  Promise.resolve().then(() => loadStressModulesUi()),
 ]).finally(() => {
   app.listen(PORT, HOST, () => {
     console.log(

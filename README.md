@@ -2,13 +2,13 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.1.1-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.2.0-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.1.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.2.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
 
 > Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
@@ -31,6 +31,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Curated LLPS gold | `data/curated/` | experimentally anchored overlay + SQLite/UI badge |
 | MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
 | External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
+| Stress condensatome modules | `data/stress_modules/` | DE × Tier A∪B enrichment + response modules; UI `/modules` |
 | Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **https://grape-condensatome.apps.grok.bot** (+ local / Render / Railway / Fly fallbacks) |
 | Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
 
@@ -45,6 +46,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - **Pfam / InterPro domains** + **IDR segments** (AF pLDDT&lt;50 ∪ UniProt MobiDB-lite disordered) via `scripts/enrich_domains_idr.py`; protein-page track + Ensembl Plants link-outs.
 - **Bulk download** UI `/download` and `GET /api/download?tier=A&format=tsv|fasta` (optional `family` / `keyword` / `q`).
 - **STRING** Vitis PPI neighborhoods + Tier A∪B enrichment via `scripts/enrich_string_neighborhood.py` (UI `/network`); combined scores are **not** LLPS evidence.
+- **Stress condensatome modules** via `scripts/enrich_stress_condensatome_modules.py` (UI `/modules`): DE × Tier A∪B enrichment for E-MTAB-4324 / E-GEOD-67932 + response-pattern modules + deposited gene sets (`data/stress_modules/`).
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
 - Gold-standard PlantLLPS AUCs are **partially in-sample** (IDs overlap the training corpus). Prefer **family hold-out / Ath↔rice transfer** metrics in `data/benchmarks/family_holdout_metrics.json`. LLPhyScore / PSAP remain out-of-the-box baselines on the 13+15 gold set.
 - **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
@@ -68,8 +70,18 @@ Optional extras / external tools: [`requirements.txt`](./requirements.txt), [`do
 npm install
 npm start
 # → http://127.0.0.1:8765/  (HOST/PORT env; default 0.0.0.0:8765)
-# Routes: /compare, /gold, /map, /hooks (Ath/rice + soybean), /network (STRING), /download, /protein/:id
+# Routes: /compare, /gold, /map, /hooks (Ath/rice + soybean), /network (STRING),
+#         /expression, /modules (stress DE enrichment), /download, /protein/:id
 # API:    GET /api/download?tier=A&evidence=llps&format=tsv|fasta
+```
+
+## Stress condensatome modules (NAR+)
+
+```bash
+python3 scripts/enrich_stress_rnaseq.py                         # prerequisite
+python3 scripts/enrich_stress_condensatome_modules.py
+# deposits: data/stress_modules/{de_enrichment,coexpression_modules,gene_sets.gmt.gz,…}
+# UI: /modules
 ```
 
 ## Second-crop condensatome (soybean)
@@ -110,6 +122,7 @@ python3 -m plantllps score-proteome \
 python3 scripts/enrich_uniprot_annotations.py --db data/grape_condensatome.sqlite
 python3 scripts/enrich_expression_atlas.py --db data/grape_condensatome.sqlite
 python3 scripts/enrich_stress_rnaseq.py --db data/grape_condensatome.sqlite
+python3 scripts/enrich_stress_condensatome_modules.py   # DE × Tier A∪B + modules
 python3 scripts/enrich_alphafold_plddt.py --segments-only --segments-tier ALL --workers 24
 python3 scripts/enrich_string_neighborhood.py   # Vitis STRING PPI + enrichment
 ```
