@@ -1,5 +1,16 @@
 # Release notes
 
+## v1.9.0 (2026-11-27)
+
+NAR-priority RNA-binding annotation crosswalk (nucleic-acid narrative; no Zenodo; no new species).
+
+- `scripts/import_rbp_sources.py` — cache RBP2GO 2.0 Ath `RBP_AT.csv` + ATtRACT ZIP under `data/rbp/cache/` (gitignored).
+- `scripts/enrich_rbp_crosswalk.py` — OrthoDB Ath→grape join to RBP2GO; ATtRACT Ath AGI→UniProt resolve; native UniProt GO:0003723 / KW RNA-binding; RG/RGG sequence grammar; deposits under `data/rbp/` (sidecar-only; SQLite meta pointer).
+- UI `/rbp` browse (Tier A∪B + RG hits); protein-page RBP/RG badges + motif notes; `/download?evidence=rbp|rg`; `/api/health.rbp_crosswalk`.
+- Methods: `data/rbp/METHOD.md` (PlantLLPS ↔ nucleic-acid scope for NAR).
+- Headline: **1 943 / 25 972** annotated (7.48%); RBP2GO joins **598**; UniProt GO **817** / KW **613**; RG/RGG calls **395**; RG∩RBP2GO **31**; Tier A∪B with RBP **348**.
+- Plant-RBP gaps: RBP2GO and ATtRACT have **no Vitis** tables; ATtRACT Ath = **3** genes / **26** motif rows and **0** grape OrthoDB joins after UniProt resolve.
+
 ## v1.8.0 (2026-11-27)
 
 Orthogonal LLPS database cross-annotation (NAR content layer A1).

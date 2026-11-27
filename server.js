@@ -38,6 +38,10 @@ import {
   listLlpsGold,
   llpsCrosswalkMeta,
   listUniqueCandidates,
+  loadRbpSidecar,
+  loadRbpUiTables,
+  getRbpUiTables,
+  rbpCrosswalkMeta,
   DEFAULT_DB,
 } from "./lib/db.js";
 import { loadModel, scoreSequence } from "./lib/model.js";
@@ -453,6 +457,7 @@ function layout(title, body, query = "") {
       <a href="/expression">Expression</a>
       <a href="/modules">Stress modules</a>
       <a href="/analyses">Atlas analyses</a>
+      <a href="/rbp">RBP / RG</a>
       <a href="/download">Download</a>
       <a href="/score">Score FASTA</a>
     </nav>
@@ -463,6 +468,7 @@ function layout(title, body, query = "") {
     Orthologs (Ath/rice + soybean via OrthoDB), STRING Vitis neighborhoods (/network),
     stress DE × condensatome enrichment + modules (/modules), atlas analyses
     (family enrichment / comparator disagreement / structure–score on /analyses),
+    RNA-binding crosswalk (RBP2GO Ath / ATtRACT / UniProt / RG–RGG) on /rbp,
     and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
     Soybean + tomato + multi-species fruit-crop condensatomes, fruit cross-species high-score
     comparison, and conserved grape↔soy↔Ath overlap on /hooks. Treat ranks as hypotheses.
@@ -503,8 +509,18 @@ function proteinTable(rows, empty = "No proteins found.") {
           ? `<span class="badge gold" title="Curated LLPS evidence join">LLPS</span>`
           : "";
       const xwalk = extLlpsBadgesHtml(r, { compact: true });
+      const rbpBadge =
+        Number(r.rbp_flag) > 0
+          ? `<span class="badge rbp" title="${esc(
+              (r.rbp?.motif_note || r.rbp?.sources?.join("; ") || "RBP evidence").slice(0, 180)
+            )}">RBP</span>`
+          : "";
+      const rgBadge =
+        r.rbp?.rg_motif_call
+          ? `<span class="badge rg" title="${esc(r.rbp.rg_motif_note || "RG/RGG motif call")}">RG</span>`
+          : "";
       return `<tr>
-        <td class="mono"><a href="/protein/${pid}">${pid}</a> ${gold}${xwalk}</td>
+        <td class="mono"><a href="/protein/${pid}">${pid}</a> ${gold}${xwalk}${rbpBadge}${rgBadge}</td>
         <td class="mono">${gene}</td>
         <td><span class="tier ${tier}">${tier}</span></td>
         <td>${fmtScore(r.score)}</td>
@@ -727,6 +743,21 @@ app.get("/api/health", (_req, res) => {
       sidecar: EXPLAIN_PATH,
     },
     llps_crosswalk: llpsCrosswalkMeta(db),
+    rbp_crosswalk: (() => {
+      const meta = rbpCrosswalkMeta(db);
+      const ui = getRbpUiTables();
+      return meta
+        ? {
+            n_with_rbp_annotation: meta.n_with_rbp_annotation,
+            hit_rate_proteome: meta.hit_rate_proteome,
+            n_grape_via_rbp2go: meta.n_grape_via_rbp2go,
+            n_grape_via_attract: meta.n_grape_via_attract,
+            n_rg_motif_call: meta.n_rg_motif_call,
+            species_coverage: meta.species_coverage,
+            ui_loaded: Boolean(ui),
+          }
+        : { ui_loaded: Boolean(ui) };
+    })(),
   });
 });
 
@@ -753,6 +784,76 @@ app.get("/api/crosswalk", (req, res) => {
       ext_llps_dbs: r.ext_llps_dbs,
     })),
   });
+});
+
+app.get("/rbp", (req, res) => {
+  const meta = rbpCrosswalkMeta(db);
+  const ui = getRbpUiTables();
+  const tab = String(req.query.tab || "tier_ab").trim().toLowerCase();
+  const tabOk = tab === "rg" ? "rg" : "tier_ab";
+  if (!ui || !meta) {
+    const body = `<div class="card"><h2>RNA-binding / RG crosswalk</h2>
+      <p class="muted">Deposit missing. Run
+      <span class="mono">python3 scripts/import_rbp_sources.py</span> then
+      <span class="mono">python3 scripts/enrich_rbp_crosswalk.py</span>.</p></div>`;
+    return res.type("html").send(layout("RBP / RG", body));
+  }
+  const rows =
+    tabOk === "rg" ? ui.rg_motif_hits || [] : ui.tier_ab_rbp || [];
+  const cells = rows
+    .map((r) => {
+      const src = (r.sources || []).join(", ");
+      return `<tr>
+        <td class="mono"><a href="/protein/${esc(r.protein_id)}">${esc(r.protein_id)}</a>
+          ${r.rg_motif_call ? `<span class="badge rg">RG</span>` : ""}
+          <span class="badge rbp">RBP</span></td>
+        <td class="mono">${esc(r.gene_name || "—")}</td>
+        <td><span class="tier ${esc(r.tier)}">${esc(r.tier)}</span></td>
+        <td>${fmtScore(r.score)}</td>
+        <td>${esc(r.n_rgg ?? "—")} / ${esc(r.n_rg ?? "—")}</td>
+        <td>${r.rbp2go_score != null ? esc(Number(r.rbp2go_score).toFixed(1)) : "—"}</td>
+        <td class="mono">${esc(r.ortholog_ath || "—")}</td>
+        <td class="muted">${esc(src)}</td>
+        <td class="muted">${esc((r.motif_note || "").slice(0, 120))}</td>
+      </tr>`;
+    })
+    .join("");
+  const sc = meta.species_coverage || {};
+  const body = `
+    <div class="card">
+      <h2>RNA-binding annotation crosswalk</h2>
+      <p>NAR nucleic-acid scope: cross PlantLLPS candidates against <strong>RBP2GO 2.0 Ath</strong>
+         (OrthoDB), <strong>ATtRACT</strong> Ath motifs, native UniProt GO:0003723 / KW RNA-binding,
+         and RG/RGG sequence grammar. Methods:
+         <span class="mono">data/rbp/METHOD.md</span>.</p>
+      <p class="muted">${esc(meta.honesty || "")}</p>
+      <p>Annotated proteins: <strong>${esc(meta.n_with_rbp_annotation)}</strong>
+         / ${esc(meta.n_atlas_proteins)}
+         (${esc(((meta.hit_rate_proteome || 0) * 100).toFixed(2))}%) ·
+         RBP2GO joins <strong>${esc(meta.n_grape_via_rbp2go)}</strong> ·
+         ATtRACT joins <strong>${esc(meta.n_grape_via_attract)}</strong> ·
+         RG/RGG calls <strong>${esc(meta.n_rg_motif_call)}</strong> ·
+         RG∩RBP2GO <strong>${esc(meta.n_rg_and_rbp2go)}</strong></p>
+      <p class="muted">Species: RBP2GO Vitis=${esc(String(sc.rbp2go_includes_vitis))} ·
+         ATtRACT Vitis=${esc(String(sc.attract_includes_vitis))} ·
+         ATtRACT Ath genes=${esc(sc.attract_ath_genes)} ·
+         grape UniProt GO:0003723=${esc(sc.grape_native_uniprot_go3723)}</p>
+      <p>
+        <a href="/rbp?tab=tier_ab">${tabOk === "tier_ab" ? "<strong>" : ""}Tier A∪B with RBP${tabOk === "tier_ab" ? "</strong>" : ""}</a> ·
+        <a href="/rbp?tab=rg">${tabOk === "rg" ? "<strong>" : ""}RG/RGG motif hits${tabOk === "rg" ? "</strong>" : ""}</a> ·
+        <a href="/download?evidence=rbp">Download RBP filter</a>
+      </p>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead><tr>
+          <th>Protein</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th>
+          <th>RGG/RG</th><th>RBP2GO</th><th>Ath ortho</th><th>Sources</th><th>Notes</th>
+        </tr></thead>
+        <tbody>${cells || `<tr><td colspan="9" class="muted">No rows</td></tr>`}</tbody>
+      </table>
+    </div>`;
+  res.type("html").send(layout("RBP / RG", body));
 });
 
 app.get("/api/search", (req, res) => {
@@ -1352,7 +1453,15 @@ app.get("/protein/:id", (req, res) => {
             Number(p.llps_gold) > 0
               ? `<span class="badge gold">LLPS evidence</span>`
               : ""
-          }${extLlpsBadgesHtml(p)}</h2>
+          }${extLlpsBadgesHtml(p)}${
+            Number(p.rbp_flag) > 0
+              ? `<span class="badge rbp">RBP evidence</span>`
+              : ""
+          }${
+            p.rbp?.rg_motif_call
+              ? `<span class="badge rg">RG/RGG</span>`
+              : ""
+          }</h2>
         <p><strong>${esc(p.gene_name || "—")}</strong>
            · <span class="tier ${esc(p.tier)}">${esc(p.tier)}</span>
            · length ${esc(p.length)}</p>
@@ -1407,6 +1516,47 @@ app.get("/protein/:id", (req, res) => {
                    )}</span></div>`
               )
               .join("")}</div></div>`
+        : ""
+    }
+    ${
+      p.rbp
+        ? `<div class="card" style="margin-top:1rem">
+            <h3>RNA-binding / RG motif notes</h3>
+            <p class="muted">NAR nucleic-acid layer: RBP2GO Ath OrthoDB transfer · ATtRACT Ath motifs (sparse) ·
+               UniProt GO/KW · sequence RG/RGG grammar. Not grape CLIP proof.
+               Browse: <a href="/rbp">/rbp</a></p>
+            <p>Sources: <strong>${esc((p.rbp.sources || []).join(", ") || "—")}</strong>
+               ${p.rbp.rna_score_context ? " · <span class='badge rg'>RNA-score context</span>" : ""}</p>
+            <p class="muted">${esc(p.rbp.motif_note || "")}</p>
+            <div class="features">
+              <div><span class="k">RGG count</span><span class="v">${esc(p.rbp.n_rgg)}</span></div>
+              <div><span class="k">RG count</span><span class="v">${esc(p.rbp.n_rg)}</span></div>
+              <div><span class="k">Max RGG run</span><span class="v">${esc(p.rbp.max_rgg_run)}</span></div>
+              <div><span class="k">RBP2GO Ath</span><span class="v">${
+                p.rbp.ortholog_ath
+                  ? `<span class="mono">${esc(p.rbp.ortholog_ath)}</span>${
+                      p.rbp.rbp2go_gene ? ` (${esc(p.rbp.rbp2go_gene)})` : ""
+                    }${
+                      p.rbp.rbp2go_score != null
+                        ? ` · score ${esc(Number(p.rbp.rbp2go_score).toFixed(1))}`
+                        : ""
+                    }`
+                  : "—"
+              }</span></div>
+              <div><span class="k">ATtRACT motifs</span><span class="v">${
+                p.rbp.attract_n
+                  ? esc(
+                      (p.rbp.attract_motifs || [])
+                        .map((m) => `${m.motif}${m.family ? ` (${m.family})` : ""}`)
+                        .join(", ")
+                    )
+                  : "— (Ath catalog sparse / no OrthoDB join)"
+              }</span></div>
+              <div><span class="k">UniProt RNA-binding</span><span class="v">GO ${
+                p.rbp.uniprot_go ? "yes" : "no"
+              } · KW ${p.rbp.uniprot_kw ? "yes" : "no"}</span></div>
+            </div>
+          </div>`
         : ""
     }
     <div class="card" style="margin-top:1rem">
@@ -1956,6 +2106,11 @@ const DOWNLOAD_TSV_COLS = [
   "llps_gold",
   "ext_llps_dbs",
   "ext_llps_unique",
+  "rbp_flag",
+  "rbp_sources",
+  "rg_motif_call",
+  "n_rgg",
+  "n_rg",
 ];
 
 function downloadFilters(query) {
@@ -2011,6 +2166,11 @@ function rowsToTsv(rows) {
     lines.push(
       DOWNLOAD_TSV_COLS.map((c) => {
         let v = r[c];
+        if (c === "rbp_flag") v = r.rbp_flag || 0;
+        if (c === "rbp_sources") v = (r.rbp?.sources || []).join(";");
+        if (c === "rg_motif_call") v = r.rbp?.rg_motif_call ? 1 : 0;
+        if (c === "n_rgg") v = r.rbp?.n_rgg ?? "";
+        if (c === "n_rg") v = r.rbp?.n_rg ?? "";
         if (c === "domain_pfam_ids" && Array.isArray(v)) v = v.join(";");
         if (c === "keywords" && Array.isArray(v)) v = v.join(";");
         if (v == null) return "";
@@ -2105,6 +2265,8 @@ app.get("/download", (req, res) => {
             <option value="llpsdb" ${filters.evidence === "llpsdb" ? "selected" : ""}>LLPSDB</option>
             <option value="drllps" ${filters.evidence === "drllps" ? "selected" : ""}>DrLLPS</option>
             <option value="cdcode" ${filters.evidence === "cdcode" ? "selected" : ""}>CD-CODE</option>
+            <option value="rbp" ${filters.evidence === "rbp" ? "selected" : ""}>RBP evidence</option>
+            <option value="rg" ${filters.evidence === "rg" ? "selected" : ""}>RG/RGG motif call</option>
           </select>
         </label>
         <label>Family <input name="family" value="${esc(filters.family)}" placeholder="MAP65"/></label>
@@ -2681,6 +2843,10 @@ Promise.all([
   }),
   Promise.resolve().then(() => loadStressModulesUi()),
   Promise.resolve().then(() => loadAtlasAnalysesUi()),
+  loadRbpSidecar().catch((err) => {
+    console.error("RBP sidecar failed:", err);
+  }),
+  Promise.resolve().then(() => loadRbpUiTables()),
   loadExplainability().catch((err) => {
     console.error("Explainability sidecar failed:", err);
   }),

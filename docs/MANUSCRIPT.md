@@ -84,6 +84,7 @@ Joined annotation layers (through **v1.4.0**):
 - **Comparators:** full-proteome native PSAP and LLPhyScore (25 972 each) plus proteome **PLAAC-approx** (stdlib approx, not the Java PLAAC HMM).
 - **Domains / IDR:** Pfam/InterPro coordinates (21 856 / 21 670) and IDR tracks (23 590 after full-AF expand).
 - **Evidence overlays:** curated grape LLPS gold (*n* = 34; `/gold`); MAP-screen reconstruction deposit (`/map`); native *Vitis* STRING neighborhoods (taxid 29760; 25 867 mapped; 19 523 neighborhoods; `/network` — combined_score is descriptive adjacency, **not** LLPS evidence).
+- **RNA-binding / nucleic-acid scope (v1.9.0):** RBP2GO 2.0 Ath RBPs joined via OrthoDB (**598** grape proteins); ATtRACT Ath motifs deposited but OrthoDB-sparse (**0** grape joins; plant-motif gap); native UniProt GO:0003723 (**817**) / KW RNA-binding (**613**); RG/RGG sequence grammar calls (**395**). UI `/rbp`. Ortholog transfers and motif grammar are triage annotations—not grape CLIP proof (`data/rbp/METHOD.md`).
 - **Explainability:** gold ∪ Tier A SHAP grammar sidecars (**1 159**; `/protein/:id` panel).
 
 **Table 1. Resource contents at a glance (v1.4.0).**
@@ -131,7 +132,8 @@ A lightweight web database (Node Express UI and Python `plantllps serve`) suppor
 | `/network` | STRING *Vitis* neighborhoods |
 | `/expression` | TPM and multi-stress RNA-seq contrasts |
 | `/modules` | Stress DE × condensatome enrichment and response modules |
-| `/protein/:id` | Domain/IDR/AF tracks + grammar SHAP panel (gold ∪ Tier A) |
+| `/protein/:id` | Domain/IDR/AF tracks + grammar SHAP panel (gold ∪ Tier A) + RBP/RG notes |
+| `/rbp` | RNA-binding crosswalk (RBP2GO Ath / ATtRACT / UniProt / RG–RGG) |
 | `/download` | Tier-/family-/keyword-/evidence-filtered TSV or FASTA |
 
 Bulk export: `GET /api/download?tier=&family=&keyword=&evidence=&format=tsv|fasta`. The public application is at **https://grape-condensatome.apps.grok.bot**; local `plantllps serve` / `npm start` and alternate hosting paths remain in `docs/HOSTING.md`. Fair leaderboard: `docs/BENCHMARK_LEADERBOARD.md`.
@@ -150,9 +152,13 @@ Bulk export: `GET /api/download?tier=&family=&keyword=&evidence=&format=tsv|fast
 
 Plant PS proteins / ProX already owns the multi-species plant experimental-plus-prediction niche with a public site. LLPSDB, PhaSePro, PhaSepDB, DrLLPS and CD-CODE supply curated community standards. GrapeCondensatome’s differentiators are narrower but concrete: (i) **whole-proteome *Vitis* coverage**; (ii) a **plant/MAP-grammar-aware scorer** with leakage-controlled gains over PSAP/LLPhy/PLAAC on gold leave-out and explainable Ser-rich rescue of MAP65-1; (iii) an **integrated atlas** (expression, stress modules, AF segments, domains, STRING, native comparator columns) under an MIT-reproducible CLI. That combination is a specialty-crop resource, not a field-wide database update—and is accordingly framed for NAR Database Issue submission while remaining suitable for a Database / plant-resource venue if NAR scope or maturity thresholds are not met.
 
+### Nucleic-acid / RBP scope (methods note)
+
+Many plant condensate scaffolds are RNA-binding or RG/RGG-rich (stress granules, glycine-rich RBPs, nuclear RGG repeats). To place PlantLLPS candidates in that nucleic-acid narrative without inventing grape CLIP data, GrapeCondensatome (v1.9.0) deposits an RNA-binding crosswalk: (i) RBP2GO 2.0 *Arabidopsis* RBPs transferred by OrthoDB; (ii) ATtRACT Ath motif catalog (animal-dominated; Vitis absent); (iii) native UniProt GO:0003723 and Keyword RNA-binding on UP000009183; (iv) sequence RG/RGG grammar calls. The layer prioritizes RNA-related LLPS hypotheses for wet-lab triage and is documented in `data/rbp/METHOD.md`. It does **not** expand species coverage or replace experimental RBP atlases.
+
 ### Calibration and scope limits
 
-Plant experimental positives remain sparse relative to human labels; OrthoDB joins and cross-crop hooks mitigate but do not eliminate scarcity. Cite fair-suite AUCs, not in-sample gold. Soybean scores use grape-trained weights. STRING combined_score mixes textmining and is not LLPS evidence. Stress modules are descriptive hypergeometric / short log2FC co-response patterns, not WGCNA. Logistic SHAP is exact for the linear head only. Sequence scores are hypotheses for turbidity, microscopy and FRAP under validated MAP65-1 conditions (Sahu et al. 2023), not substitutes for experiment. Databases require versioning as LLPSDB and grapevine annotations advance.
+Plant experimental positives remain sparse relative to human labels; OrthoDB joins and cross-crop hooks mitigate but do not eliminate scarcity. Cite fair-suite AUCs, not in-sample gold. Soybean scores use grape-trained weights. STRING combined_score mixes textmining and is not LLPS evidence. Stress modules are descriptive hypergeometric / short log2FC co-response patterns, not WGCNA. Logistic SHAP is exact for the linear head only. Sequence scores are hypotheses for turbidity, microscopy and FRAP under validated MAP65-1 conditions (Sahu et al. 2023), not substitutes for experiment. RBP2GO/ATtRACT ortholog and RG/RGG flags are triage annotations, not grape RNA-binding proof. Databases require versioning as LLPSDB and grapevine annotations advance.
 
 ### Outlook
 

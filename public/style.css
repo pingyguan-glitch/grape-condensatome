@@ -180,6 +180,16 @@ tr:hover td { background: #f7f3ea; }
 .badge.ext.llpsdb { background: #e4f0f4; color: #2a5560; border-color: #b0cdd4; }
 .badge.ext.drllps { background: #f4ebe4; color: #6a452a; border-color: #d8c0b0; }
 .badge.ext.cdcode { background: #e4f4ea; color: #2a5a3a; border-color: #b0d4bc; }
+.badge.rbp {
+  background: #d7ebe3;
+  color: #0b4f3c;
+  border: 1px solid #9cc9b6;
+}
+.badge.rg {
+  background: #e4e8f2;
+  color: #2a3a5c;
+  border: 1px solid #a8b4cc;
+}
 
 .pager { display: flex; gap: 0.75rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
 .table-wrap { overflow-x: auto; margin-top: 0.75rem; }

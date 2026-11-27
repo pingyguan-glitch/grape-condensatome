@@ -257,6 +257,28 @@ python3 scripts/enrich_structure_score_joint.py
 Honesty: family + structure threshold tests are FDR-controlled; comparator disagreement
 and per-protein structure flags are exploratory. SQLite stores meta summaries only.
 
+## RNA-binding crosswalk (RBP2GO / ATtRACT / RG–RGG)
+
+```bash
+# Cache Ath RBP2GO CSV (browser export or --fetch-rbp2go via Playwright) + ATtRACT ZIP
+python3 scripts/import_rbp_sources.py --rbp2go-csv /path/to/RBP_AT.csv --fetch-attract
+
+# Crosswalk → data/rbp/ deposits + SQLite meta.rbp_crosswalk (sidecar UI)
+python3 scripts/enrich_rbp_crosswalk.py
+# → UI /rbp ; protein-page RBP/RG badges ; /download?evidence=rbp|rg
+```
+
+Notes:
+
+- **RBP2GO 2.0** lists 13 species; plant coverage is **Arabidopsis only** (2 352 RBPs).
+  *Vitis* is absent — grape joins use OrthoDB `ortholog_ath`.
+- **ATtRACT** is animal-dominated; Ath motif rows are sparse and often lack grape
+  OrthoDB partners (documented in `data/rbp/summary.json`).
+- Native grape UniProt **GO:0003723** and Keyword **RNA-binding** are deposited as
+  plant-aware evidence independent of RBP2GO/ATtRACT.
+- RG/RGG calls are sequence-grammar thresholds (`n_RGG≥2` or `n_RG≥8` or RGG-run≥2),
+  not CLIP proof. Full methods: `data/rbp/METHOD.md`.
+
 ## STRING neighborhood (Vitis PPI)
 
 ```bash
