@@ -74,7 +74,7 @@ def _layout(title: str, body: str, *, query: str = "") -> str:
       <a href="/tiers/D">Tier D</a>
       <a href="/score">Score FASTA</a>
     </nav>
-    <!-- Compare / hooks: prefer Node UI (server.js) for /compare and /hooks -->
+    <!-- Full /compare + /hooks live on the Node UI (server.js). -->
   </header>
   <div class="banner">
     PlantLLPS hybrid model (v13; hard disordered negatives). Disorder defaults to a composition proxy;

@@ -1,5 +1,14 @@
 # Release notes
 
+## v0.5.0 (2026-11-26)
+
+Full-proteome **native** PSAP and LLPhyScore (user priority: comparator columns).
+
+- `scripts/score_psap_proteome.py` — batched + checkpointed native PSAP (Python ≤3.9 env).
+- `scripts/score_llphyscore_proteome.py` — batched + checkpointed LLPhyScore standalone (8-feature-sum human+PDB %ile).
+- `scripts/enrich_comparator_scores.py` joins proteome TSVs into SQLite; UI `/compare` shows coverage + proteome top-40 with real PSAP / LLPhyScore values.
+- Honest docs in `docs/EXTERNAL_TOOLS.md` (env pins, wall-time expectations, resumable checkpoints).
+
 ## v0.4.0 (2026-11-26)
 
 Atlas enrichments for user priorities 1–3 + 6 (honest compute scope).
@@ -24,7 +33,7 @@ Atlas enrichments for user priorities 1–3 + 6 (honest compute scope).
 
 - `scripts/enrich_comparator_scores.py` + `plantllps/plaac_approx.py`.
 - Gold PSAP / LLPhyScore joined; PLAAC-approx for full proteome; UI `/compare`.
-- Full-proteome PSAP/LLPhyScore **not** claimed (env + CPU limits).
+- Full-proteome native PSAP/LLPhyScore deferred to **v0.5.0** (env + CPU).
 
 ## v0.3.1 (2026-11-26)
 

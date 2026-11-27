@@ -66,8 +66,7 @@ families). Curated hooks seed high-value families even when xref coverage is thi
 
 ```bash
 python3 scripts/enrich_comparator_scores.py
-# Joins gold PSAP + LLPhyScore from data/benchmarks/gold_standard_scores.tsv
-# Computes stdlib PLAAC-approx for the full scored proteome
+# Joins gold + optional proteome native TSVs; PLAAC-approx for full proteome
 # → data/benchmarks/comparator_side_by_side.tsv + UI /compare
 ```
 
@@ -80,20 +79,49 @@ It does **not** import on system Python 3.12.
 micromamba create -n psap39 -c conda-forge python=3.9 pip -y
 micromamba run -n psap39 pip install 'psap' 'numpy<1.24' 'scipy<1.11'
 export PSAP_PYTHON="$(micromamba run -n psap39 which python)"
+
+# Gold-standard AUC
 python3 scripts/run_psap_gold.py --psap-python "$PSAP_PYTHON"
+
+# Full scored proteome (batched + checkpointed; ~5–15 min on a 4-core CPU)
+python3 scripts/score_psap_proteome.py --db-ids-only --batch-size 500 \
+  --psap-python "$PSAP_PYTHON"
+# → data/benchmarks/psap_proteome.tsv + SQLite score_psap
 ```
 
-**Full-proteome PSAP** is not shipped (CPU + env pin). Gold columns are joined into
-SQLite for the overlapping proteome IDs; UI `/compare` shows the gold panel.
+Checkpoint: `data/benchmarks/psap_proteome.checkpoint.json` (gitignored).
 
 **MAP-screen Spearman ρ** still cannot be recomputed until the companion 208-protein
 table (with PSAP columns) is deposited.
 
-### LLPhyScore
+### LLPhyScore (Cai / Forman-Kay lab)
 
-Set `LLPHYSCORE_HOME` to an unpacked standalone tree, then
-`python3 scripts/compare_gold_standard.py`. Gold percentiles are joined by
-`enrich_comparator_scores.py`. Proteome-wide LLPhyScore is not run in CI.
+```bash
+git clone https://github.com/julie-forman-kay-lab/LLPhyScore.git /tmp/LLPhyScore
+cd /tmp/LLPhyScore/standalone_package && tar -xf LLPhyScore-standalone-20220627.tar.gz
+export LLPHYSCORE_HOME=/tmp/LLPhyScore/standalone_package/LLPhyScore
+
+# Pinned deps (standalone README pins older wheels; py3.9 + numpy 1.19 works)
+micromamba create -n llphy39 -c conda-forge python=3.9 pip numpy=1.19.5 \
+  pandas=1.1.5 scipy=1.5.3 tqdm scikit-learn -y
+export LLPHYSCORE_PYTHON="$(micromamba run -n llphy39 which python)"
+
+# Gold-standard AUC
+python3 scripts/compare_gold_standard.py --llphyscore-home "$LLPHYSCORE_HOME"
+
+# Full scored proteome (batched + checkpointed; ~2–4 h single-process on a 4-core CPU)
+python3 scripts/score_llphyscore_proteome.py --db-ids-only --batch-size 100 \
+  --llphyscore-home "$LLPHYSCORE_HOME" --llphyscore-python "$LLPHYSCORE_PYTHON"
+# → data/benchmarks/llphyscore_proteome.tsv + SQLite score_llphyscore_percentile
+
+# Optional: fan-out across CPU cores with separate shard checkpoints, then merge
+# (each shard uses --fasta of a partitioned ID set + its own --checkpoint/--out)
+python3 scripts/merge_llphyscore_shards.py
+```
+
+Checkpoint: `data/benchmarks/llphyscore_proteome.checkpoint.json` (gitignored; shard
+files `llphyscore_proteome.shard*.checkpoint.json` likewise). Score column is the
+**8-feature-sum human+PDB percentile** (same as gold compare).
 
 ### PLAAC-approx (stdlib)
 

@@ -406,12 +406,23 @@ app.get("/compare", (_req, res) => {
       </tr>`;
     })
     .join("");
-  // Proteome sample with PLAAC (top scores) for side-by-side vs PlantLLPS
+  const meta = getMeta(db);
+  let psapCov = "—";
+  let llphyCov = "—";
+  try {
+    const psapMeta = meta.psap_proteome ? JSON.parse(meta.psap_proteome) : null;
+    const llphyMeta = meta.llphyscore_proteome ? JSON.parse(meta.llphyscore_proteome) : null;
+    const nProt = Number(meta.n_scored || 25972);
+    if (psapMeta?.n != null) psapCov = `${psapMeta.n} / ${nProt}`;
+    if (llphyMeta?.n != null) llphyCov = `${llphyMeta.n} / ${nProt}`;
+  } catch {
+    /* ignore */
+  }
+  // Proteome sample with native comparators (top PlantLLPS scores)
   const proteomeSample = db
     .prepare(
-      `SELECT protein_id, gene_name, tier, score, plaac_nllr_approx, frac_disorder_metapredict,
-              af_frac_very_low FROM proteins
-       WHERE plaac_nllr_approx IS NOT NULL
+      `SELECT protein_id, gene_name, tier, score, score_psap, score_llphyscore_percentile,
+              plaac_nllr_approx, frac_disorder_metapredict, af_frac_very_low FROM proteins
        ORDER BY score DESC LIMIT 40`
     )
     .all();
@@ -423,8 +434,8 @@ app.get("/compare", (_req, res) => {
         <td class="mono">${esc(r.gene_name || "—")}</td>
         <td><span class="tier ${esc(r.tier || "?")}">${esc(r.tier || "?")}</span></td>
         <td>${fmtScore(r.score)}</td>
-        <td class="muted">—</td>
-        <td class="muted">—</td>
+        <td>${fmtScore(r.score_psap)}</td>
+        <td>${fmtScore(r.score_llphyscore_percentile)}</td>
         <td>${fmtScore(r.plaac_nllr_approx)}</td>
         <td>${fmtScore(r.frac_disorder_metapredict)}</td>
         <td>${fmtScore(r.af_frac_very_low)}</td>
@@ -435,9 +446,9 @@ app.get("/compare", (_req, res) => {
     <div class="card">
       <h2>Side-by-side comparators</h2>
       <p class="muted">Gold panel: PlantLLPS vs native PSAP / LLPhyScore + PLAAC-approx.
-      Proteome-wide PSAP/LLPhyScore are <strong>not</strong> shipped (external envs + CPU);
-      PLAAC-approx and disorder tracks cover the atlas. See
-      <span class="mono">docs/EXTERNAL_TOOLS.md</span>.</p>
+      Proteome-wide native coverage — PSAP: <strong>${esc(psapCov)}</strong>;
+      LLPhyScore: <strong>${esc(llphyCov)}</strong>.
+      See <span class="mono">docs/EXTERNAL_TOOLS.md</span>.</p>
     </div>
     <h2 style="font-family:var(--font-display)">Gold standard (13+15)</h2>
     <div class="card" style="overflow-x:auto">
@@ -450,7 +461,7 @@ app.get("/compare", (_req, res) => {
         <tbody>${goldCells || `<tr><td colspan="9" class="muted">Run scripts/enrich_comparator_scores.py</td></tr>`}</tbody>
       </table>
     </div>
-    <h2 style="font-family:var(--font-display)">Proteome top-40 (PLAAC≈ / disorder)</h2>
+    <h2 style="font-family:var(--font-display)">Proteome top-40 (PlantLLPS rank)</h2>
     <div class="card" style="overflow-x:auto">
       <table>
         <thead><tr>
