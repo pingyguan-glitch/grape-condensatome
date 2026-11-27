@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "provenance": {
+    "companion_cited": {
+      "n_go_annotated": 208,
+      "n_name_rescued_extra": 48,
+      "n_extended": 256,
+      "spearman_composite_vs_psap": 0.368,
+      "spearman_p": 4.6e-08,
+      "spearman_composite_vs_llphyscore": 0.232,
+      "note": "Companion Supplemental Data S1 table with original PSAP columns was never deposited in this repo or project store."
+    },
+    "this_deposit": {
+      "method": "Reconstructed from UniProt joins in grape_condensatome.sqlite: GO:0008017 \u222a keyword Microtubule (= annotation set), plus modest name-rescue / cross_crop_family extras (= extended set). PSAP / LLPhyScore columns are **native proteome** scores from scripts/score_psap_proteome.py and score_llphyscore_proteome.py, not the companion's original MAP-screen PSAP run.",
+      "annotation_drift": "Current UP000009183 annotations yield GO:0008017 n\u2260208; do not treat set membership as identical to the companion 208."
+    }
+  },
+  "metrics": {
+    "annotation": {
+      "set": "annotation_GO8017_or_KW_Microtubule",
+      "n": 233,
+      "n_go8017": 159,
+      "n_kw_microtubule": 150,
+      "spearman_companion_vs_psap": {
+        "n": 233,
+        "rho": 0.20199078443001162,
+        "p_approx_normal": 0.0017208480332756492
+      },
+      "spearman_plantllps_vs_psap": {
+        "n": 233,
+        "rho": 0.15326398067584265,
+        "p_approx_normal": 0.018410291607351414
+      },
+      "spearman_companion_vs_llphyscore": {
+        "n": 233,
+        "rho": 0.14628284679665243,
+        "p_approx_normal": 0.02460915022943794
+      },
+      "spearman_plantllps_vs_llphyscore": {
+        "n": 233,
+        "rho": -0.10890447331689278,
+        "p_approx_normal": 0.09589113285135693
+      },
+      "F6HET4": {
+        "psap_rank": 126,
+        "psap_n": 233,
+        "llphyscore_rank": 163,
+        "llphyscore_n": 233,
+        "score_psap": 0.01666667,
+        "score_llphyscore_percentile": 29.84524687,
+        "score_plantllps": 0.7617666478640973
+      }
+    },
+    "go8017_only": {
+      "set": "GO:0008017_only",
+      "n": 159,
+      "n_go8017": 159,
+      "n_kw_microtubule": 76,
+      "spearman_companion_vs_psap": {
+        "n": 159,
+        "rho": 0.18509041296515624,
+        "p_approx_normal": 0.018277266366331736
+      },
+      "spearman_plantllps_vs_psap": {
+        "n": 159,
+        "rho": 0.1294040271775879,
+        "p_approx_normal": 0.10201206210455885
+      },
+      "spearman_companion_vs_llphyscore": {
+        "n": 159,
+        "rho": 0.3425086541275154,
+        "p_approx_normal": 4.9260479133742865e-06
+      },
+      "spearman_plantllps_vs_llphyscore": {
+        "n": 159,
+        "rho": 0.06954783681245699,
+        "p_approx_normal": 0.38236495152989686
+      },
+      "F6HET4": {
+        "psap_rank": 84,
+        "psap_n": 159,
+        "llphyscore_rank": 96,
+        "llphyscore_n": 159,
+        "score_psap": 0.01666667,
+        "score_llphyscore_percentile": 29.84524687,
+        "score_plantllps": 0.7617666478640973
+      }
+    },
+    "extended": {
+      "set": "annotation_plus_name_rescue",
+      "n": 240,
+      "n_go8017": 159,
+      "n_kw_microtubule": 150,
+      "spearman_companion_vs_psap": {
+        "n": 240,
+        "rho": 0.20133264683658997,
+        "p_approx_normal": 0.0015194632816354532
+      },
+      "spearman_plantllps_vs_psap": {
+        "n": 240,
+        "rho": 0.15882836339304815,
+        "p_approx_normal": 0.013072504353035334
+      },
+      "spearman_companion_vs_llphyscore": {
+        "n": 240,
+        "rho": 0.15435620118498905,
+        "p_approx_normal": 0.015944790621031015
+      },
+      "spearman_plantllps_vs_llphyscore": {
+        "n": 240,
+        "rho": -0.09152169908168625,
+        "p_approx_normal": 0.1562261743539536
+      },
+      "F6HET4": {
+        "psap_rank": 129,
+        "psap_n": 240,
+        "llphyscore_rank": 169,
+        "llphyscore_n": 240,
+        "score_psap": 0.01666667,
+        "score_llphyscore_percentile": 29.84524687,
+        "score_plantllps": 0.7617666478640973
+      }
+    }
+  },
+  "honesty": "Recomputed \u03c1 uses PlantLLPS companion/hybrid scores (composition-proxy disorder + MAP65 grammar bonus) versus native proteome PSAP. These are **not** a byte-for-byte replication of companion \u03c1=0.368. Cite companion \u03c1 when discussing the published transfer gap; cite this deposit when discussing the public atlas reconstruction."
+}

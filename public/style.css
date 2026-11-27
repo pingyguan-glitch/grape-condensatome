@@ -145,6 +145,22 @@ tr:hover td { background: #f7f3ea; }
 .tier.C { background: var(--tier-c); }
 .tier.D { background: var(--tier-d); }
 
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: 0.35rem;
+}
+.badge.gold {
+  background: #f0e2c0;
+  color: #6a4a12;
+  border: 1px solid #d4bc86;
+}
+
 .pager { display: flex; gap: 0.75rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
 .muted { color: var(--muted); }
 .err { color: var(--danger); }

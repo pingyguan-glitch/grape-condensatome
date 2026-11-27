@@ -7,8 +7,8 @@ authors:
     given-names: Pingyin
     orcid: "https://orcid.org/0000-0003-4890-3412"
     affiliation: "College of Horticulture, China Agricultural University, Beijing 100193, China"
-version: "0.6.0"
-date-released: "2026-11-26"
+version: "0.8.0"
+date-released: "2026-11-27"
 license: MIT
 repository-code: "https://github.com/pingyguan-glitch/grape-condensatome"
 abstract: >-
