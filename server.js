@@ -59,6 +59,9 @@ const TOM_DB_PATH =
 const FRUIT_DIR =
   process.env.FRUIT_CROPS_DIR || join(__dirname, "data", "fruit_crops");
 const FRUIT_INDEX_PATH = join(FRUIT_DIR, "index.json");
+const FRUIT_CROSS_DIR = join(FRUIT_DIR, "cross_species");
+const FRUIT_CROSS_SUMMARY_PATH = join(FRUIT_CROSS_DIR, "summary.json");
+const FRUIT_CROSS_BROWSE_PATH = join(FRUIT_CROSS_DIR, "browse.json");
 const EXPLAIN_PATH =
   process.env.GRAPE_EXPLAIN ||
   join(__dirname, "data", "explainability", "attributions.json.gz");
@@ -98,6 +101,36 @@ if (existsSync(TOM_DB_PATH)) {
 const fruitDbs = new Map();
 /** @type {object | null} */
 let fruitIndex = null;
+/** @type {object | null} */
+let fruitCrossSummary = null;
+/** @type {object | null} */
+let fruitCrossBrowse = null;
+function loadFruitCrossSpecies() {
+  fruitCrossSummary = null;
+  fruitCrossBrowse = null;
+  if (existsSync(FRUIT_CROSS_SUMMARY_PATH)) {
+    try {
+      fruitCrossSummary = JSON.parse(readFileSync(FRUIT_CROSS_SUMMARY_PATH, "utf8"));
+    } catch (e) {
+      console.warn(`Fruit cross-species summary unreadable: ${e}`);
+    }
+  }
+  if (existsSync(FRUIT_CROSS_BROWSE_PATH)) {
+    try {
+      fruitCrossBrowse = JSON.parse(readFileSync(FRUIT_CROSS_BROWSE_PATH, "utf8"));
+      console.log(
+        `Fruit cross-species browse: ${fruitCrossBrowse?.conservative?.length || 0} conserved + ` +
+          `${Object.keys(fruitCrossBrowse?.species_specific_by_peak || {}).length} peak species`
+      );
+    } catch (e) {
+      console.warn(`Fruit cross-species browse unreadable: ${e}`);
+    }
+  } else {
+    console.warn(
+      `Fruit cross-species deposit missing (${FRUIT_CROSS_DIR}); run scripts/analyze_fruit_cross_species.py`
+    );
+  }
+}
 function loadFruitCrops() {
   fruitDbs.clear();
   fruitIndex = null;
@@ -110,6 +143,7 @@ function loadFruitCrops() {
   }
   if (!existsSync(FRUIT_DIR)) {
     console.warn(`Fruit-crop dir missing (${FRUIT_DIR}); /hooks fruit panel limited.`);
+    loadFruitCrossSpecies();
     return;
   }
   const files = readdirSync(FRUIT_DIR).filter((f) => f.endsWith("_condensatome.sqlite"));
@@ -123,6 +157,7 @@ function loadFruitCrops() {
     }
   }
   console.log(`Fruit-crop SQLite: ${fruitDbs.size} species under ${FRUIT_DIR}`);
+  loadFruitCrossSpecies();
 }
 loadFruitCrops();
 /** @type {Map<string, string>} */
@@ -426,7 +461,8 @@ function layout(title, body, query = "") {
     stress DE × condensatome enrichment + modules (/modules), atlas analyses
     (family enrichment / comparator disagreement / structure–score on /analyses),
     and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
-    Soybean + tomato + multi-species fruit-crop condensatomes and conserved grape↔soy↔Ath overlap on /hooks. Treat ranks as hypotheses.
+    Soybean + tomato + multi-species fruit-crop condensatomes, fruit cross-species high-score
+    comparison, and conserved grape↔soy↔Ath overlap on /hooks. Treat ranks as hypotheses.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -566,6 +602,21 @@ function fruitCropsMeta() {
         }
       : null,
     species,
+    cross_species: fruitCrossSummary
+      ? {
+          dir: FRUIT_CROSS_DIR,
+          n_panel_species: fruitCrossSummary.n_panel_species,
+          n_conservative: fruitCrossSummary.n_conservative,
+          n_species_specific: fruitCrossSummary.n_species_specific,
+          n_species_specific_panel_contrast:
+            fruitCrossSummary.n_species_specific_panel_contrast,
+          n_species_specific_orphan_high: fruitCrossSummary.n_species_specific_orphan_high,
+          n_species_with_orthodb_ab: fruitCrossSummary.n_species_with_orthodb_ab,
+          thresholds: fruitCrossSummary.thresholds,
+          generated_at_utc: fruitCrossSummary.generated_at_utc,
+          browse_loaded: Boolean(fruitCrossBrowse),
+        }
+      : null,
   };
 }
 
@@ -1907,6 +1958,184 @@ app.get("/download", (req, res) => {
   res.type("html").send(layout("Download", body, filters.q || filters.family || filters.keyword));
 });
 
+function fruitCrossSpeciesPanel(req) {
+  if (!fruitCrossBrowse || !fruitCrossSummary) {
+    return `<div class="card"><h2>Fruit cross-species high-score comparison</h2>
+      <p class="muted">Deposit missing under <span class="mono">data/fruit_crops/cross_species/</span>.
+      Run <span class="mono">python3 scripts/analyze_fruit_cross_species.py</span>.</p></div>`;
+  }
+  const mode = String(req.query.xsp_mode || "conservative").trim().toLowerCase();
+  const modeOk = mode === "species_specific" ? "species_specific" : "conservative";
+  const speciesFilter = String(req.query.xsp_species || "").trim();
+  const q = String(req.query.xsp_q || "").trim().toLowerCase();
+  const minHigh = Math.max(0, Number(req.query.xsp_min_high) || 0);
+  const minScore = Number(req.query.xsp_min_score);
+  const hasMinScore = Number.isFinite(minScore) && String(req.query.xsp_min_score || "") !== "";
+  const page = Math.max(1, Number(req.query.xsp_page) || 1);
+  const speciesList = (fruitCrossBrowse.species || []).map((s) => s.slug);
+
+  /** @type {object[]} */
+  let rows = [];
+  if (modeOk === "conservative") {
+    rows = [...(fruitCrossBrowse.conservative || [])];
+    if (speciesFilter) {
+      rows = rows.filter((r) => (r.species_high || []).includes(speciesFilter));
+    }
+  } else {
+    const byPeak = fruitCrossBrowse.species_specific_by_peak || {};
+    if (speciesFilter && byPeak[speciesFilter]) {
+      rows = [...byPeak[speciesFilter]];
+    } else {
+      rows = speciesList.flatMap((s) => byPeak[s] || []);
+    }
+  }
+  if (minHigh > 0) {
+    rows = rows.filter((r) => Number(r.n_species_high || 0) >= minHigh);
+  }
+  if (hasMinScore) {
+    rows = rows.filter((r) => {
+      const v = Number(r.median_high_score ?? r.max_high_score);
+      return Number.isFinite(v) && v >= minScore;
+    });
+  }
+  if (q) {
+    rows = rows.filter((r) => {
+      const blob = [
+        r.cluster_id,
+        r.gene_symbol,
+        r.protein_name_example,
+        r.orthodb_id,
+        r.grape_ortholog,
+        ...(r.species_high || []),
+        ...(r.peak_species || []),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return blob.includes(q);
+    });
+  }
+
+  const total = rows.length;
+  const nPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pageClamped = Math.min(page, nPages);
+  const slice = rows.slice((pageClamped - 1) * PAGE_SIZE, pageClamped * PAGE_SIZE);
+
+  const qsBase = new URLSearchParams();
+  // Preserve fruit browser selection when present
+  if (req.query.fruit) qsBase.set("fruit", String(req.query.fruit));
+  qsBase.set("xsp_mode", modeOk);
+  if (speciesFilter) qsBase.set("xsp_species", speciesFilter);
+  if (q) qsBase.set("xsp_q", q);
+  if (minHigh > 0) qsBase.set("xsp_min_high", String(minHigh));
+  if (hasMinScore) qsBase.set("xsp_min_score", String(minScore));
+  const pageBase = `/hooks?${qsBase.toString()}&`;
+  const prev = pageClamped > 1 ? `${pageBase}xsp_page=${pageClamped - 1}` : "#";
+  const next = pageClamped < nPages ? `${pageBase}xsp_page=${pageClamped + 1}` : "#";
+
+  const th = fruitCrossSummary.thresholds || {};
+  const table = slice
+    .map((r) => {
+      const rank =
+        modeOk === "conservative"
+          ? esc(r.conservation_rank ?? "—")
+          : esc((r.peak_species || [])[0] || "—");
+      const score =
+        modeOk === "conservative"
+          ? fmtScore(r.median_high_score)
+          : fmtScore(r.max_high_score);
+      const grape = r.grape_ortholog
+        ? `<a class="mono" href="/protein/${esc(r.grape_ortholog)}">${esc(r.grape_ortholog)}</a>`
+        : "—";
+      const highs = (r.species_high || []).map((s) => esc(s)).join(", ") || "—";
+      const members = Object.entries(r.members || {})
+        .slice(0, 6)
+        .map(([s, m]) => {
+          const id = m?.protein_id
+            ? `<a class="mono" href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(m.protein_id)}/entry" target="_blank" rel="noopener">${esc(m.protein_id)}</a>`
+            : "—";
+          return `<span class="muted">${esc(s)}</span> ${id}` +
+            (m?.tier ? ` <span class="tier ${esc(m.tier)}">${esc(m.tier)}</span>` : "");
+        })
+        .join("<br/>");
+      return `<tr>
+        <td>${rank}</td>
+        <td class="mono">${esc(r.gene_symbol || "—")}</td>
+        <td><span class="muted">${esc(r.key_type || "")}</span><br/><span class="mono">${esc((r.cluster_id || "").slice(0, 42))}</span></td>
+        <td>${esc(r.n_species_high)} / ${esc(r.n_species_present)}</td>
+        <td>${score}</td>
+        <td class="muted">${highs}</td>
+        <td>${grape}</td>
+        <td class="muted">${esc((r.protein_name_example || "").slice(0, 64) || "—")}</td>
+        <td>${members || "—"}</td>
+      </tr>`;
+    })
+    .join("");
+
+  const speciesOpts = [
+    `<option value="">Any</option>`,
+    ...speciesList.map(
+      (s) =>
+        `<option value="${esc(s)}" ${s === speciesFilter ? "selected" : ""}>${esc(s)}</option>`
+    ),
+  ].join("");
+
+  return `
+    <div class="card" id="fruit-cross-species">
+      <h2>Fruit cross-species high-score comparison</h2>
+      <p class="muted">Near-ortholog / gene-proxy clusters across the <strong>${esc(
+        fruitCrossSummary.n_panel_species
+      )}</strong> scored fruit-crop proteomes.
+      Conservative (≥${esc(th.min_species_conserved)} species Tier A∪B):
+      <strong>${esc(fruitCrossSummary.n_conservative)}</strong>.
+      Species-specific (≤${esc(th.max_species_specific)} high;
+      panel-contrast ${esc(fruitCrossSummary.n_species_specific_panel_contrast)},
+      orphan-high ${esc(fruitCrossSummary.n_species_specific_orphan_high)}):
+      <strong>${esc(fruitCrossSummary.n_species_specific)}</strong>.
+      OrthoDB-linked species in panel: ${esc(fruitCrossSummary.n_species_with_orthodb_ab)}.
+      Methods: <span class="mono">data/fruit_crops/cross_species/README.md</span>.
+      ${esc(fruitCrossSummary.honesty || "")}</p>
+      <form method="get" action="/hooks" class="inline" style="flex-wrap:wrap;gap:0.5rem">
+        ${req.query.fruit ? `<input type="hidden" name="fruit" value="${esc(String(req.query.fruit))}"/>` : ""}
+        <label>Table
+          <select name="xsp_mode">
+            <option value="conservative" ${modeOk === "conservative" ? "selected" : ""}>Conservative</option>
+            <option value="species_specific" ${modeOk === "species_specific" ? "selected" : ""}>Species-specific</option>
+          </select>
+        </label>
+        <label>Species
+          <select name="xsp_species">${speciesOpts}</select>
+        </label>
+        <label>Min spp high
+          <input name="xsp_min_high" type="number" min="0" step="1" value="${minHigh > 0 ? esc(minHigh) : ""}" style="width:4rem"/>
+        </label>
+        <label>Min score
+          <input name="xsp_min_score" type="number" min="0" max="1" step="0.01" value="${hasMinScore ? esc(minScore) : ""}" style="width:5rem"/>
+        </label>
+        <label>Search
+          <input name="xsp_q" value="${esc(q)}" placeholder="gene / OrthoDB / species"/>
+        </label>
+        <button type="submit">Filter</button>
+      </form>
+    </div>
+    <div class="card" style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>${modeOk === "conservative" ? "Rank" : "Peak"}</th>
+          <th>Gene</th><th>Cluster</th><th>High / present</th>
+          <th>${modeOk === "conservative" ? "Median high" : "Max high"}</th>
+          <th>High species</th><th>Grape ortholog</th><th>Name</th><th>Members</th>
+        </tr></thead>
+        <tbody>${table || `<tr><td colspan="9" class="muted">No rows match filters (UI browse slice; full TSV under data/fruit_crops/cross_species/).</td></tr>`}</tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <a class="btn secondary" href="${esc(prev)}">← Prev</a>
+      <span class="muted">Page ${pageClamped} / ${nPages} · ${total} rows
+        (browse cap; full tables in deposit TSV.gz)</span>
+      <a class="btn secondary" href="${esc(next)}">Next →</a>
+    </div>`;
+}
+
 function cropBrowsePanel({
   cropDb,
   join,
@@ -2152,10 +2381,13 @@ app.get("/hooks", (req, res) => {
       Grape-specific Tier A/B: <strong>${esc(po.grape_specific_ab)}</strong>.</p></div>`
     : "";
 
+  const fruitCrossPanel = fruitCrossSpeciesPanel(req);
+
   const body = `
     <div class="card"><h2>Cross-crop condensatome hooks</h2>
     <p class="muted">Curated family anchors plus OrthoDB-joined Ath/rice/<strong>soybean</strong>/<strong>tomato</strong> columns on grape rows.
-    Crop atlases under <span class="mono">data/second_crop/</span>; fruit trees under <span class="mono">data/fruit_crops/</span>;
+    Crop atlases under <span class="mono">data/second_crop/</span>; fruit trees under <span class="mono">data/fruit_crops/</span>
+    (incl. <a href="#fruit-cross-species">cross-species high-score comparison</a>);
     conserved overlap under <span class="mono">data/cross_crop/</span>.</p></div>
     ${conservedCard}
     ${hookCards || `<p class="muted">No hooks in meta — load data/cross_crop_hooks.json via enrich_orthologs.py</p>`}
@@ -2167,8 +2399,30 @@ app.get("/hooks", (req, res) => {
     ${tomPanel}
     <h2 style="font-family:var(--font-display);margin-top:1.5rem">Fruit-crop condensatomes</h2>
     ${fruitNav}
-    ${fruitPanel}`;
+    ${fruitPanel}
+    <h2 style="font-family:var(--font-display);margin-top:1.5rem">Fruit cross-species comparison</h2>
+    ${fruitCrossPanel}`;
   res.type("html").send(layout("Cross-crop", body));
+});
+
+app.get("/api/fruit-cross-species", (req, res) => {
+  if (!fruitCrossSummary) {
+    return res.status(404).json({
+      ok: false,
+      error: "Fruit cross-species deposit not loaded",
+      hint: "python3 scripts/analyze_fruit_cross_species.py",
+    });
+  }
+  const mode = String(req.query.mode || "summary").trim().toLowerCase();
+  if (mode === "browse" && fruitCrossBrowse) {
+    return res.json({ ok: true, summary: fruitCrossSummary, browse: fruitCrossBrowse });
+  }
+  res.json({
+    ok: true,
+    summary: fruitCrossSummary,
+    browse_loaded: Boolean(fruitCrossBrowse),
+    ui: "/hooks#fruit-cross-species",
+  });
 });
 
 function scoreForm(resultHtml = "") {

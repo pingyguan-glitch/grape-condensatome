@@ -1,5 +1,16 @@
 # Release notes
 
+## v1.7.0 (2026-11-27)
+
+Fruit-crop cross-species high-score comparison layer (no re-scoring; no Zenodo touch).
+
+- `scripts/analyze_fruit_cross_species.py` — reads the 18 scored `data/fruit_crops/*_condensatome.sqlite` deposits; groups near-orthologs by OrthoDB → grape join → gene-symbol proxy → singleton.
+- Deposits under `data/fruit_crops/cross_species/`: `conservative_candidates.tsv.gz`, `species_specific_peaks.tsv.gz`, `cluster_members.tsv.gz`, `summary.json`, `browse.json`, methods `README.md`.
+- Thresholds (documented): **conservative** = Tier A∪B in ≥5 panel species; **species-specific** = high in ≤2 species (panel-contrast when present in ≥3, else orphan-high).
+- UI `/hooks#fruit-cross-species` — filterable conservative / species-specific table (species, conservation rank / peak, min score, search); `/api/fruit-cross-species`; `/api/health.second_crop.fruit_crops.cross_species`.
+- Honesty: OrthoDB eukaryote groups + gene proxies are approximations; OrthoDB-sparse proteomes enrich orphan-high peaks; ranks are hypotheses from grape-trained transfer.
+- Headline: conservative clusters **1438** (almost all OrthoDB); species-specific **73 336** (panel-contrast **1675**, orphan-high **71 661**); OrthoDB-linked high species in panel **12** / 18.
+
 ## v1.6.0 (2026-11-27)
 
 Multi-species fruit-tree / fruit-crop condensatome scoring pipeline.
