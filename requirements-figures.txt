@@ -1,0 +1,5 @@
+# Optional plotting stack for Supplemental Figures S1–S5
+# (scripts/generate_supp_figures.py). Core PlantLLPS remains stdlib-only.
+matplotlib==3.10.8
+# numpy is pulled in by matplotlib; pin for bit-stable installs:
+numpy==2.2.6

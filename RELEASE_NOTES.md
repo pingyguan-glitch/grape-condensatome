@@ -1,5 +1,13 @@
 # Release notes
 
+## v1.5.3 (2026-11-27)
+
+Supplemental Figures S1–S5 for the NAR Database manuscript.
+
+- Generator `scripts/generate_supp_figures.py` (+ pinned `requirements-figures.txt`) deposits PNG/PDF under `docs/figures/supp/` with `LEGENDS.md`.
+- S1 stratified CV/gold ROC (in-sample caveat); S2 fair leave-gold-out / family / Ath→non_ath_crop; S3 feature-ablation + F6HET4 SHAP; S4 proteome score histogram; S5 stress DE × Tier A∪B enrichment + modules.
+- Linked from `docs/MANUSCRIPT.md` and indexed in `README.md`.
+
 ## v1.5.2 (2026-11-27)
 
 Cross-crop conserved condensatome + tomato third-crop atlas.

@@ -41,6 +41,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Cross-crop conserved (v1.5.2) | `data/cross_crop/` | Grape↔soy↔Ath Tier A∪B OrthoDB overlap + Ath score deposit |
 | Tomato third crop (v1.5.2) | `data/second_crop/tomato_*` | UP000004994 scores + grape `ortholog_sly*`; UI `/hooks` |
 | NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.x atlas + cross-crop/tomato deposits; Zenodo DOI pending |
+| Supplemental figures S1–S5 (v1.5.3) | [`docs/figures/supp/`](./docs/figures/supp/) | PNG/PDF + [`LEGENDS.md`](./docs/figures/supp/LEGENDS.md); regenerate via `scripts/generate_supp_figures.py` (`requirements-figures.txt`) |
 
 ## Honesty (read before citing metrics)
 
@@ -228,6 +229,7 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 **`v1.5.0`** = stress GO/keyword deep dive + STRING/stress hubs + VIT multi-accession score deltas.
 **`v1.5.1`** = family enrichment + comparator disagreement + structure–score (UI `/analyses`).
 **`v1.5.2`** = conserved grape↔soy↔Ath Tier A∪B + tomato third-crop condensatome.
+**`v1.5.3`** = Supplemental Figures S1–S5 (PNG/PDF + generator).
 
 ## Still open (not claimed done)
 
