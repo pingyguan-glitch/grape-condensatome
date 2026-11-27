@@ -1,0 +1,11 @@
+{
+  "slug": "citrus_clementina",
+  "species": "Citrus clementina",
+  "proteome": "UP000030687",
+  "n_crop_proteins": 30104,
+  "n_crop_orthodb_rows": 31352,
+  "n_with_grape_ortholog": 15627,
+  "n_with_ath_via_grape": 12016,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

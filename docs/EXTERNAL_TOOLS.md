@@ -111,6 +111,21 @@ PlantLLPS v13 with composition-proxy disorder; tiers recalibrated per crop prote
 If tomato FASTA download fails after retries: document the blocker and
 `python3 scripts/write_tomato_schema_stub.py --blocker "…"`.
 
+## Fruit-crop condensatomes (multi-species)
+
+```bash
+python3 scripts/score_fruit_crop_proteomes.py --list
+python3 scripts/score_fruit_crop_proteomes.py --all
+# optional fruit→grape OrthoDB (+ Ath via grape); crop DB only:
+python3 scripts/enrich_fruit_crop_orthologs.py --all
+```
+
+Pinned UniProt IDs live in `data/fruit_crops/species_manifest.yaml`. Deposits under
+`data/fruit_crops/` (SQLite + summary/index; FASTA/TSV.gz gitignored). UI: `/hooks`
+fruit-crop panel. Uses the same grape-trained PlantLLPS v13 composition-proxy path as
+second-crop; **not** species-retrained. Species without a usable UniProt proteome are
+listed in the manifest `unavailable` block (no invented tables).
+
 ## Fair NAR+ benchmark suite
 
 Leakage-controlled same-set comparison (PlantLLPS vs PSAP / LLPhyScore / PLAAC-approx /

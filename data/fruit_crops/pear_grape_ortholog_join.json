@@ -1,0 +1,11 @@
+{
+  "slug": "pear",
+  "species": "Pyrus ussuriensis x Pyrus communis",
+  "proteome": "UP000327157",
+  "n_crop_proteins": 39683,
+  "n_crop_orthodb_rows": 41937,
+  "n_with_grape_ortholog": 28696,
+  "n_with_ath_via_grape": 21723,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

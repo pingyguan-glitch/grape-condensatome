@@ -1,0 +1,32 @@
+{
+  "crop": "strawberry",
+  "label": "Strawberry",
+  "species": "Fragaria ananassa",
+  "proteome": "UP001783032",
+  "taxon": 3747,
+  "n_fasta_parsed": 76950,
+  "n_scored": 76950,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 3315,
+    "B": 8949,
+    "C": 28282,
+    "D": 36404
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8288166408560668,
+    "score_C": 0.39259506560529717,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 224.3,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "strawberry_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Fragaria ananassa (UP001783032). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model. Note: Fragaria vesca has no UniProt proteome; cultivated strawberry used.",
+  "mean_score": 0.444412,
+  "note": "Fragaria vesca has no UniProt proteome; cultivated strawberry used.",
+  "ok": true,
+  "slug": "strawberry"
+}

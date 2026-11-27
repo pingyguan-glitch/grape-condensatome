@@ -1,0 +1,11 @@
+{
+  "slug": "pineapple",
+  "species": "Ananas comosus",
+  "proteome": "UP000515123",
+  "n_crop_proteins": 29488,
+  "n_crop_orthodb_rows": 29712,
+  "n_with_grape_ortholog": 23568,
+  "n_with_ath_via_grape": 17793,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

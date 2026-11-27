@@ -1,0 +1,11 @@
+{
+  "slug": "banana",
+  "species": "Musa acuminata subsp. malaccensis",
+  "proteome": "UP000012960",
+  "n_crop_proteins": 37776,
+  "n_crop_orthodb_rows": 40347,
+  "n_with_grape_ortholog": 25671,
+  "n_with_ath_via_grape": 20283,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

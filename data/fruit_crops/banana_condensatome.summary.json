@@ -1,0 +1,32 @@
+{
+  "crop": "banana",
+  "label": "Banana",
+  "species": "Musa acuminata subsp. malaccensis",
+  "proteome": "UP000012960",
+  "taxon": 214687,
+  "n_fasta_parsed": 37776,
+  "n_scored": 37776,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1609,
+    "B": 4573,
+    "C": 13746,
+    "D": 17848
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8480045894067599,
+    "score_C": 0.42382629043288045,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 109.9,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "banana_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Musa acuminata subsp. malaccensis (UP000012960). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.469283,
+  "note": null,
+  "ok": true,
+  "slug": "banana"
+}

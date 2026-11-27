@@ -1,0 +1,32 @@
+{
+  "crop": "fig",
+  "label": "Fig",
+  "species": "Ficus carica",
+  "proteome": "UP001187192",
+  "taxon": 3494,
+  "n_fasta_parsed": 43146,
+  "n_scored": 43146,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1924,
+    "B": 3968,
+    "C": 16754,
+    "D": 20500
+  },
+  "tier_cutoffs": {
+    "score_A": 0.838441649716988,
+    "score_C": 0.42746732413239247,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 99.6,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "fig_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Ficus carica (UP001187192). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.465402,
+  "note": null,
+  "ok": true,
+  "slug": "fig"
+}

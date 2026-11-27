@@ -1,0 +1,11 @@
+{
+  "slug": "blackberry",
+  "species": "Rubus argutus",
+  "proteome": "UP001457282",
+  "n_crop_proteins": 38432,
+  "n_crop_orthodb_rows": 39955,
+  "n_with_grape_ortholog": 0,
+  "n_with_ath_via_grape": 0,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

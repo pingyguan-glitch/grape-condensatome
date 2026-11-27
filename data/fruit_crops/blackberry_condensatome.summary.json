@@ -1,0 +1,32 @@
+{
+  "crop": "blackberry",
+  "label": "Southern blackberry",
+  "species": "Rubus argutus",
+  "proteome": "UP001457282",
+  "taxon": 59490,
+  "n_fasta_parsed": 38432,
+  "n_scored": 38432,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1714,
+    "B": 3883,
+    "C": 14508,
+    "D": 18327
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8337491531856533,
+    "score_C": 0.3910133862034476,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 91.8,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "blackberry_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Rubus argutus (UP001457282). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model. Note: Rubus idaeus (raspberry) has no UniProt proteome; R. argutus used.",
+  "mean_score": 0.4428,
+  "note": "Rubus idaeus (raspberry) has no UniProt proteome; R. argutus used.",
+  "ok": true,
+  "slug": "blackberry"
+}

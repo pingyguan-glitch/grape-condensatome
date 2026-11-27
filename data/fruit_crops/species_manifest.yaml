@@ -1,0 +1,254 @@
+# Multi-species fruit-tree / fruit-crop condensatome manifest.
+# UniProt proteome IDs pinned after live REST lookup (2026-11-27).
+# Scores: grape-trained PlantLLPS v13 (composition-proxy disorder) — NOT species-retrained.
+#
+# status:
+#   score   — download FASTA + score + deposit under data/fruit_crops/
+#   link    — already deposited elsewhere (soybean/tomato/grape); index only
+#   skip    — no usable UniProt reference / near-complete proteome; document failure
+
+version: 1
+model: model_formal.json
+model_note: >
+  Grape-trained PlantLLPS v13 hybrid with composition-proxy disorder.
+  Tier cutoffs recalibrated per proteome. Not species-specific retrained weights.
+out_dir: data/fruit_crops
+honesty: >
+  Cross-species transfer of grape-trained PlantLLPS. OrthoDB grape joins are
+  eukaryote-level and can be broad. Do not treat ranks as experimental LLPS calls.
+
+species:
+  # --- keep existing grape / soybean / tomato joins ---
+  - slug: grape
+    label: Grape
+    species: Vitis vinifera
+    taxon: 29760
+    proteome: UP000009183
+    status: link
+    deposit: data/grape_condensatome.sqlite
+    odb_key: vvi
+    note: Primary atlas (already scored).
+
+  - slug: soybean
+    label: Soybean
+    species: Glycine max
+    taxon: 3847
+    proteome: UP000008827
+    status: link
+    deposit: data/second_crop/soybean_condensatome.sqlite
+    odb_key: gma
+    gene_prefixes: [GLYMA, Glyma, LOC]
+
+  - slug: tomato
+    label: Tomato
+    species: Solanum lycopersicum
+    taxon: 4081
+    proteome: UP000004994
+    status: link
+    deposit: data/second_crop/tomato_condensatome.sqlite
+    odb_key: sly
+    gene_prefixes: [Solyc, LOC]
+
+  # --- fruit trees / major fruit crops (score) ---
+  - slug: apple
+    label: Apple
+    species: Malus domestica
+    taxon: 3750
+    proteome: UP000290289
+    status: score
+    odb_key: mdo
+    gene_prefixes: [MD, LOC]
+    note: UniProt reference proteome (cv. HFTH1).
+
+  - slug: pear
+    label: Pear
+    species: Pyrus ussuriensis x Pyrus communis
+    taxon: 2448454
+    proteome: UP000327157
+    status: score
+    odb_key: pyr
+    gene_prefixes: [LOC, Pyr]
+    note: Closest pear reference; pure Pyrus communis has no UniProt proteome.
+
+  - slug: peach
+    label: Peach
+    species: Prunus persica
+    taxon: 3760
+    proteome: UP000006882
+    status: score
+    odb_key: ppe
+    gene_prefixes: [Prupe, LOC]
+
+  - slug: sweet_cherry
+    label: Sweet cherry
+    species: Prunus avium
+    taxon: 42229
+    proteome: UP000515124
+    status: score
+    odb_key: pav
+    gene_prefixes: [Pav, LOC]
+
+  - slug: citrus_sinensis
+    label: Sweet orange
+    species: Citrus sinensis
+    taxon: 2711
+    proteome: UP000027120
+    status: score
+    odb_key: csi
+    gene_prefixes: [Cs, orange, LOC]
+    note: Classic citrus reference (~44k). Larger Valencia UP000829398 also exists.
+
+  - slug: citrus_clementina
+    label: Clementine
+    species: Citrus clementina
+    taxon: 85681
+    proteome: UP000030687
+    status: score
+    odb_key: ccl
+    gene_prefixes: [Ciclev, LOC]
+
+  - slug: banana
+    label: Banana
+    species: Musa acuminata subsp. malaccensis
+    taxon: 214687
+    proteome: UP000012960
+    status: score
+    odb_key: mac
+    gene_prefixes: [GSMUA, Ma, LOC]
+
+  - slug: strawberry
+    label: Strawberry
+    species: Fragaria ananassa
+    taxon: 3747
+    proteome: UP001783032
+    status: score
+    odb_key: fan
+    gene_prefixes: [Fv, Fa, LOC]
+    note: Fragaria vesca has no UniProt proteome; cultivated strawberry used.
+
+  - slug: blueberry
+    label: Blueberry (Darrow's)
+    species: Vaccinium darrowii
+    taxon: 229202
+    proteome: UP000828048
+    status: score
+    odb_key: vda
+    gene_prefixes: [LOC]
+    note: V. corymbosum has no UniProt proteome; V. darrowii reference used.
+
+  - slug: kiwifruit
+    label: Kiwifruit
+    species: Actinidia chinensis var. chinensis
+    taxon: 1590841
+    proteome: UP000241394
+    status: score
+    odb_key: ach
+    gene_prefixes: [Ach, LOC]
+
+  - slug: avocado
+    label: Avocado
+    species: Persea americana
+    taxon: 3435
+    proteome: UP001234297
+    status: score
+    odb_key: pam
+    gene_prefixes: [LOC]
+
+  - slug: pineapple
+    label: Pineapple
+    species: Ananas comosus
+    taxon: 4615
+    proteome: UP000515123
+    status: score
+    odb_key: aco
+    gene_prefixes: [Aco, LOC]
+
+  - slug: melon
+    label: Melon
+    species: Cucumis melo
+    taxon: 3656
+    proteome: UP001652600
+    status: score
+    odb_key: cme
+    gene_prefixes: [MELO, LOC]
+
+  - slug: date_palm
+    label: Date palm
+    species: Phoenix dactylifera
+    taxon: 42345
+    proteome: UP000228380
+    status: score
+    odb_key: pda
+    gene_prefixes: [LOC]
+
+  - slug: olive
+    label: Olive
+    species: Olea europaea subsp. europaea
+    taxon: 158383
+    proteome: UP000594638
+    status: score
+    odb_key: oeu
+    gene_prefixes: [Oe, LOC]
+
+  - slug: fig
+    label: Fig
+    species: Ficus carica
+    taxon: 3494
+    proteome: UP001187192
+    status: score
+    odb_key: fca
+    gene_prefixes: [LOC]
+
+  - slug: pomegranate
+    label: Pomegranate
+    species: Punica granatum
+    taxon: 22663
+    proteome: UP000233551
+    status: score
+    odb_key: pgr
+    gene_prefixes: [LOC]
+
+  - slug: blackberry
+    label: Southern blackberry
+    species: Rubus argutus
+    taxon: 59490
+    proteome: UP001457282
+    status: score
+    odb_key: rar
+    gene_prefixes: [LOC]
+    note: Rubus idaeus (raspberry) has no UniProt proteome; R. argutus used.
+
+# Documented failures (no inventing deposits)
+unavailable:
+  - slug: plum
+    requested: Prunus domestica
+    taxon: 3758
+    reason: No UniProt proteome for P. domestica. Near-relative P. mume (UP000694861) exists but was not substituted.
+  - slug: raspberry
+    requested: Rubus idaeus
+    taxon: 32285
+    reason: No UniProt proteome. Rubus argutus (blackberry) scored instead as blackberry.
+  - slug: woodland_strawberry
+    requested: Fragaria vesca
+    taxon: 57918
+    reason: No UniProt proteome. Fragaria ananassa scored as strawberry.
+  - slug: highbush_blueberry
+    requested: Vaccinium corymbosum
+    taxon: 69266
+    reason: No UniProt proteome. Vaccinium darrowii scored as blueberry.
+  - slug: mango
+    requested: Mangifera indica
+    taxon: 29780
+    reason: No UniProt proteome available.
+  - slug: papaya
+    requested: Carica papaya
+    taxon: 3649
+    reason: No UniProt proteome available.
+  - slug: watermelon
+    requested: Citrullus lanatus
+    taxon: 3654
+    reason: No UniProt proteome for C. lanatus (C. colocynthis UP001642487 exists but is not watermelon).
+  - slug: pear_communis
+    requested: Pyrus communis
+    taxon: 2326
+    reason: No UniProt proteome for pure P. communis; hybrid P. ussuriensis x P. communis scored as pear.

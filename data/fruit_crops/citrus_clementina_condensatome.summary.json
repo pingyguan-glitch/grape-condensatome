@@ -1,0 +1,32 @@
+{
+  "crop": "citrus_clementina",
+  "label": "Clementine",
+  "species": "Citrus clementina",
+  "proteome": "UP000030687",
+  "taxon": 85681,
+  "n_fasta_parsed": 30104,
+  "n_scored": 30104,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1329,
+    "B": 3289,
+    "C": 11130,
+    "D": 14356
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8380067208779112,
+    "score_C": 0.37703390485154276,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 87.2,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "citrus_clementina_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Citrus clementina (UP000030687). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.43551,
+  "note": null,
+  "ok": true,
+  "slug": "citrus_clementina"
+}
