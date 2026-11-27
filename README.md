@@ -2,13 +2,13 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.3.0-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.4.0-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.3.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.4.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
 
 > Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
@@ -35,11 +35,13 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Stress condensatome modules | `data/stress_modules/` | DE × Tier A∪B enrichment + response modules; UI `/modules` |
 | Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **https://grape-condensatome.apps.grok.bot** (+ local / Render / Railway / Fly fallbacks) |
 | Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
+| Explainability | `data/explainability/` + `plantllps/explain.py` | SHAP-equivalent Ser-rich / charge-block / IDR attributions (gold ∪ Tier A; F6HET4 example) |
 
 ## Honesty (read before citing metrics)
 
 - Default disorder is a **composition proxy** (`data/model_formal.json`). **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed). Optional experimental retrains that *replace* the proxy live under `data/experimental/` (`scripts/retrain_disorder_features.py`) and must not silently replace production weights.
 - **Feature-ablation panels** for Figure 3: `scripts/eval_feature_ablation.py` → `data/benchmarks/feature_ablation_*`.
+- **Explainability (NAR+):** exact logistic SHAP (`φ=w·z`) + companion decomposition + Gly-occlusion windows via `scripts/deposit_explainability.py` → `data/explainability/` (gold ∪ Tier A; protein-page panel). Not KernelSHAP.
 - **AlphaFold pLDDT** summaries + **scored-proteome low-pLDDT segments** via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache; browser-like User-Agent).
 - **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
 - **Soybean second-crop condensatome** (UP000008827) via `scripts/score_second_crop_proteome.py` + `scripts/enrich_second_crop_orthologs.py` → `data/second_crop/` + grape `ortholog_gma*` columns; UI `/hooks`.
@@ -126,6 +128,7 @@ python3 scripts/enrich_stress_rnaseq.py --db data/grape_condensatome.sqlite
 python3 scripts/enrich_stress_condensatome_modules.py   # DE × Tier A∪B + modules
 python3 scripts/enrich_alphafold_plddt.py --segments-only --segments-tier ALL --workers 24
 python3 scripts/enrich_string_neighborhood.py   # Vitis STRING PPI + enrichment
+python3 scripts/deposit_explainability.py       # SHAP/grammar attributions (gold ∪ Tier A)
 ```
 
 Optional metapredict (subset recommended on CPU):
@@ -194,7 +197,8 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 **`v0.6.0`** = Pfam/InterPro domains + IDR tracks, bulk download API, Ensembl Plants link-outs.  
 **`v1.1.1`** = feature ablation + experimental disorder retrains.  
 **`v1.2.0`** = stress DE × condensatome modules (parallel PR).
-**`v1.3.0`** = fair NAR+ benchmark suite + leaderboard (leave-gold-out / family / expanded species).
+**`v1.3.0`** = fair NAR+ benchmark suite + leaderboard (leave-gold-out / family / expanded species).  
+**`v1.4.0`** = explainability SHAP/grammar attributions on protein pages (gold ∪ Tier A).
 
 ## Still open (not claimed done)
 

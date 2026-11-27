@@ -6,9 +6,18 @@ and a GrapeCondensatome SQLite schema. Full proteome scoring and
 production weights trained on LLPSDB plant entries are not included.
 """
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 from .features import FEATURE_NAMES, extract_features
 from .model import PlantLLPSModel
+from .explain import explain_sequence, logistic_shap, grammar_attributions
 
-__all__ = ["FEATURE_NAMES", "extract_features", "PlantLLPSModel", "__version__"]
+__all__ = [
+    "FEATURE_NAMES",
+    "extract_features",
+    "PlantLLPSModel",
+    "explain_sequence",
+    "logistic_shap",
+    "grammar_attributions",
+    "__version__",
+]
