@@ -41,14 +41,14 @@
     },
     {
       "family": "WVD2/WDL",
-      "grape": ["A0ACT1LGI9"],
-      "arabidopsis": ["Q9LZ18"],
+      "grape": ["F6HG33", "F6HN32"],
+      "arabidopsis": ["Q84ZT9", "Q9LZ18"],
       "rice": [],
       "other_crops": {
         "soybean": [],
         "tomato": []
       },
-      "note": "Plant-specific disordered MAP family; top of extended grape screen. Grape ID may be absent from the scored UP000009183 atlas depending on UniProt revision."
+      "note": "Plant-specific disordered MAP family; companion top A0ACT1LGI9 not in current UP000009183 — atlas links deposited WVD2-like accessions"
     }
   ]
 }

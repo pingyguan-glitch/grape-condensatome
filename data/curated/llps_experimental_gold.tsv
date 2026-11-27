@@ -1,0 +1,33 @@
+protein_id	species	gene_symbol	condensate_type	assay_evidence	citation	label	grape_ortholog	in_plantllps_train	notes
+Q9FLP0	Arabidopsis thaliana	MAP65-1	microtubule_bundling_condensate	in_vitro_droplets;c_crit_approx_48nM;MT_aster_nucleation	Sahu et al. 2023	positive	F6HET4	yes	Companion mechanism-matched gold; Ser-rich C-terminal driver
+F6HET4	Vitis vinifera	VvMAP65-1	microtubule_bundling_condensate	ortholog_of_AtMAP65-1;composition_conserved_tail	Sahu et al. 2023; Guan companion MAP/LLPS	positive	F6HET4	yes	Grape ortholog of proven AtMAP65-1 driver; atlas anchor
+A0A0R4J2T3	Glycine max	MAP65-1a	microtubule_bundling_condensate	ortholog_tail_composition_conservation	Sahu et al. 2023; Guan companion MAP/LLPS	positive		yes	Soybean MAP65-1a ortholog in formal train
+O82804	Arabidopsis thaliana	ELF3	thermosensor_prion-like	prion-like_domain_thermosensor;temperature-dependent_condensation	Jung et al. 2020	positive		yes	Companion plant positive
+Q8VZR8	Arabidopsis thaliana	FLOE1	hydration_sensor	hydration-dependent_LLPS;seed_germination_gate	Dorone et al. 2021	positive		yes	AT4G28300
+Q7DZS7	Arabidopsis thaliana	RBGD2	stress_granule_like	heat-induced_LLPS	Zhu et al. 2022	positive		yes	Companion plant positive; RBGD4 AGI still open
+Q8W234	Arabidopsis thaliana	SEUSS	osmotic_stress_condensate	hyperosmotic_stress_condensation	Wang et al. 2022	positive		yes	Companion plant positive
+O04425	Arabidopsis thaliana	FCA	nuclear_RNA_processing	FLL2-promoted_co-condensation	Fang et al. 2019	positive		yes	Companion plant positive
+Q84TD8	Arabidopsis thaliana	FLL2	polyadenylation_condensate	literature_curated_condensate_scaffold	Fang et al. 2019	positive		yes	Literature expansion (train)
+Q0WW84	Arabidopsis thaliana	RBP47B	stress_granule	stress-related_RNA-binding_protein	literature_curated (train note)	positive		yes	Stress RBP; modest expansion
+Q9LIS2	Arabidopsis thaliana	RBG4	RNA_granule	glycine-rich_RBP	literature_curated (train note)	positive		yes	GR-RBP family
+Q9LQI9	Arabidopsis thaliana	UBP1B	stress_granule	polyU-binding_RBP	literature_curated (train note)	positive		yes	SG-associated
+Q9C658	Arabidopsis thaliana	DCP5	processing_body	decapping_condensate_component	literature_curated (train note)	positive		yes	P-body component
+Q9LDX1	Arabidopsis thaliana	SGS3	RNA_silencing_condensate	RNA_silencing_condensate-associated	literature_curated (train note)	positive		yes	Mechanism-associated; not primary droplet paper
+Q9FIX7	Arabidopsis thaliana	TZP	photobody_associated	tandem_zinc-knuckle_photobody-associated	literature_curated (train note)	positive		yes	Photobody-associated
+O23593	Arabidopsis thaliana	RGGB	nuclear_RBP_condensate	RGG-repeat_nuclear_RBP	literature_curated (train note)	positive		yes	RBGD-family related
+P14713	Arabidopsis thaliana	PHYB	photobody	phytochrome_photobody	round_v4 train curation	positive		yes	Photobody; folded chromophore domain — use with mechanism caution
+P43254	Arabidopsis thaliana	COP1	photomorphogenesis_condensate	COP1-SPA_complex	round_v4 train curation	positive		yes	Photomorphogenesis
+Q9S7N5	Arabidopsis thaliana	SPA1	photomorphogenesis_condensate	COP1-SPA_complex	round_v4 train curation	positive		yes	Photomorphogenesis
+Q96525	Arabidopsis thaliana	CRY2	photobody	blue-light_photobody_LLPS	Wang et al. 2021	excluded_mechanism_mismatch		no	Folded-domain oligomerization; held out of IDR-driver training (eval_mechanism_special)
+O43663	Homo sapiens	PRC1	microtubule_bundling_condensate	in_vitro_droplets_with_MAP65-1_study	Sahu et al. 2023	positive		yes	Animal MAP65 ortholog / mechanism control
+Q9ULW0	Homo sapiens	TPX2	spindle_condensate	co-condensation_with_tubulin	King and Petry 2020	positive		yes	Animal mechanism control
+P10636	Homo sapiens	MAPT	neuronal_condensate	in_vitro_LLPS_initiating_aggregation	Wegmann et al. 2018	positive		yes	tau; animal mechanism control
+P35637	Homo sapiens	FUS	RNP_granule	liquid-to-solid_transition	Patel et al. 2015	positive		yes	Animal mechanism control
+P09651	Homo sapiens	HNRNPA1	RNP_granule	LCD_phase_separation	Molliex et al. 2015	positive		yes	Animal mechanism control
+Q9NQI0	Homo sapiens	DDX4	nuage	nuage_phase_transition	Nott et al. 2015	positive		yes	Animal mechanism control
+Q9NP74	Homo sapiens	ZNF207	spindle_assembly_condensate	phase_transition_in_spindle_assembly	Jiang et al. 2015	positive		yes	BuGZ; UniProt Q9NP74 used in reconstructed gold (companion table also cites O43670)
+Q8L3W1	Arabidopsis thaliana	VRN1	nuclear_chromatin_related	LLPSDB_v2_plant_entry	Li et al. 2020 (LLPSDB)	positive		yes	LLPSDB plant PS entry
+F4IS91	Arabidopsis thaliana	EMB1579	nuclear	LLPSDB_v2_plant_entry	Li et al. 2020 (LLPSDB)	positive		yes	RSA1/emb1579
+A0A2K3DA85	Chlamydomonas reinhardtii	EPYC1	pyrenoid	LLPSDB_v2_plant_entry	Li et al. 2020 (LLPSDB)	positive		yes	Algal pyrenoid linker
+P42763	Arabidopsis thaliana	ERD14	dehydrin_stress	LLPSDB_v2_plant_entry	Li et al. 2020 (LLPSDB)	positive		yes	Dehydrin-class LLPSDB entry
+Q84ZT9	Arabidopsis thaliana	WVD2	plant_MAP_scaffold	literature_MAP_family;extreme_disorder	round_v12; Guan companion MAP/LLPS	positive	F6HG33,F6HN32	yes	Plant-specific disordered MAP; companion top hit A0ACT1LGI9 not in current UP000009183 atlas — linked to deposited WVD2-like accessions

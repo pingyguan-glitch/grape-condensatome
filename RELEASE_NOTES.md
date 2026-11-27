@@ -1,10 +1,14 @@
 # Release notes
 
+## v1.0.0 (2026-11-27)
+
+Combined Wave 2 landing on `main`: curated LLPS gold / MAP hold-out (**v0.8.0**), STRING neighborhoods (**v0.9.0**), and soybean second-crop condensatome (**v0.9.1** content). Single coherent atlas release — not a claim of production-complete PlantLLPS.
+
 ## v0.9.1 (2026-11-27)
 
 Second-crop condensatome: **soybean** (*Glycine max*, UniProt **UP000008827**).
 
-Parallel additive layer on `main` **v0.6.0** — versioned **0.9.1** so it does not fight open **v0.8.0** (PR #7 gold/MAP/hold-out) or **v0.9.0** (PR #8 STRING). Not stacked on either PR.
+Originally a parallel additive layer; now merged into **v1.0.0** with gold/MAP + STRING.
 
 - `scripts/score_second_crop_proteome.py` — download + PlantLLPS v13 score (composition-proxy); writes `data/second_crop/soybean_condensatome.{proteome.tsv.gz,sqlite,summary.json}`. Tomato (`--crop tomato`, UP000004994) supported by the same script.
 - **Full proteome scored:** **71 064** proteins (min length 80); tiers A=3 137 / B=7 983 / C=26 235 / D=33 709; ~3.5 min wall on a 4-core CPU.
@@ -12,6 +16,29 @@ Parallel additive layer on `main` **v0.6.0** — versioned **0.9.1** so it does 
 - Join coverage: **16 388 / 25 972** grape proteins with a soybean OrthoDB hit (**16 304** with crop scores); curated MAP65-1 soybean IDs overlay F6HET4 → `A0A0R0GGZ9` (Tier B, score ≈ 0.805).
 - UI `/hooks` expanded: soybean condensatome table (tier filter + pager) + soybean columns on family hooks / protein pages; `/api/health` reports `second_crop`.
 - Honesty: grape-trained weights, not soybean-retrained; OrthoDB groups can be broad; FASTA cache gitignored.
+
+## v0.9.0 (2026-11-27)
+
+Additive **STRING neighborhood + condensatome enrichment** on top of Wave 2 **v0.8.0** (gold/MAP/hold-out).
+
+- `scripts/enrich_string_neighborhood.py` — native *Vitis* STRING (taxid 29760) v12 downloads;
+  UniProt mapping **25 867 / 25 972** (99.6%); 1-hop neighborhoods at combined_score ≥ 400.
+- SQLite: `string_neighborhood` for **Tier A seeds** (~833 deposited seed rows) + `string_id` on mapped proteins
+  (full-proteome neighbor JSON would exceed GitHub's 100 MB SQLite limit); combined DB also keeps curated LLPS gold columns from v0.8.0.
+- UI: protein-page neighborhood snippet + `/network` enrichment table; `/api/health` reports STRING meta.
+- Deposits: `data/string/enrichment_summary.json`, `neighborhood_stats.tsv.gz` (19 523),
+  `top_neighbors.tsv.gz`, `seed_edges.tsv.gz` (44 932), `README.md`.
+- Honest limits: combined score ≠ LLPS evidence (includes textmining); no Ath PPI transfer;
+  seeds = score Tier A (gold overlay is separate).
+
+## v0.8.0 (2026-11-27)
+
+Wave 2 resource-quality: curated LLPS gold, MAP-screen deposit + Spearman ρ, family / transfer AUCs.
+
+- **Curated LLPS gold** — `data/curated/llps_experimental_gold.tsv` (protein ID, species, condensate type, assay/evidence, citation, grape ortholog); `scripts/enrich_curated_llps_gold.py` joins SQLite `llps_gold` / `llps_gold_json`; UI `/gold` + protein-page badge + download `evidence=llps`.
+- **MAP screen deposit** — reconstructed GO:0008017 ∪ KW-Microtubule table under `data/map_screen/` with provenance README; recomputed Spearman ρ vs PlantLLPS / native PSAP / LLPhyScore (`map_screen_spearman.json`). Companion-cited ρ=0.368 retained as manuscript number (original 208-ID PSAP table still not recovered).
+- **Family hold-out / transfer** — `scripts/eval_family_holdout.py` → `data/benchmarks/family_holdout_metrics.json` + README; mean hybrid family-hold-out AUC ≈ **0.833** (13 families); Ath→rice hybrid AUC = **1.00** on tiny n=6 (honesty: small rice slice). Contrasts in-sample gold hybrid AUC ≈ 0.990.
+- Version **0.8.0** (skips 0.7.x to avoid collision with in-flight P1 AF-segments / stress RNA-seq work).
 
 ## v0.6.0 (2026-11-27)
 

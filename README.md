@@ -2,9 +2,9 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 0.9.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+**Version:** 1.0.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
 
-> **v0.9.1** adds a **soybean** second-crop condensatome (`data/second_crop/`, UI `/hooks`) as a parallel additive layer on `main` v0.6.0 — it does not stack on open v0.8.0 / v0.9.0 PRs.
+> **v1.0.0** combines Wave 2 curated gold/MAP/hold-out, STRING neighborhoods, and the soybean second-crop condensatome.
 
 Author: Pingyin Guan (College of Horticulture, China Agricultural University; ORCID [0000-0003-4890-3412](https://orcid.org/0000-0003-4890-3412)).
 
@@ -18,7 +18,9 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Proteome SQLite | `data/grape_condensatome.sqlite` | 25 972 scored rows + UniProt + Expression Atlas |
 | Proteome TSV | `data/grape_condensatome.proteome.tsv` | flat table |
 | Node web UI | `server.js` + `lib/` + `public/` | Express + `node:sqlite` (Node ≥22) |
-| Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + metapredict subset |
+| Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + family hold-out / transfer |
+| Curated LLPS gold | `data/curated/` | experimentally anchored overlay + SQLite/UI badge |
+| MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
 | External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
 | Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | publish-app + Railway/Render/Fly; not GitHub Pages |
 
@@ -31,10 +33,11 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - Side-by-side **PSAP / LLPhyScore / PLAAC-approx** via `scripts/enrich_comparator_scores.py`. Full-proteome native PSAP / LLPhyScore via `scripts/score_psap_proteome.py` and `scripts/score_llphyscore_proteome.py` (external envs; batched + checkpointed).
 - **Pfam / InterPro domains** + **IDR segments** (AF pLDDT&lt;50 ∪ UniProt MobiDB-lite disordered) via `scripts/enrich_domains_idr.py`; protein-page track + Ensembl Plants link-outs.
 - **Bulk download** UI `/download` and `GET /api/download?tier=A&format=tsv|fasta` (optional `family` / `keyword` / `q`).
+- **STRING** Vitis PPI neighborhoods + Tier A∪B enrichment via `scripts/enrich_string_neighborhood.py` (UI `/network`); combined scores are **not** LLPS evidence.
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
-- Gold-standard PlantLLPS AUCs are **partially in-sample** (IDs overlap the training corpus). LLPhyScore / PSAP are out-of-the-box.
+- Gold-standard PlantLLPS AUCs are **partially in-sample** (IDs overlap the training corpus). Prefer **family hold-out / Ath↔rice transfer** metrics in `data/benchmarks/family_holdout_metrics.json`. LLPhyScore / PSAP remain out-of-the-box baselines on the 13+15 gold set.
 - **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
-- The companion **208-protein MAP screen table** (with PSAP columns) is not in this repo; MAP ρ cannot be recomputed until that table is deposited (companion ρ = 0.368).
+- Companion-cited MAP-screen ρ = **0.368** used the unpublished Supplemental Data S1 PSAP table. This repo deposits an **annotation reconstruction** (`data/map_screen/`) and recomputes ρ vs **native proteome PSAP** (annotation set ≈ 0.20) — not a byte-for-byte replication of 0.368.
 
 ## Install
 
@@ -54,8 +57,8 @@ Optional extras / external tools: [`requirements.txt`](./requirements.txt), [`do
 npm install
 npm start
 # → http://127.0.0.1:8765/  (HOST/PORT env; default 0.0.0.0:8765)
-# Routes: /compare, /hooks (Ath/rice + soybean), /download, /protein/:id
-# API:    GET /api/download?tier=A&format=tsv|fasta
+# Routes: /compare, /gold, /map, /hooks (Ath/rice + soybean), /network (STRING), /download, /protein/:id
+# API:    GET /api/download?tier=A&evidence=llps&format=tsv|fasta
 ```
 
 ## Second-crop condensatome (soybean)
@@ -88,6 +91,7 @@ python3 -m plantllps score-proteome \
 
 python3 scripts/enrich_uniprot_annotations.py --db data/grape_condensatome.sqlite
 python3 scripts/enrich_expression_atlas.py --db data/grape_condensatome.sqlite
+python3 scripts/enrich_string_neighborhood.py   # Vitis STRING PPI + enrichment
 ```
 
 Optional metapredict (subset recommended on CPU):

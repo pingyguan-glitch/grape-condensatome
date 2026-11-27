@@ -1,0 +1,656 @@
+{
+  "version": 1,
+  "train_csv": "data/train_formal_v13.csv",
+  "n_train": 162,
+  "n_pos": 76,
+  "n_neg": 86,
+  "family_counts": {
+    "MAP65": {
+      "pos": 11,
+      "neg": 0
+    },
+    "FCA_FLL": {
+      "pos": 2,
+      "neg": 0
+    },
+    "ELF3_thermosensor": {
+      "pos": 1,
+      "neg": 0
+    },
+    "RBGD_RGG": {
+      "pos": 2,
+      "neg": 0
+    },
+    "SEUSS_osmotic": {
+      "pos": 1,
+      "neg": 0
+    },
+    "animal_control": {
+      "pos": 6,
+      "neg": 0
+    },
+    "MAP70_TPX2_SPR1": {
+      "pos": 4,
+      "neg": 0
+    },
+    "stress_RBP_SG": {
+      "pos": 14,
+      "neg": 0
+    },
+    "FLOE1": {
+      "pos": 1,
+      "neg": 0
+    },
+    "P_body": {
+      "pos": 4,
+      "neg": 0
+    },
+    "photobody": {
+      "pos": 7,
+      "neg": 0
+    },
+    "other_positive": {
+      "pos": 2,
+      "neg": 0
+    },
+    "LLPSDB_plant": {
+      "pos": 6,
+      "neg": 3
+    },
+    "dehydrin_COR": {
+      "pos": 6,
+      "neg": 1
+    },
+    "mediator_TF": {
+      "pos": 3,
+      "neg": 0
+    },
+    "WVD2_IQD_MOR1": {
+      "pos": 5,
+      "neg": 0
+    },
+    "evening_complex": {
+      "pos": 1,
+      "neg": 0
+    },
+    "hard_folded_neg": {
+      "pos": 0,
+      "neg": 30
+    },
+    "other_negative": {
+      "pos": 0,
+      "neg": 36
+    },
+    "hard_disordered_neg": {
+      "pos": 0,
+      "neg": 16
+    }
+  },
+  "species_counts": {
+    "other_plant": {
+      "pos": 16,
+      "neg": 20
+    },
+    "arabidopsis": {
+      "pos": 50,
+      "neg": 62
+    },
+    "animal": {
+      "pos": 7,
+      "neg": 1
+    },
+    "rice": {
+      "pos": 3,
+      "neg": 3
+    }
+  },
+  "family_holdout": {
+    "protocol": "holdout_pos_family_plus_shared_negatives",
+    "folds": [
+      {
+        "held_out_family": "ELF3_thermosensor",
+        "skipped": true,
+        "reason": "need \u22652 positives in family",
+        "n_pos_family": 1,
+        "n_neg_family": 0
+      },
+      {
+        "n": 88,
+        "n_pos": 2,
+        "n_neg": 86,
+        "auc_logistic": 0.8546511627906976,
+        "auc_companion": 0.7383720930232558,
+        "auc_hybrid": 0.8255813953488372,
+        "held_out_family": "FCA_FLL",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 2,
+        "test_pos_ids": [
+          "O04425",
+          "Q84TD8"
+        ]
+      },
+      {
+        "held_out_family": "FLOE1",
+        "skipped": true,
+        "reason": "need \u22652 positives in family",
+        "n_pos_family": 1,
+        "n_neg_family": 0
+      },
+      {
+        "n": 92,
+        "n_pos": 6,
+        "n_neg": 86,
+        "auc_logistic": 0.6666666666666666,
+        "auc_companion": 0.7170542635658915,
+        "auc_hybrid": 0.6821705426356589,
+        "held_out_family": "LLPSDB_plant",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 6,
+        "test_pos_ids": [
+          "A0A2K3DA85",
+          "F4IS91",
+          "O22607",
+          "Q05753",
+          "Q8L3W1",
+          "Q9SQK3"
+        ]
+      },
+      {
+        "n": 97,
+        "n_pos": 11,
+        "n_neg": 86,
+        "auc_logistic": 0.9608879492600423,
+        "auc_companion": 0.7748414376321353,
+        "auc_hybrid": 0.9587737843551797,
+        "held_out_family": "MAP65",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 11,
+        "test_pos_ids": [
+          "A0A0R4J2T3",
+          "F6HET4",
+          "Q9FLP0",
+          "A0A067FFA6",
+          "A0A251PPG9",
+          "A0A3Q7HI29",
+          "A0A498K7R4",
+          "A2YEY2",
+          "B6TSQ5",
+          "B6U1C0",
+          "B6U4I4"
+        ]
+      },
+      {
+        "n": 90,
+        "n_pos": 4,
+        "n_neg": 86,
+        "auc_logistic": 0.875,
+        "auc_companion": 0.8313953488372093,
+        "auc_hybrid": 0.9098837209302325,
+        "held_out_family": "MAP70_TPX2_SPR1",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 4,
+        "test_pos_ids": [
+          "Q9ULW0",
+          "F4I2H7",
+          "Q9C9X0",
+          "Q9SJW3"
+        ]
+      },
+      {
+        "n": 90,
+        "n_pos": 4,
+        "n_neg": 86,
+        "auc_logistic": 0.8924418604651163,
+        "auc_companion": 0.6482558139534884,
+        "auc_hybrid": 0.8604651162790697,
+        "held_out_family": "P_body",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 4,
+        "test_pos_ids": [
+          "Q9C658",
+          "A0ACS0ZFQ9",
+          "Q8VZG7",
+          "Q9LTT8"
+        ]
+      },
+      {
+        "n": 88,
+        "n_pos": 2,
+        "n_neg": 86,
+        "auc_logistic": 0.9011627906976745,
+        "auc_companion": 0.8430232558139535,
+        "auc_hybrid": 0.9127906976744186,
+        "held_out_family": "RBGD_RGG",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 2,
+        "test_pos_ids": [
+          "Q7DZS7",
+          "O23593"
+        ]
+      },
+      {
+        "held_out_family": "SEUSS_osmotic",
+        "skipped": true,
+        "reason": "need \u22652 positives in family",
+        "n_pos_family": 1,
+        "n_neg_family": 0
+      },
+      {
+        "n": 91,
+        "n_pos": 5,
+        "n_neg": 86,
+        "auc_logistic": 0.9790697674418605,
+        "auc_companion": 0.8255813953488372,
+        "auc_hybrid": 0.9651162790697675,
+        "held_out_family": "WVD2_IQD_MOR1",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 5,
+        "test_pos_ids": [
+          "Q84ZT9",
+          "Q8GYX9",
+          "Q94FN2",
+          "Q9SF32",
+          "Q9SI19"
+        ]
+      },
+      {
+        "n": 92,
+        "n_pos": 6,
+        "n_neg": 86,
+        "auc_logistic": 0.7868217054263565,
+        "auc_companion": 0.9147286821705426,
+        "auc_hybrid": 0.8585271317829457,
+        "held_out_family": "animal_control",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 6,
+        "test_pos_ids": [
+          "O43663",
+          "P09651",
+          "P10636",
+          "P35637",
+          "Q9NP74",
+          "Q9NQI0"
+        ]
+      },
+      {
+        "n": 92,
+        "n_pos": 6,
+        "n_neg": 86,
+        "auc_logistic": 0.26356589147286824,
+        "auc_companion": 0.877906976744186,
+        "auc_hybrid": 0.6492248062015504,
+        "held_out_family": "dehydrin_COR",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 6,
+        "test_pos_ids": [
+          "P42763",
+          "Q06738",
+          "P30185",
+          "P31168",
+          "P42759",
+          "Q9SYI0"
+        ]
+      },
+      {
+        "held_out_family": "evening_complex",
+        "skipped": true,
+        "reason": "need \u22652 positives in family",
+        "n_pos_family": 1,
+        "n_neg_family": 0
+      },
+      {
+        "held_out_family": "hard_disordered_neg",
+        "skipped": true,
+        "reason": "need \u22652 positives in family",
+        "n_pos_family": 0,
+        "n_neg_family": 16
+      },
+      {
+        "held_out_family": "hard_folded_neg",
+        "skipped": true,
+        "reason": "need \u22652 positives in family",
+        "n_pos_family": 0,
+        "n_neg_family": 30
+      },
+      {
+        "n": 89,
+        "n_pos": 3,
+        "n_neg": 86,
+        "auc_logistic": 0.8449612403100775,
+        "auc_companion": 0.5852713178294574,
+        "auc_hybrid": 0.810077519379845,
+        "held_out_family": "mediator_TF",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 3,
+        "test_pos_ids": [
+          "Q7XYY2",
+          "Q9ASS3",
+          "Q9FZ09"
+        ]
+      },
+      {
+        "held_out_family": "other_negative",
+        "skipped": true,
+        "reason": "need \u22652 positives in family",
+        "n_pos_family": 0,
+        "n_neg_family": 36
+      },
+      {
+        "n": 88,
+        "n_pos": 2,
+        "n_neg": 86,
+        "auc_logistic": 0.877906976744186,
+        "auc_companion": 0.8372093023255814,
+        "auc_hybrid": 0.872093023255814,
+        "held_out_family": "other_positive",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 2,
+        "test_pos_ids": [
+          "Q9LDX1",
+          "Q9FG31"
+        ]
+      },
+      {
+        "n": 93,
+        "n_pos": 7,
+        "n_neg": 86,
+        "auc_logistic": 0.7591362126245847,
+        "auc_companion": 0.6345514950166113,
+        "auc_hybrid": 0.7342192691029901,
+        "held_out_family": "photobody",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 7,
+        "test_pos_ids": [
+          "Q9FIX7",
+          "O24646",
+          "Q9FXA2",
+          "P14713",
+          "P43254",
+          "Q9S7N5",
+          "Q9SSA7"
+        ]
+      },
+      {
+        "n": 100,
+        "n_pos": 14,
+        "n_neg": 86,
+        "auc_logistic": 0.8106312292358804,
+        "auc_companion": 0.7142857142857143,
+        "auc_hybrid": 0.7898671096345515,
+        "held_out_family": "stress_RBP_SG",
+        "skipped": false,
+        "protocol": "holdout_pos_family_plus_shared_negatives",
+        "n_pos_family": 14,
+        "test_pos_ids": [
+          "Q0WW84",
+          "Q9LIS2",
+          "Q9LQI9",
+          "Q10QA5",
+          "Q6Z7B0",
+          "Q9SYG4",
+          "Q03250",
+          "Q03251",
+          "Q9LJE5",
+          "Q9LK35",
+          "Q9ZQ38",
+          "Q9C5X8",
+          "Q9C5X9",
+          "Q9LIN3"
+        ]
+      }
+    ],
+    "n_families_evaluated": 13,
+    "mean_auc_logistic": 0.8056079579335393,
+    "mean_auc_companion": 0.764805930503605,
+    "mean_auc_hybrid": 0.8329838765885278
+  },
+  "species_transfer": [
+    {
+      "n": 6,
+      "n_pos": 3,
+      "n_neg": 3,
+      "auc_logistic": 0.8888888888888888,
+      "auc_companion": 0.8888888888888888,
+      "auc_hybrid": 1.0,
+      "train_species": "arabidopsis",
+      "test_species": "rice",
+      "skipped": false,
+      "n_train": 133,
+      "test_ids": [
+        "A2YEY2",
+        "Q10QA5",
+        "Q6Z7B0",
+        "Q10CE7",
+        "Q5N725",
+        "Q7X8A1"
+      ]
+    },
+    {
+      "n": 36,
+      "n_pos": 16,
+      "n_neg": 20,
+      "auc_logistic": 0.975,
+      "auc_companion": 0.784375,
+      "auc_hybrid": 0.971875,
+      "train_species": "arabidopsis",
+      "test_species": "other_plant",
+      "skipped": false,
+      "n_train": 116,
+      "test_ids": [
+        "A0A0R4J2T3",
+        "F6HET4",
+        "Q7DZS7",
+        "A0A067FFA6",
+        "A0A251PPG9",
+        "A0A3Q7HI29",
+        "A0A498K7R4",
+        "B6TSQ5",
+        "B6U1C0",
+        "B6U4I4",
+        "Q0WW84",
+        "Q7XYY2",
+        "A0ACS0ZFQ9",
+        "Q03250",
+        "Q03251",
+        "Q06738",
+        "A0ACT1EZG2",
+        "P04350",
+        "P0DP23",
+        "P04778",
+        "P57751",
+        "P83755",
+        "Q42589",
+        "A0A0R0F8K1",
+        "A0A1P8AM70",
+        "A0ACS1AHG4",
+        "O65375",
+        "Q38913",
+        "Q3ECQ3",
+        "Q42560",
+        "P59226",
+        "P59259",
+        "Q39026",
+        "Q39027",
+        "P56757",
+        "P56761"
+      ]
+    },
+    {
+      "n": 112,
+      "n_pos": 50,
+      "n_neg": 62,
+      "auc_logistic": 0.8370967741935483,
+      "auc_companion": 0.7448387096774194,
+      "auc_hybrid": 0.8364516129032258,
+      "train_species": "other_plant",
+      "test_species": "arabidopsis",
+      "skipped": false,
+      "n_train": 40,
+      "test_ids": [
+        "O04425",
+        "O82804",
+        "Q8W234",
+        "Q9FLP0",
+        "O23593",
+        "Q84TD8",
+        "Q8VZR8",
+        "Q9C658",
+        "Q9FIX7",
+        "Q9LDX1",
+        "Q9LIS2",
+        "Q9LQI9",
+        "A0A2K3DA85",
+        "F4IS91",
+        "O22607",
+        "P42763",
+        "Q05753",
+        "Q8L3W1",
+        "Q9SQK3",
+        "O24646",
+        "Q9ASS3",
+        "Q9FXA2",
+        "Q9FZ09",
+        "Q84ZT9",
+        "Q8GYX9",
+        "Q94FN2",
+        "Q9SF32",
+        "Q9SI19",
+        "Q8VZG7",
+        "Q9LTT8",
+        "Q9SYG4",
+        "P14713",
+        "P43254",
+        "Q9S7N5",
+        "Q9SSA7",
+        "Q9LJE5",
+        "Q9LK35",
+        "Q9ZQ38",
+        "Q9SNB4",
+        "F4I2H7",
+        "Q9C9X0",
+        "Q9SJW3",
+        "Q9C5X8",
+        "Q9C5X9",
+        "Q9FG31",
+        "Q9LIN3",
+        "P30185",
+        "P31168",
+        "P42759",
+        "Q9SYI0",
+        "P25858",
+        "Q0WL56",
+        "Q9FLN4",
+        "Q9FNK4",
+        "O48549",
+        "P10795",
+        "P24100",
+        "P25696",
+        "P29514",
+        "P49040",
+        "Q96292",
+        "Q96528",
+        "Q9CAV6",
+        "Q9FZ47",
+        "Q9LD57",
+        "Q9M658",
+        "Q9M9S3",
+        "Q9SI37",
+        "Q9SJB3",
+        "P17333",
+        "P18566",
+        "Q9C5C2",
+        "Q9C5C5",
+        "Q9FNN5",
+        "Q9LEW3",
+        "Q9C5C0",
+        "Q9C5C1",
+        "Q9FJH7",
+        "Q9LZF6",
+        "F4IPK9",
+        "F4J0B5",
+        "O22194",
+        "P26569",
+        "Q9FS16",
+        "Q9FZ35",
+        "Q9FZA2",
+        "Q9LHF1",
+        "Q9LZJ7",
+        "Q9STN0",
+        "Q9T0K5",
+        "Q9XIP3",
+        "Q9ZT16",
+        "Q94B78",
+        "Q9LXS6",
+        "Q9SUS3",
+        "Q9C5U8",
+        "Q9M7A8",
+        "Q9SAU2",
+        "Q9SAU5",
+        "Q9SKT0",
+        "O48946",
+        "Q9FIR9",
+        "Q9M9A8",
+        "P22954",
+        "Q9LF37",
+        "Q9LKR0",
+        "Q9LKR3",
+        "Q9STW6",
+        "Q9STX5",
+        "Q9M7A0",
+        "O03042",
+        "Q9SUI4"
+      ]
+    }
+  ],
+  "in_sample_gold_production_model": {
+    "available": true,
+    "caveat": "partially_in_sample_gold_ids_overlap_train",
+    "n": 28,
+    "auc_logistic": 0.9794871794871794,
+    "auc_companion": 0.9641025641025641,
+    "auc_hybrid": 0.9897435897435898,
+    "ids": [
+      "Q9FLP0",
+      "O82804",
+      "Q8VZR8",
+      "Q7DZS7",
+      "Q8W234",
+      "O04425",
+      "P35637",
+      "O43663",
+      "Q9ULW0",
+      "P09651",
+      "Q9NQI0",
+      "P10636",
+      "Q9NP74",
+      "A0ACT1EZG2",
+      "P04350",
+      "P0DP23",
+      "P25858",
+      "Q0WL56",
+      "Q9FLN4",
+      "Q9FNK4",
+      "P29514",
+      "Q96292",
+      "P24100",
+      "P25696",
+      "P04778",
+      "O48549",
+      "P49040",
+      "Q96528"
+    ]
+  },
+  "honesty": "Family hold-out and Ath/rice transfer AUCs are the appropriate transfer claims. Production-model AUCs on the reconstructed 13+15 gold set are partially in-sample (gold IDs overlap train) and must not be advertised as independent transfer performance. External baselines on that gold set remain LLPhyScore \u2248 0.769 and native PSAP \u2248 0.718."
+}

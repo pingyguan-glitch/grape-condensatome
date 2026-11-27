@@ -26,3 +26,7 @@ data/benchmarks/llphyscore_proteome.shard*.checkpoint.json
 data/benchmarks/llphyscore_proteome.shard*.tsv
 data/benchmarks/llphyscore_proteome.shard*.tsv.summary.json
 data/domains/interpro_pfam_backfill.checkpoint.json
+# STRING bulk downloads (re-fetch via enrich_string_neighborhood.py)
+data/string/*.protein.links*.txt.gz
+data/string/*.protein.aliases*.txt.gz
+data/string/*.protein.info*.txt.gz
