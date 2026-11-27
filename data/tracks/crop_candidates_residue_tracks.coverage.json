@@ -1,0 +1,34 @@
+{
+  "candidates": "/agent/repos/grape-condensatome/data/fruit_crops/cross_species/conservative_candidates.tsv.gz",
+  "coverage": {
+    "n_proteins": 9633,
+    "n_with_both": 8819,
+    "n_with_disorder": 9633,
+    "n_with_plddt": 8819,
+    "schema_version": 1,
+    "updated_at_utc": "2026-11-27T08:13:44Z"
+  },
+  "include_peaks": false,
+  "n_unique_ids": 9633,
+  "plddt": {
+    "cache_dir": "/agent/repos/grape-condensatome/data/alphafold/candidates",
+    "elapsed_sec": 1877.7,
+    "n_fail": 814,
+    "n_ok": 8819,
+    "n_pending": 9633,
+    "n_requested": 9633,
+    "source": "alphafold.ebi.ac.uk confidence JSON"
+  },
+  "role": "NAR A2 crop high-score candidate tracks",
+  "species": {
+    "banana": 1113,
+    "date_palm": 1124,
+    "grape": 1432,
+    "kiwifruit": 1222,
+    "olive": 1266,
+    "peach": 1158,
+    "pear": 1213,
+    "pineapple": 1105
+  },
+  "tracks_db": "/agent/repos/grape-condensatome/data/tracks/crop_candidates_residue_tracks.sqlite"
+}

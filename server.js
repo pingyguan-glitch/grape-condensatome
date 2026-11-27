@@ -2604,7 +2604,7 @@ function fruitCrossSpeciesPanel(req) {
         .slice(0, 6)
         .map(([s, m]) => {
           const id = m?.protein_id
-            ? `<a class="mono" href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(m.protein_id)}/entry" target="_blank" rel="noopener">${esc(m.protein_id)}</a>`
+            ? `<a class="mono" href="/protein/${esc(m.protein_id)}" title="Residue tracks (A2)">${esc(m.protein_id)}</a>`
             : "—";
           return `<span class="muted">${esc(s)}</span> ${id}` +
             (m?.tier ? ` <span class="tier ${esc(m.tier)}">${esc(m.tier)}</span>` : "");

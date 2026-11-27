@@ -484,6 +484,8 @@ def deposit_plddt(
     t0 = time.time()
     n_ok = 0
     n_fail = 0
+    # Chunk submissions so AFDB rate limits / huge pools cannot hang the process.
+    chunk_size = max(workers * 25, 200)
 
     def job(pid: str):
         pred = None
@@ -497,68 +499,84 @@ def deposit_plddt(
         arr, src = fetch_plddt_array(pid, pred=pred, model_id=mid, cache=cache_dir)
         return pid, arr, src, mid, pred
 
-    with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-        futs = {pool.submit(job, pid): pid for pid in pending}
-        done = 0
-        for fut in as_completed(futs):
-            done += 1
-            pid = futs[fut]
-            try:
-                pid, arr, src, mid, pred = fut.result()
-            except Exception as e:
-                n_fail += 1
-                if done % 200 == 0 or done == len(pending):
-                    print(f"  pLDDT {done}/{len(pending)} ok={n_ok} fail={n_fail} ({e})", flush=True)
-                continue
-            if not arr:
-                n_fail += 1
-            else:
-                mean = sum(arr) / len(arr)
-                upsert_track(
-                    tracks,
-                    protein_id=pid,
-                    length=len(arr),
-                    plddt_u8=quantize_plddt(arr),
-                    plddt_source=src or "alphafold_db",
-                    plddt_mean=round(mean, 4),
-                )
-                n_ok += 1
-                # Refresh AF summary columns when present and empty
-                if pred and "af_mean_plddt" in cols:
-                    row = atlas.execute(
-                        "SELECT af_mean_plddt FROM proteins WHERE protein_id = ?", (pid,)
-                    ).fetchone()
-                    if row and row[0] is None:
-                        atlas.execute(
-                            """
-                            UPDATE proteins SET
-                              af_mean_plddt = ?,
-                              af_frac_very_low = ?,
-                              af_frac_low = ?,
-                              af_frac_confident = ?,
-                              af_frac_very_high = ?,
-                              af_model_id = ?
-                            WHERE protein_id = ?
-                            """,
-                            (
-                                float(pred.get("globalMetricValue") or mean),
-                                float(pred.get("fractionPlddtVeryLow") or 0.0),
-                                float(pred.get("fractionPlddtLow") or 0.0),
-                                float(pred.get("fractionPlddtConfident") or 0.0),
-                                float(pred.get("fractionPlddtVeryHigh") or 0.0),
-                                mid,
-                                pid,
-                            ),
+    done = 0
+    for chunk_start in range(0, len(pending), chunk_size):
+        chunk = pending[chunk_start : chunk_start + chunk_size]
+        with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
+            futs = {pool.submit(job, pid): pid for pid in chunk}
+            for fut in as_completed(futs):
+                done += 1
+                pid = futs[fut]
+                try:
+                    pid, arr, src, mid, pred = fut.result()
+                except Exception as e:
+                    n_fail += 1
+                    if done % 200 == 0 or done == len(pending):
+                        print(
+                            f"  pLDDT {done}/{len(pending)} ok={n_ok} fail={n_fail} ({e})",
+                            flush=True,
                         )
-            if done % 200 == 0 or done == len(pending):
-                tracks.commit()
-                atlas.commit()
-                elapsed = time.time() - t0
-                print(
-                    f"  pLDDT {done}/{len(pending)} ok={n_ok} fail={n_fail} "
-                    f"({done / max(elapsed, 1e-6):.1f}/s)",
-                    flush=True,
-                )
+                    continue
+                if not arr:
+                    n_fail += 1
+                else:
+                    mean = sum(arr) / len(arr)
+                    upsert_track(
+                        tracks,
+                        protein_id=pid,
+                        length=len(arr),
+                        plddt_u8=quantize_plddt(arr),
+                        plddt_source=src or "alphafold_db",
+                        plddt_mean=round(mean, 4),
+                    )
+                    n_ok += 1
+                    # Refresh AF summary columns when the full grape atlas schema is present
+                    af_cols = {
+                        "af_mean_plddt",
+                        "af_frac_very_low",
+                        "af_frac_low",
+                        "af_frac_confident",
+                        "af_frac_very_high",
+                        "af_model_id",
+                    }
+                    if pred and af_cols.issubset(cols):
+                        row = atlas.execute(
+                            "SELECT af_mean_plddt FROM proteins WHERE protein_id = ?",
+                            (pid,),
+                        ).fetchone()
+                        if row and row[0] is None:
+                            atlas.execute(
+                                """
+                                UPDATE proteins SET
+                                  af_mean_plddt = ?,
+                                  af_frac_very_low = ?,
+                                  af_frac_low = ?,
+                                  af_frac_confident = ?,
+                                  af_frac_very_high = ?,
+                                  af_model_id = ?
+                                WHERE protein_id = ?
+                                """,
+                                (
+                                    float(pred.get("globalMetricValue") or mean),
+                                    float(pred.get("fractionPlddtVeryLow") or 0.0),
+                                    float(pred.get("fractionPlddtLow") or 0.0),
+                                    float(pred.get("fractionPlddtConfident") or 0.0),
+                                    float(pred.get("fractionPlddtVeryHigh") or 0.0),
+                                    mid,
+                                    pid,
+                                ),
+                            )
+                if done % 200 == 0 or done == len(pending):
+                    tracks.commit()
+                    atlas.commit()
+                    elapsed = time.time() - t0
+                    print(
+                        f"  pLDDT {done}/{len(pending)} ok={n_ok} fail={n_fail} "
+                        f"({done / max(elapsed, 1e-6):.1f}/s)",
+                        flush=True,
+                    )
+        tracks.commit()
+        atlas.commit()
     tracks.commit()
     atlas.commit()
     summary = {

@@ -279,35 +279,15 @@ def main() -> None:
     }
 
     if args.plddt:
-        # For fruit IDs without af_mean, deposit_plddt still tries prediction API when force
-        # Widen selection: mark unknown IDs as needing fetch by setting force path
+        # Always force: candidate fruit IDs rarely have af_mean in the grape atlas.
         report["plddt"] = deposit_plddt(
             atlas=tmp_atlas,
             tracks=tracks,
             ids=all_ids,
             workers=args.workers,
-            force=args.force,
+            force=True,
             cache_dir=Path(args.cache_dir),
         )
-        # IDs without af_mean were filtered — re-run with force for remaining
-        have = {
-            r[0]
-            for r in tracks.execute(
-                "SELECT protein_id FROM residue_tracks WHERE plddt_u8 IS NOT NULL"
-            )
-        }
-        missing = [p for p in all_ids if p not in have]
-        if missing:
-            print(f"pLDDT second pass for {len(missing)} IDs without prior AF mean…", flush=True)
-            # Seed af_mean_plddt NULL but ensure they are attempted: use force
-            report["plddt_pass2"] = deposit_plddt(
-                atlas=tmp_atlas,
-                tracks=tracks,
-                ids=missing,
-                workers=args.workers,
-                force=True,
-                cache_dir=Path(args.cache_dir),
-            )
 
     if args.disorder:
         seqs = fetch_uniprot_fasta(all_ids, Path(args.fasta_cache))
