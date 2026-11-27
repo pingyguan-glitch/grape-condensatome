@@ -1,0 +1,19 @@
+panel	group	mean_auc_logistic	mean_auc_hybrid	delta_mean_auc_logistic	delta_mean_auc_hybrid
+leave_one_group_out	map65_cterm	0.826969	0.832124	-0.035694	-0.027067
+leave_one_group_out	disorder	0.842092	0.850114	-0.020572	-0.009077
+leave_one_group_out	sp_tp	0.845678	0.847002	-0.016985	-0.012190
+leave_one_group_out	ser_arg	0.853431	0.855359	-0.009232	-0.003832
+leave_one_group_out	low_complexity	0.856569	0.846912	-0.006095	-0.012279
+leave_one_group_out	qn_polar	0.864232	0.853791	0.001569	-0.005400
+leave_one_group_out	aromatic	0.864657	0.856569	0.001993	-0.002623
+leave_one_group_out	charge_blockiness	0.865106	0.857892	0.002443	-0.001299
+leave_one_group_out	length	0.874788	0.869477	0.012124	0.010286
+group_only	qn_polar	0.735033	0.735033		
+group_only	disorder	0.705948	0.705948		
+group_only	aromatic	0.697712	0.697712		
+group_only	ser_arg	0.677198	0.677198		
+group_only	low_complexity	0.626671	0.626671		
+group_only	map65_cterm	0.617680	0.593546		
+group_only	charge_blockiness	0.612819	0.609861		
+group_only	length	0.611634	0.611634		
+group_only	sp_tp	0.486021	0.486021		

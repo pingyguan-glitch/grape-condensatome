@@ -18,6 +18,7 @@ dist/
 build/
 # large enrichment caches (scripts re-download / resume)
 data/alphafold/*.json
+data/alphafold/train_cache/
 data/orthologs/*.tsv.gz
 data/benchmarks/metapredict_proteome.checkpoint.json
 data/benchmarks/psap_proteome.checkpoint.json

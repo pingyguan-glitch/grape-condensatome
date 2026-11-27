@@ -2,7 +2,7 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 1.1.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+**Version:** 1.1.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
 
 > **v1.0.0** combines Wave 2 curated gold/MAP/hold-out, STRING neighborhoods, and the soybean second-crop condensatome.
 
@@ -18,7 +18,8 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Proteome SQLite | `data/grape_condensatome.sqlite` | 25 972 scored rows + UniProt + Expression Atlas |
 | Proteome TSV | `data/grape_condensatome.proteome.tsv` | flat table |
 | Node web UI | `server.js` + `lib/` + `public/` | Express + `node:sqlite` (Node ≥22) |
-| Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + family hold-out / transfer |
+| Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + family hold-out / transfer + **feature ablation** |
+| Experimental models | `data/experimental/` | optional metapredict / AF-pLDDT disorder retrains (**not** production default) |
 | Curated LLPS gold | `data/curated/` | experimentally anchored overlay + SQLite/UI badge |
 | MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
 | External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
@@ -26,7 +27,8 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 
 ## Honesty (read before citing metrics)
 
-- Default disorder is a **composition proxy**. **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed; v13 logistic weights still expect the proxy unless you retrain).
+- Default disorder is a **composition proxy** (`data/model_formal.json`). **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed). Optional experimental retrains that *replace* the proxy live under `data/experimental/` (`scripts/retrain_disorder_features.py`) and must not silently replace production weights.
+- **Feature-ablation panels** for Figure 3: `scripts/eval_feature_ablation.py` → `data/benchmarks/feature_ablation_*`.
 - **AlphaFold pLDDT** summaries + **scored-proteome low-pLDDT segments** via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache; browser-like User-Agent).
 - **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
 - **Soybean second-crop condensatome** (UP000008827) via `scripts/score_second_crop_proteome.py` + `scripts/enrich_second_crop_orthologs.py` → `data/second_crop/` + grape `ortholog_gma*` columns; UI `/hooks`.
@@ -78,6 +80,13 @@ python3 -m plantllps train \
   --model-out data/model_formal.json
 
 python3 scripts/expand_v13_hard_negatives.py   # rebuild v13 from v12 + hard negs
+
+# Figure 3 feature ablation (composition proxy; deposits under data/benchmarks/)
+python3 scripts/eval_feature_ablation.py
+
+# Optional experimental disorder retrain (does NOT overwrite model_formal.json)
+export METAPREDICT_PYTHON="$(micromamba run -n meta311 which python)"  # if needed
+python3 scripts/retrain_disorder_features.py --metapredict-python "$METAPREDICT_PYTHON"
 ```
 
 ## Score a proteome
