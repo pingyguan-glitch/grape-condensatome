@@ -32,4 +32,4 @@ preferred-citation:
   authors:
     - family-names: Guan
       given-names: Pingyin
-  notes: "Manuscript in preparation; cite this software release and the companion MAP/LLPS screen when available. Zenodo DOI pending — see docs/ZENODO.md."
+  notes: "NAR Database draft in docs/MANUSCRIPT.md (synced to software v1.4.0). Cite this software release and the companion MAP/LLPS screen when available. Public URL https://grape-condensatome.apps.grok.bot; Zenodo DOI pending — see docs/ZENODO.md."
