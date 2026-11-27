@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration experimentType="rnaseq_mrna_differential" r_data="1">
+    <analytics>
+        <assay_groups>
+            <assay_group id="g1" label="control; control">
+                <assay>SRR1975205</assay>
+                <assay>SRR1975206</assay>
+                <assay>SRR1975208</assay>
+                <assay>SRR1975207</assay>
+            </assay_group>
+            <assay_group id="g2" label="stage 1; Botrytis cinerea">
+                <assay>SRR1975194</assay>
+                <assay>SRR1975196</assay>
+                <assay>SRR1975193</assay>
+                <assay>SRR1975195</assay>
+            </assay_group>
+            <assay_group id="g3" label="stage 2; Botrytis cinerea">
+                <assay>SRR1975200</assay>
+                <assay>SRR1975199</assay>
+                <assay>SRR1975198</assay>
+                <assay>SRR1975197</assay>
+            </assay_group>
+            <assay_group id="g4" label="stage 3; Botrytis cinerea">
+                <assay>SRR1975203</assay>
+                <assay>SRR1975201</assay>
+                <assay>SRR1975202</assay>
+                <assay>SRR1975204</assay>
+            </assay_group>
+        </assay_groups>
+        <contrasts>
+            <contrast id="g1_g2">
+                <name>'stage 1; Botrytis cinerea' vs 'control'</name>
+                <reference_assay_group>g1</reference_assay_group>
+                <test_assay_group>g2</test_assay_group>
+            </contrast>
+            <contrast id="g1_g3">
+                <name>'stage 2; Botrytis cinerea' vs 'control'</name>
+                <reference_assay_group>g1</reference_assay_group>
+                <test_assay_group>g3</test_assay_group>
+            </contrast>
+            <contrast id="g1_g4">
+                <name>'stage 3; Botrytis cinerea' vs 'control'</name>
+                <reference_assay_group>g1</reference_assay_group>
+                <test_assay_group>g4</test_assay_group>
+            </contrast>
+        </contrasts>
+    </analytics>
+</configuration>

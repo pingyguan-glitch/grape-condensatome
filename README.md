@@ -2,7 +2,7 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 0.6.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+**Version:** 0.7.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
 
 Author: Pingyin Guan (College of Horticulture, China Agricultural University; ORCID [0000-0003-4890-3412](https://orcid.org/0000-0003-4890-3412)).
 
@@ -23,7 +23,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 ## Honesty (read before citing metrics)
 
 - Default disorder is a **composition proxy**. **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed; v13 logistic weights still expect the proxy unless you retrain).
-- **AlphaFold pLDDT** summaries (+ Tier A / gold low-pLDDT segments) via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache).
+- **AlphaFold pLDDT** summaries + **scored-proteome low-pLDDT segments** via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache; browser-like User-Agent).
 - **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
 - Side-by-side **PSAP / LLPhyScore / PLAAC-approx** via `scripts/enrich_comparator_scores.py`. Full-proteome native PSAP / LLPhyScore via `scripts/score_psap_proteome.py` and `scripts/score_llphyscore_proteome.py` (external envs; batched + checkpointed).
 - **Pfam / InterPro domains** + **IDR segments** (AF pLDDT&lt;50 ∪ UniProt MobiDB-lite disordered) via `scripts/enrich_domains_idr.py`; protein-page track + Ensembl Plants link-outs.
@@ -76,6 +76,8 @@ python3 -m plantllps score-proteome \
 
 python3 scripts/enrich_uniprot_annotations.py --db data/grape_condensatome.sqlite
 python3 scripts/enrich_expression_atlas.py --db data/grape_condensatome.sqlite
+python3 scripts/enrich_stress_rnaseq.py --db data/grape_condensatome.sqlite
+python3 scripts/enrich_alphafold_plddt.py --segments-only --segments-tier ALL --workers 24
 ```
 
 Optional metapredict (subset recommended on CPU):
@@ -121,7 +123,9 @@ python3 scripts/enrich_comparator_scores.py
 
 ## Expression Atlas
 
-Experiment **E-MTAB-8758** (Pinot Noir berry baseline) TPMs joined on `gene_name` = Atlas `GeneID` (`VIT_*`): **25 810 / 25 972** proteins matched (99.4%). UI shows mean/max TPM and per-condition values on protein pages.
+**Baseline TPM:** Experiment **E-MTAB-8758** (Pinot Noir berry) joined on `gene_name` = Atlas `GeneID` (`VIT_*`): **25 810 / 25 972** (99.4%).
+
+**Stress RNA-seq differentials (v0.7):** **E-MTAB-4324** (downy mildew / Trichoderma) and **E-GEOD-67932** (Botrytis noble rot) — both **25 810 / 25 972** (99.4%). UI `/expression` + protein-page contrasts (log2FC / p; sig when p&lt;0.05 and |log2FC|≥1). Abiotic drought/salt Atlas grape entries remain microarray and are not claimed as RNA-seq.
 
 ## Version tag notes
 
@@ -129,13 +133,13 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 **`v0.3.1`** = metapredict wiring, native PSAP gold AUC, Expression Atlas joins, hosting docs.  
 **`v0.4.0`** = AlphaFold pLDDT joins, batched proteome metapredict, Ath/rice OrthoDB + cross-crop hooks, side-by-side PSAP/LLPhyScore/PLAAC-approx UI.  
 **`v0.5.0`** = full-proteome **native** PSAP + LLPhyScore (batched/checkpointed) joined into SQLite + `/compare`.  
-**`v0.6.0`** = Pfam/InterPro domains + IDR tracks, bulk download API, Ensembl Plants link-outs.
+**`v0.6.0`** = Pfam/InterPro domains + IDR tracks, bulk download API, Ensembl Plants link-outs.  
+**`v0.7.0`** = scored-proteome AF low-pLDDT segments + multi-stress RNA-seq differentials.
 
 ## Still open (not claimed done)
 
 - MAP-screen table deposit (ρ vs PSAP)  
 - Exact RBGD4 AGI; family-held-out PlantLLPS transfer AUC  
 - Confirmed public URL after publish-app / Railway / Render / Fly deploy  
-- AlphaFold low-pLDDT segments for every protein (default remains gold + Tier A)  
-- Splice isoforms; STRING / coexpression layers  
+- Splice isoforms; STRING / coexpression layers; user score queue  
 

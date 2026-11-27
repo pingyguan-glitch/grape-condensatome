@@ -37,17 +37,28 @@ Notes:
 ## AlphaFold pLDDT
 
 ```bash
-# Mean pLDDT + fraction bins from alphafold.ebi.ac.uk API; optional low-pLDDT
-# segments from confidence JSON (User-Agent required; files 403 without it).
-python3 scripts/enrich_alphafold_plddt.py --workers 12 --with-segments --segments-tier A
-# Full proteome summaries are network-bound (~20–60+ min depending on rate limits).
-# Segments default to gold + anchors + Tier A; use --segments-tier ALL for every ID.
+# Mean pLDDT + fraction bins from alphafold.ebi.ac.uk API; low-pLDDT segments from
+# confidence JSON (browser-like User-Agent required; file CDN 403 otherwise).
+python3 scripts/enrich_alphafold_plddt.py --workers 16 --with-segments --segments-tier ALL
+# Resume segments only (skips IDs that already have af_disorder_segments_json):
+python3 scripts/enrich_alphafold_plddt.py --segments-only --segments-tier ALL --workers 24
+# Full proteome is network-bound (~15–45+ min depending on rate limits / workers).
+# v0.7 default segment scope = ALL scored proteins with an AFDB model.
 ```
 
 Columns: `af_mean_plddt`, `af_frac_very_low` (pLDDT&lt;50 fraction; matches companion
 “pLDDT-based disorder”), `af_disorder_segments_json`, …
 
-Cache: `data/alphafold/*.json` (gitignored).
+Cache: `data/alphafold/*.json` (gitignored). Coverage: `data/alphafold/coverage.json` + `meta.alphafold_plddt`.
+
+## Stress RNA-seq (Expression Atlas)
+
+```bash
+python3 scripts/enrich_stress_rnaseq.py --db data/grape_condensatome.sqlite
+# Default: E-MTAB-4324 (downy mildew / Trichoderma) + E-GEOD-67932 (Botrytis noble rot)
+```
+
+Joins `expr_stress_json`; report in `data/expression_atlas/stress_rnaseq_join_report.json`.
 
 ## Orthologs (Arabidopsis / rice) + cross-crop hooks
 

@@ -50,6 +50,45 @@ def _fmt_pct(x: Any) -> str:
         return "—"
 
 
+def _stress_expr_html(expr_stress: Any) -> str:
+    if not isinstance(expr_stress, dict) or not expr_stress:
+        return ""
+    blocks: List[str] = []
+    for acc, info in expr_stress.items():
+        if not isinstance(info, dict):
+            continue
+        comps = info.get("comparisons") or {}
+        rows = []
+        for label, c in comps.items():
+            if not isinstance(c, dict):
+                continue
+            sig = (
+                ' <span class="tier A" title="p&lt;0.05 and |log2FC|≥1">sig</span>'
+                if c.get("significant")
+                else ""
+            )
+            rows.append(
+                f'<div><span class="k">{_esc(label)}</span>'
+                f'<span class="v">log2FC {_esc(c.get("log2fc"))} · p {_esc(c.get("pvalue"))}{sig}</span></div>'
+            )
+        blocks.append(
+            f'<h4 style="margin-top:0.75rem"><span class="mono">{_esc(acc)}</span>'
+            f' · {_esc(info.get("title") or "")}</h4>'
+            f'<p class="muted">{_esc(info.get("stress") or "")}'
+            f' · {_esc(info.get("n_significant") or 0)} significant contrast(s)</p>'
+            f'<div class="features">{"".join(rows) or "<span class=\\"muted\\">no contrasts</span>"}</div>'
+        )
+    if not blocks:
+        return ""
+    return (
+        '<div class="card" style="margin-top:1rem"><h3>Stress RNA-seq differentials</h3>'
+        '<p class="muted">Expression Atlas analytics joined on <span class="mono">VIT_*</span> gene name. '
+        "Call rule: nominal p&lt;0.05 and |log2FC|≥1.</p>"
+        + "".join(blocks)
+        + "</div>"
+    )
+
+
 def _layout(title: str, body: str, *, query: str = "") -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -430,6 +469,7 @@ def make_handler(state: AppState) -> Callable:
             {
                 (
                     '<div class="card" style="margin-top:1rem"><h3>Expression Atlas TPM by condition</h3>'
+                    f'<p class="muted">Baseline <span class="mono">{_esc(p.get("expr_experiment") or "E-MTAB-8758")}</span></p>'
                     '<div class="features">'
                     + "".join(
                         f'<div><span class="k">{_esc(k)}</span><span class="v">{_esc(v)}</span></div>'
@@ -440,6 +480,7 @@ def make_handler(state: AppState) -> Callable:
                 if p.get("expr_tpm")
                 else ""
             }
+            {_stress_expr_html(p.get("expr_stress"))}
             <div class="card" style="margin-top:1rem">
               <h3>Features</h3>
               <div class="features">{feat_html}</div>
