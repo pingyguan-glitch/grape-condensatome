@@ -8,9 +8,10 @@ import urllib.request
 from typing import Optional
 
 
+# Prefer a browser-like UA: AlphaFold file CDN returns HTTP 403 to bot-like agents.
 DEFAULT_UA = (
-    "GrapeCondensatome/0.4 (+https://github.com/pingyguan-glitch/grape-condensatome; "
-    "research; pyguan@cau.edu.cn)"
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
 
 

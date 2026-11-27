@@ -24,6 +24,7 @@ import {
   listStringEnrichment,
   stringNetworkMeta,
   loadStringTopNeighbors,
+  loadStressSidecar,
   listLlpsGold,
   DEFAULT_DB,
 } from "./lib/db.js";
@@ -164,6 +165,35 @@ function trackHtml(length, segments, { title, tone }) {
   </div>`;
 }
 
+function stressExprHtml(exprStress) {
+  if (!exprStress || typeof exprStress !== "object") return "";
+  const blocks = Object.entries(exprStress)
+    .map(([acc, info]) => {
+      const comps = info?.comparisons || {};
+      const rows = Object.entries(comps)
+        .map(([label, c]) => {
+          const sig = c?.significant
+            ? ' <span class="tier A" title="p&lt;0.05 and |log2FC|≥1">sig</span>'
+            : "";
+          return `<div><span class="k">${esc(label)}</span><span class="v">log2FC ${esc(
+            c?.log2fc
+          )} · p ${esc(c?.pvalue)}${sig}</span></div>`;
+        })
+        .join("");
+      return `<h4 style="margin-top:0.75rem"><span class="mono">${esc(acc)}</span>
+        · ${esc(info?.title || "")}</h4>
+        <p class="muted">${esc(info?.stress || "")}
+           · ${esc(info?.n_significant ?? 0)} significant contrast(s)</p>
+        <div class="features">${rows || '<span class="muted">no contrasts</span>'}</div>`;
+    })
+    .join("");
+  if (!blocks) return "";
+  return `<div class="card" style="margin-top:1rem"><h3>Stress RNA-seq differentials</h3>
+    <p class="muted">Expression Atlas analytics joined on <span class="mono">VIT_*</span> gene name.
+       Call rule: nominal p&lt;0.05 and |log2FC|≥1.</p>
+    ${blocks}</div>`;
+}
+
 function layout(title, body, query = "") {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -191,6 +221,7 @@ function layout(title, body, query = "") {
       <a href="/map">MAP screen</a>
       <a href="/hooks">Cross-crop</a>
       <a href="/network">STRING</a>
+      <a href="/expression">Expression</a>
       <a href="/download">Download</a>
       <a href="/score">Score FASTA</a>
     </nav>
@@ -362,6 +393,17 @@ app.get("/", (_req, res) => {
       exprMeta = ` · Expression Atlas <span class="mono">${esc(ea.experiment || "")}</span>
         matched ${esc(ea.n_proteins_matched || "—")} / ${esc(summary.n_proteins)}`;
     }
+    const sr = meta.stress_rnaseq ? JSON.parse(meta.stress_rnaseq) : null;
+    if (sr?.accessions?.length) {
+      exprMeta += ` · stress RNA-seq <span class="mono">${esc(sr.accessions.join(", "))}</span>
+        matched ${esc(sr.n_proteins_with_any_stress || "—")} / ${esc(summary.n_proteins)}`;
+    }
+    const af = meta.alphafold_plddt ? JSON.parse(meta.alphafold_plddt) : null;
+    if (af?.n_with_segments_field != null || af?.n_with_af_n_disorder != null) {
+      exprMeta += ` · AF segments ${esc(
+        af.n_with_segments_field ?? af.n_with_af_n_disorder
+      )} / ${esc(af.n_with_mean || "—")} models`;
+    }
   } catch {
     /* ignore */
   }
@@ -380,6 +422,68 @@ app.get("/", (_req, res) => {
     <h2 style="font-family:var(--font-display)">Top scores</h2>
     ${proteinTable(top)}`;
   res.type("html").send(layout("Home", body));
+});
+
+app.get("/expression", (_req, res) => {
+  const meta = getMeta(db);
+  const summary = summarize(db);
+  let ea = null;
+  let sr = null;
+  try {
+    ea = meta.expression_atlas ? JSON.parse(meta.expression_atlas) : null;
+  } catch {
+    ea = null;
+  }
+  try {
+    sr = meta.stress_rnaseq ? JSON.parse(meta.stress_rnaseq) : null;
+  } catch {
+    sr = null;
+  }
+  const baseline = ea
+    ? `<div class="card"><h3>Baseline TPM · <span class="mono">${esc(
+        ea.experiment || ""
+      )}</span></h3>
+       <p>Matched <strong>${esc(ea.n_proteins_matched)}</strong> / ${esc(
+         summary.n_proteins
+       )}
+       · Atlas genes ${esc(ea.n_genes_in_atlas || "—")}</p>
+       <p class="muted mono">${esc(ea.source || "")}</p></div>`
+    : `<p class="muted">No baseline Expression Atlas join in meta.</p>`;
+  const stressCards = sr?.experiments
+    ? Object.entries(sr.experiments)
+        .map(
+          ([acc, info]) => `<div class="card" style="margin-top:1rem">
+        <h3><span class="mono">${esc(acc)}</span> · ${esc(info.title || "")}</h3>
+        <p>${esc(info.stress || "")}</p>
+        <p>Technology: ${esc(info.technology || "—")}
+           · matched <strong>${esc(info.n_proteins_matched)}</strong> / ${esc(
+             sr.n_proteins
+           )}
+           (${esc(info.match_rate)}%)</p>
+        <p class="muted">${esc(info.citation || "")}</p>
+        <p class="muted">Contrasts: ${esc(
+          Object.values(info.contrasts || {}).join(" · ")
+        )}</p>
+        <p class="muted">${esc(info.call_rule || "")}</p>
+        <p class="muted mono">${esc(info.source || "")}</p>
+      </div>`
+        )
+        .join("")
+    : "";
+  const body = `
+    <div class="card"><h2>Expression joins</h2>
+      <p class="muted">Baseline berry TPM plus multi-stress RNA-seq differentials from
+      EMBL-EBI Expression Atlas (public experiment files). Gene join key:
+      UniProt <span class="mono">gene_name</span> = Atlas <span class="mono">VIT_*</span>.</p>
+      ${
+        sr?.choice_rationale
+          ? `<p class="muted">${esc(sr.choice_rationale)}</p>`
+          : ""
+      }
+    </div>
+    ${baseline}
+    ${stressCards || '<p class="muted">No stress RNA-seq join yet.</p>'}`;
+  res.type("html").send(layout("Expression", body));
 });
 
 app.get("/search", (req, res) => {
@@ -609,6 +713,9 @@ app.get("/protein/:id", (req, res) => {
     ${
       p.expr_tpm
         ? `<div class="card" style="margin-top:1rem"><h3>Expression Atlas TPM by condition</h3>
+           <p class="muted">Baseline <span class="mono">${esc(
+             p.expr_experiment || "E-MTAB-8758"
+           )}</span></p>
            <div class="features">${Object.entries(p.expr_tpm)
              .map(
                ([k, v]) =>
@@ -617,6 +724,7 @@ app.get("/protein/:id", (req, res) => {
              .join("")}</div></div>`
         : ""
     }
+    ${stressExprHtml(p.expr_stress)}
     ${stringNeighborhoodHtml(p.protein_id)}
     <div class="card" style="margin-top:1rem">
       <h3>Features</h3>
@@ -1293,6 +1401,9 @@ Promise.all([
   }),
   loadStringTopNeighbors().catch((err) => {
     console.error("STRING top neighbors failed:", err);
+  }),
+  loadStressSidecar().catch((err) => {
+    console.error("Stress sidecar failed:", err);
   }),
 ]).finally(() => {
   app.listen(PORT, HOST, () => {

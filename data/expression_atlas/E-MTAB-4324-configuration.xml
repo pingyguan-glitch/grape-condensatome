@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration experimentType="rnaseq_mrna_differential" r_data="1">
+    <analytics>
+        <assay_groups>
+            <assay_group id="g1" label="Plasmopara viticola">
+                <assay technical_replicate_id="t4">SRR519453</assay>
+                <assay technical_replicate_id="t4">SRR519454</assay>
+                <assay technical_replicate_id="t5">SRR519455</assay>
+                <assay technical_replicate_id="t5">SRR519456</assay>
+                <assay technical_replicate_id="t6">SRR520373</assay>
+                <assay technical_replicate_id="t6">SRR520374</assay>
+            </assay_group>
+            <assay_group id="g2" label="Trichoderma harzianum">
+                <assay technical_replicate_id="t7">SRR520378</assay>
+                <assay technical_replicate_id="t7">SRR520377</assay>
+                <assay technical_replicate_id="t8">SRR520380</assay>
+                <assay technical_replicate_id="t8">SRR520379</assay>
+                <assay technical_replicate_id="t9">SRR520381</assay>
+                <assay technical_replicate_id="t9">SRR520382</assay>
+            </assay_group>
+            <assay_group id="g3" label="Trichoderma harzianum and Plasmopara viticola">
+                <assay technical_replicate_id="t10">SRR520383</assay>
+                <assay technical_replicate_id="t10">SRR520384</assay>
+                <assay technical_replicate_id="t11">SRR520386</assay>
+                <assay technical_replicate_id="t11">SRR520385</assay>
+                <assay technical_replicate_id="t12">SRR520388</assay>
+                <assay technical_replicate_id="t12">SRR520387</assay>
+            </assay_group>
+            <assay_group id="g4" label="none">
+                <assay technical_replicate_id="t1">SRR519450</assay>
+                <assay technical_replicate_id="t1">SRR519449</assay>
+                <assay technical_replicate_id="t2">SRR519451</assay>
+                <assay technical_replicate_id="t2">SRR519452</assay>
+                <assay technical_replicate_id="t3">SRR520375</assay>
+                <assay technical_replicate_id="t3">SRR520376</assay>
+            </assay_group>
+        </assay_groups>
+        <contrasts>
+            <contrast id="g4_g1" cttv_primary="0">
+                <name>'Plasmopara viticola' vs 'none'</name>
+                <reference_assay_group>g4</reference_assay_group>
+                <test_assay_group>g1</test_assay_group>
+                <batch_effects>
+                    <batch_effect name="library_layout">
+                        <batch value="paired">
+                            <assay>SRR519456</assay>
+                            <assay>SRR520376</assay>
+                            <assay>SRR519451</assay>
+                            <assay>SRR519453</assay>
+                            <assay>SRR519454</assay>
+                            <assay>SRR519452</assay>
+                            <assay>SRR519450</assay>
+                            <assay>SRR520374</assay>
+                            <assay>SRR519455</assay>
+                            <assay>SRR519449</assay>
+                        </batch>
+                        <batch value="single">
+                            <assay>SRR520373</assay>
+                            <assay>SRR520375</assay>
+                        </batch>
+                    </batch_effect>
+                </batch_effects>
+            </contrast>
+            <contrast id="g4_g2" cttv_primary="0">
+                <name>'Trichoderma harzianum' vs 'none'</name>
+                <reference_assay_group>g4</reference_assay_group>
+                <test_assay_group>g2</test_assay_group>
+                <batch_effects>
+                    <batch_effect name="library_layout">
+                        <batch value="single">
+                            <assay>SRR520377</assay>
+                            <assay>SRR520375</assay>
+                        </batch>
+                        <batch value="paired">
+                            <assay>SRR519450</assay>
+                            <assay>SRR520380</assay>
+                            <assay>SRR520379</assay>
+                            <assay>SRR519449</assay>
+                            <assay>SRR519452</assay>
+                            <assay>SRR520382</assay>
+                            <assay>SRR520381</assay>
+                            <assay>SRR520376</assay>
+                            <assay>SRR520378</assay>
+                            <assay>SRR519451</assay>
+                        </batch>
+                    </batch_effect>
+                </batch_effects>
+            </contrast>
+            <contrast id="g4_g3" cttv_primary="0">
+                <name>'Trichoderma harzianum and Plasmopara viticola' vs 'none'</name>
+                <reference_assay_group>g4</reference_assay_group>
+                <test_assay_group>g3</test_assay_group>
+                <batch_effects>
+                    <batch_effect name="library_layout">
+                        <batch value="single">
+                            <assay>SRR520375</assay>
+                            <assay>SRR520383</assay>
+                        </batch>
+                        <batch value="paired">
+                            <assay>SRR520387</assay>
+                            <assay>SRR519451</assay>
+                            <assay>SRR520376</assay>
+                            <assay>SRR520384</assay>
+                            <assay>SRR519450</assay>
+                            <assay>SRR519449</assay>
+                            <assay>SRR520386</assay>
+                            <assay>SRR520388</assay>
+                            <assay>SRR520385</assay>
+                            <assay>SRR519452</assay>
+                        </batch>
+                    </batch_effect>
+                </batch_effects>
+            </contrast>
+        </contrasts>
+    </analytics>
+</configuration>

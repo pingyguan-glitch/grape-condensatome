@@ -2,7 +2,7 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 1.0.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+**Version:** 1.1.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
 
 > **v1.0.0** combines Wave 2 curated gold/MAP/hold-out, STRING neighborhoods, and the soybean second-crop condensatome.
 
@@ -27,7 +27,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 ## Honesty (read before citing metrics)
 
 - Default disorder is a **composition proxy**. **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed; v13 logistic weights still expect the proxy unless you retrain).
-- **AlphaFold pLDDT** summaries (+ Tier A / gold low-pLDDT segments) via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache).
+- **AlphaFold pLDDT** summaries + **scored-proteome low-pLDDT segments** via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache; browser-like User-Agent).
 - **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
 - **Soybean second-crop condensatome** (UP000008827) via `scripts/score_second_crop_proteome.py` + `scripts/enrich_second_crop_orthologs.py` → `data/second_crop/` + grape `ortholog_gma*` columns; UI `/hooks`.
 - Side-by-side **PSAP / LLPhyScore / PLAAC-approx** via `scripts/enrich_comparator_scores.py`. Full-proteome native PSAP / LLPhyScore via `scripts/score_psap_proteome.py` and `scripts/score_llphyscore_proteome.py` (external envs; batched + checkpointed).
@@ -91,6 +91,8 @@ python3 -m plantllps score-proteome \
 
 python3 scripts/enrich_uniprot_annotations.py --db data/grape_condensatome.sqlite
 python3 scripts/enrich_expression_atlas.py --db data/grape_condensatome.sqlite
+python3 scripts/enrich_stress_rnaseq.py --db data/grape_condensatome.sqlite
+python3 scripts/enrich_alphafold_plddt.py --segments-only --segments-tier ALL --workers 24
 python3 scripts/enrich_string_neighborhood.py   # Vitis STRING PPI + enrichment
 ```
 
@@ -137,7 +139,10 @@ python3 scripts/enrich_comparator_scores.py
 
 ## Expression Atlas
 
-Experiment **E-MTAB-8758** (Pinot Noir berry baseline) TPMs joined on `gene_name` = Atlas `GeneID` (`VIT_*`): **25 810 / 25 972** proteins matched (99.4%). UI shows mean/max TPM and per-condition values on protein pages.
+**Baseline TPM:** Experiment **E-MTAB-8758** (Pinot Noir berry) joined on `gene_name` = Atlas `GeneID` (`VIT_*`): **25 810 / 25 972** (99.4%).
+
+**Stress RNA-seq differentials (v1.1):** **E-MTAB-4324** (downy mildew / Trichoderma) and **E-GEOD-67932** (Botrytis noble rot) — both **25 810 / 25 972** (99.4%). UI `/expression` + protein-page contrasts (log2FC / p; sig when p&lt;0.05 and |log2FC|≥1). Abiotic drought/salt Atlas grape entries remain microarray and are not claimed as RNA-seq.
+
 
 ## Version tag notes
 
@@ -152,6 +157,5 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 - MAP-screen table deposit (ρ vs PSAP)  
 - Exact RBGD4 AGI; family-held-out PlantLLPS transfer AUC  
 - Confirmed public URL after publish-app / Railway / Render / Fly deploy  
-- AlphaFold low-pLDDT segments for every protein (default remains gold + Tier A)  
 - Splice isoforms; STRING / coexpression layers  
 

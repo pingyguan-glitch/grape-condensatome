@@ -2,11 +2,65 @@
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, Iterable, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional
+
+_STRESS_CACHE: Optional[Dict[str, Any]] = None
+_STRESS_SIDECAR = (
+    Path(__file__).resolve().parents[1]
+    / "data"
+    / "expression_atlas"
+    / "stress_by_protein.json.gz"
+)
+
+
+def _normalize_segments(segs: Any) -> List[Dict[str, Any]]:
+    if not isinstance(segs, list):
+        return []
+    out: List[Dict[str, Any]] = []
+    for s in segs:
+        if not isinstance(s, dict):
+            continue
+        start = s.get("start", s.get("s"))
+        end = s.get("end", s.get("e"))
+        length = s.get("length")
+        if length is None and start is not None and end is not None:
+            try:
+                length = int(end) - int(start) + 1
+            except (TypeError, ValueError):
+                length = None
+        out.append(
+            {
+                **s,
+                "start": start,
+                "end": end,
+                "length": length,
+                "source": s.get("source") or s.get("src") or "",
+                "label": s.get("label", s.get("lab")),
+            }
+        )
+    return out
+
+
+def _stress_from_sidecar(protein_id: Optional[str]) -> Optional[Dict[str, Any]]:
+    global _STRESS_CACHE
+    if not protein_id:
+        return None
+    if _STRESS_CACHE is None:
+        _STRESS_CACHE = {}
+        if _STRESS_SIDECAR.exists():
+            try:
+                with gzip.open(_STRESS_SIDECAR, "rt", encoding="utf-8") as fh:
+                    _STRESS_CACHE = json.load(fh)
+            except (OSError, json.JSONDecodeError):
+                _STRESS_CACHE = {}
+    hit = _STRESS_CACHE.get(protein_id)
+    return hit if isinstance(hit, dict) else None
+
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -295,15 +349,46 @@ def _row_to_protein(row: sqlite3.Row) -> Dict[str, Any]:
             d["expr_tpm"] = None
     else:
         d["expr_tpm"] = None
+    stress_raw = d.get("expr_stress_json") or ""
+    if stress_raw:
+        try:
+            d["expr_stress"] = json.loads(stress_raw)
+        except json.JSONDecodeError:
+            d["expr_stress"] = None
+    else:
+        d["expr_stress"] = _stress_from_sidecar(d.get("protein_id"))
     # AlphaFold / ortholog / comparator enrichments (columns may be absent on old DBs)
     segs_raw = d.get("af_disorder_segments_json") or ""
     if segs_raw:
         try:
-            d["af_disorder_segments"] = json.loads(segs_raw)
+            d["af_disorder_segments"] = _normalize_segments(json.loads(segs_raw))
         except json.JSONDecodeError:
             d["af_disorder_segments"] = []
     else:
         d["af_disorder_segments"] = []
+    for key, dest in (
+        ("domains_json", "domains"),
+        ("idr_segments_json", "idr_segments"),
+    ):
+        raw = d.get(key) or ""
+        if raw:
+            try:
+                d[dest] = _normalize_segments(json.loads(raw) or [])
+            except json.JSONDecodeError:
+                d[dest] = []
+        else:
+            d[dest] = []
+    if not d["af_disorder_segments"] and d.get("idr_segments"):
+        d["af_disorder_segments"] = [
+            {
+                "start": s.get("start"),
+                "end": s.get("end"),
+                "length": s.get("length"),
+                "source": s.get("source"),
+            }
+            for s in d["idr_segments"]
+            if "af_plddt" in str(s.get("source") or "")
+        ]
     ortho_raw = d.get("ortholog_json") or ""
     if ortho_raw:
         try:

@@ -1,0 +1,47 @@
+{
+  "experiments": {
+    "E-MTAB-4324": {
+      "title": "Downy mildew / Trichoderma induced resistance (leaves)",
+      "stress": "biotic: Plasmopara viticola \u00b1 Trichoderma harzianum T39",
+      "technology": "RNA-seq differential",
+      "citation": "Perazzolli et al. 2012 (BMC Plant Biol / Atlas E-MTAB-4324)",
+      "license_note": "EMBL-EBI Expression Atlas public experiment files",
+      "n_genes_in_atlas": 29971,
+      "n_proteins_matched": 25810,
+      "match_rate": 99.38,
+      "contrasts": {
+        "g4_g1": "none vs Plasmopara viticola",
+        "g4_g2": "none vs Trichoderma harzianum",
+        "g4_g3": "none vs Trichoderma harzianum and Plasmopara viticola"
+      },
+      "source": "https://ftp.ebi.ac.uk/pub/databases/microarray/data/atlas/experiments/E-MTAB-4324/E-MTAB-4324-analytics.tsv",
+      "call_rule": "significant if p<0.05 and |log2FC|>=1.0"
+    },
+    "E-GEOD-67932": {
+      "title": "Noble rot Botrytis stages vs control (berries)",
+      "stress": "biotic: Botrytis cinerea noble rot (stages 1\u20133)",
+      "technology": "RNA-seq differential",
+      "citation": "Blanco-Ulate et al. 2015 (Plant Physiol / Atlas E-GEOD-67932)",
+      "license_note": "EMBL-EBI Expression Atlas public experiment files",
+      "n_genes_in_atlas": 29971,
+      "n_proteins_matched": 25810,
+      "match_rate": 99.38,
+      "contrasts": {
+        "g1_g2": "control; control vs stage 1; Botrytis cinerea",
+        "g1_g3": "control; control vs stage 2; Botrytis cinerea",
+        "g1_g4": "control; control vs stage 3; Botrytis cinerea"
+      },
+      "source": "https://ftp.ebi.ac.uk/pub/databases/microarray/data/atlas/experiments/E-GEOD-67932/E-GEOD-67932-analytics.tsv",
+      "call_rule": "significant if p<0.05 and |log2FC|>=1.0"
+    }
+  },
+  "n_proteins": 25972,
+  "n_proteins_with_any_stress": 25810,
+  "accessions": [
+    "E-MTAB-4324",
+    "E-GEOD-67932"
+  ],
+  "choice_rationale": "Selected two public Atlas RNA-seq differentials with VIT_* GeneIDs and clear biotic-stress contrasts (downy mildew / Trichoderma; Botrytis noble rot). Abiotic drought/salt Atlas entries for grape are microarray (E-GEOD-31594 / E-GEOD-31677) \u2014 not joined as RNA-seq. Full DE blobs ship as gzip sidecar (GH 100 MiB SQLite limit).",
+  "sidecar": "data/expression_atlas/stress_by_protein.json.gz",
+  "sqlite_column": false
+}

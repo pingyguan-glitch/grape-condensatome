@@ -1,5 +1,26 @@
 # Release notes
 
+## v1.1.0 (2026-11-27)
+
+P1 atlas layers on v1.0.0: full scored-proteome AlphaFold low-pLDDT segments + multi-stress RNA-seq.
+
+### AlphaFold low-pLDDT segments (scored proteome)
+
+- `scripts/enrich_alphafold_plddt.py` — `--segments-tier ALL` (default) + `--segments-only` resume; browser-like User-Agent for AFDB file CDN (403 otherwise); cache under `data/alphafold/`.
+- Coverage on scored proteome (**25 972**): **23 421** with mean pLDDT; **23 421 / 23 421** AFDB models with segment residue counts (**22 449** nonempty low-pLDDT). Remaining **2 551** proteins have no AFDB model.
+- Protein page shows segments alongside domain / IDR tracks; IDR refresh → **23 590** proteins with IDR intervals (AF∪MobiDB; was 9 401 when segments were gold+Tier A only).
+- Coverage written to `meta.alphafold_plddt`. AF interval geometry ships via the IDR track (`source=af_plddt_lt50`) plus `af_n_disorder_residues` so SQLite stays under GitHub's 100 MiB limit.
+
+### Multi-stress transcriptome
+
+- `scripts/enrich_stress_rnaseq.py` joins Expression Atlas RNA-seq differentials:
+  - **E-MTAB-4324** — downy mildew / Trichoderma induced resistance (leaves)
+  - **E-GEOD-67932** — Botrytis noble-rot stages vs control (berries)
+- Both match **25 810 / 25 972** (99.4%) on `VIT_*` gene_name (same key as baseline E-MTAB-8758).
+- UI `/expression` + protein-page contrast cards (log2FC / p; significant when p&lt;0.05 and |log2FC|≥1).
+- DE blobs ship as `data/expression_atlas/stress_by_protein.json.gz` (Node loads at startup).
+- Honesty: abiotic drought/salt Atlas grape experiments (E-GEOD-31594 / E-GEOD-31677) are microarray — not claimed as RNA-seq.
+
 ## v1.0.0 (2026-11-27)
 
 Combined Wave 2 landing on `main`: curated LLPS gold / MAP hold-out (**v0.8.0**), STRING neighborhoods (**v0.9.0**), and soybean second-crop condensatome (**v0.9.1** content). Single coherent atlas release — not a claim of production-complete PlantLLPS.

@@ -6,7 +6,7 @@ and a GrapeCondensatome SQLite schema. Full proteome scoring and
 production weights trained on LLPSDB plant entries are not included.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from .features import FEATURE_NAMES, extract_features
 from .model import PlantLLPSModel
