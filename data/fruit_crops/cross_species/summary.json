@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "generated_at_utc": "2026-11-27T07:19:37Z",
+  "tool": "scripts/analyze_fruit_cross_species.py",
+  "n_panel_species": 18,
+  "species": [
+    {
+      "slug": "apple",
+      "label": "Apple",
+      "species": "Malus domestica",
+      "proteome": "UP000290289",
+      "taxon": 3750
+    },
+    {
+      "slug": "avocado",
+      "label": "Avocado",
+      "species": "Persea americana",
+      "proteome": "UP001234297",
+      "taxon": 3435
+    },
+    {
+      "slug": "banana",
+      "label": "Banana",
+      "species": "Musa acuminata subsp. malaccensis",
+      "proteome": "UP000012960",
+      "taxon": 214687
+    },
+    {
+      "slug": "blackberry",
+      "label": "Southern blackberry",
+      "species": "Rubus argutus",
+      "proteome": "UP001457282",
+      "taxon": 59490
+    },
+    {
+      "slug": "blueberry",
+      "label": "Blueberry (Darrow's)",
+      "species": "Vaccinium darrowii",
+      "proteome": "UP000828048",
+      "taxon": 229202
+    },
+    {
+      "slug": "citrus_clementina",
+      "label": "Clementine",
+      "species": "Citrus clementina",
+      "proteome": "UP000030687",
+      "taxon": 85681
+    },
+    {
+      "slug": "citrus_sinensis",
+      "label": "Sweet orange",
+      "species": "Citrus sinensis",
+      "proteome": "UP000027120",
+      "taxon": 2711
+    },
+    {
+      "slug": "date_palm",
+      "label": "Date palm",
+      "species": "Phoenix dactylifera",
+      "proteome": "UP000228380",
+      "taxon": 42345
+    },
+    {
+      "slug": "fig",
+      "label": "Fig",
+      "species": "Ficus carica",
+      "proteome": "UP001187192",
+      "taxon": 3494
+    },
+    {
+      "slug": "kiwifruit",
+      "label": "Kiwifruit",
+      "species": "Actinidia chinensis var. chinensis",
+      "proteome": "UP000241394",
+      "taxon": 1590841
+    },
+    {
+      "slug": "melon",
+      "label": "Melon",
+      "species": "Cucumis melo",
+      "proteome": "UP001652600",
+      "taxon": 3656
+    },
+    {
+      "slug": "olive",
+      "label": "Olive",
+      "species": "Olea europaea subsp. europaea",
+      "proteome": "UP000594638",
+      "taxon": 158383
+    },
+    {
+      "slug": "peach",
+      "label": "Peach",
+      "species": "Prunus persica",
+      "proteome": "UP000006882",
+      "taxon": 3760
+    },
+    {
+      "slug": "pear",
+      "label": "Pear",
+      "species": "Pyrus ussuriensis x Pyrus communis",
+      "proteome": "UP000327157",
+      "taxon": 2448454
+    },
+    {
+      "slug": "pineapple",
+      "label": "Pineapple",
+      "species": "Ananas comosus",
+      "proteome": "UP000515123",
+      "taxon": 4615
+    },
+    {
+      "slug": "pomegranate",
+      "label": "Pomegranate",
+      "species": "Punica granatum",
+      "proteome": "UP000233551",
+      "taxon": 22663
+    },
+    {
+      "slug": "strawberry",
+      "label": "Strawberry",
+      "species": "Fragaria ananassa",
+      "proteome": "UP001783032",
+      "taxon": 3747
+    },
+    {
+      "slug": "sweet_cherry",
+      "label": "Sweet cherry",
+      "species": "Prunus avium",
+      "proteome": "UP000515124",
+      "taxon": 42229
+    }
+  ],
+  "n_proteins_scanned": 741587,
+  "n_tier_ab_proteins": 115632,
+  "n_clusters_with_high": 75544,
+  "n_conservative": 1438,
+  "n_species_specific": 73336,
+  "n_species_specific_panel_contrast": 1675,
+  "n_species_specific_orphan_high": 71661,
+  "n_species_with_orthodb_ab": 12,
+  "species_with_orthodb_ab": [
+    "apple",
+    "banana",
+    "citrus_clementina",
+    "citrus_sinensis",
+    "date_palm",
+    "kiwifruit",
+    "melon",
+    "olive",
+    "peach",
+    "pear",
+    "pineapple",
+    "pomegranate"
+  ],
+  "thresholds": {
+    "high_tiers": [
+      "A",
+      "B"
+    ],
+    "min_species_conserved": 5,
+    "max_species_specific": 2,
+    "min_present_for_panel_contrast": 3
+  },
+  "key_type_counts": {
+    "conserved:gene_proxy": 6,
+    "conserved:orthodb": 1432,
+    "specific:gene_proxy": 69582,
+    "specific:orthodb": 1767,
+    "specific:singleton": 1987,
+    "specific_class:orphan_high": 71661,
+    "specific_class:panel_contrast": 1675
+  },
+  "files": {
+    "conservative_candidates": "conservative_candidates.tsv.gz",
+    "species_specific_peaks": "species_specific_peaks.tsv.gz",
+    "cluster_members": "cluster_members.tsv.gz",
+    "browse": "browse.json",
+    "readme": "README.md"
+  },
+  "honesty": "Cross-species transfer of grape-trained PlantLLPS; OrthoDB eukaryote groups and gene-name proxies are near-ortholog approximations. Do not treat ranks as experimental LLPS calls. Species lacking OrthoDB xrefs enrich orphan-high peaks."
+}

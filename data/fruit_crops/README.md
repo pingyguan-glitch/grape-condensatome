@@ -12,6 +12,7 @@ composition-proxy disorder). Tier cutoffs recalibrated per proteome.
 | `{slug}_condensatome.sqlite` | Slim browse DB (scores + optional grape/Ath ortholog pointers) |
 | `{slug}_condensatome.summary.json` | Per-species tier counts / honesty |
 | `{slug}_grape_ortholog_join.json` | OrthoDB fruit→grape join coverage |
+| `cross_species/` | Conservative vs species-specific high-score layer (v1.7.0) |
 | `*_condensatome.proteome.tsv.gz` | Full score tables (gitignored; rebuild / Zenodo) |
 | `*.fasta.gz` | UniProt FASTA caches (gitignored) |
 
@@ -25,9 +26,13 @@ python3 scripts/score_fruit_crop_proteomes.py --list
 python3 scripts/score_fruit_crop_proteomes.py --all
 # optional OrthoDB fruit→grape (+ Ath via grape) joins — crop DB only:
 python3 scripts/enrich_fruit_crop_orthologs.py --all
+# cross-species high-score comparison (reads existing SQLite; no re-score):
+python3 scripts/analyze_fruit_cross_species.py
 ```
 
-UI: `/hooks` → Fruit-crop condensatomes panel. Health: `/api/health` → `second_crop.fruit_crops`.
+UI: `/hooks` → Fruit-crop condensatomes panel + **Fruit cross-species comparison**
+(`#fruit-cross-species`). Health: `/api/health` → `second_crop.fruit_crops`
+(+ `cross_species`). Methods/thresholds: [`cross_species/README.md`](./cross_species/README.md).
 
 ## Honesty
 
@@ -36,3 +41,5 @@ UI: `/hooks` → Fruit-crop condensatomes panel. Health: `/api/health` → `seco
   for fruit species (keeps `grape_condensatome.sqlite` ≤100 MiB).
 - Species without a UniProt reference/near-complete proteome are listed in the manifest
   `unavailable` block — no invented deposits.
+- Cross-species clustering uses OrthoDB / grape-join / gene-name **proxies** (not curated
+  1:1 orthologs). OrthoDB-sparse proteomes enrich orphan-high species-specific peaks.

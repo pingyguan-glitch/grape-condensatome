@@ -126,6 +126,15 @@ fruit-crop panel. Uses the same grape-trained PlantLLPS v13 composition-proxy pa
 second-crop; **not** species-retrained. Species without a usable UniProt proteome are
 listed in the manifest `unavailable` block (no invented tables).
 
+Cross-species high-score comparison (reads existing fruit SQLite; no re-scoring):
+
+```bash
+python3 scripts/analyze_fruit_cross_species.py
+# → data/fruit_crops/cross_species/ (conservative + species-specific TSV.gz + browse.json)
+```
+
+UI: `/hooks#fruit-cross-species`. Methods: `data/fruit_crops/cross_species/README.md`.
+
 ## Fair NAR+ benchmark suite
 
 Leakage-controlled same-set comparison (PlantLLPS vs PSAP / LLPhyScore / PLAAC-approx /
