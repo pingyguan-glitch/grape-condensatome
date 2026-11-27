@@ -1,5 +1,16 @@
 # Release notes
 
+## v1.5.1 (2026-11-27)
+
+NAR+ atlas analyses: Tier A∪B domain enrichment, comparator disagreement, structure–score joint.
+
+- `scripts/enrich_family_enrichment.py` — hypergeometric Pfam/InterPro enrichment vs scored proteome; BH FDR within each DB; deposits `data/family_enrichment/` + figure `public/figures/top_families_pfam.svg`.
+- `scripts/enrich_comparator_disagreement.py` — PlantLLPS Tier A∪B with native PSAP and/or LLPhyScore in the proteome bottom quartile; Ser-rich/MAP focus flags; `data/comparator_disagreement/` + `METHOD.md`.
+- `scripts/enrich_structure_score_joint.py` — Tier A∪B ∩ AlphaFold low-pLDDT (`af_frac_very_low`); threshold hypergeometric + BH FDR; per-protein flags under `data/structure_score/`.
+- UI `/analyses` (family / disagreement / structure tabs); `/api/health.atlas_analyses`; SQLite meta pointers only (DB stays ≤100 MiB).
+- Headline: Pfam FDR&lt;0.05 **144** / 424 tested; InterPro FDR&lt;0.05 **323** / 984; disagreement **1 555** (both-low **277**; Ser/MAP focus **448**); structure joint flags **1 872** / 3 423 Tier A∪B with AF (all 4 af_frac thresholds FDR&lt;0.05).
+- Honesty: family + structure threshold tests are FDR-controlled; disagreement set and per-protein structure flags are exploratory.
+
 ## v1.5.0 (2026-11-27)
 
 NAR+ atlas analyses on existing stress_modules / STRING / UniProt joins (analyses 2, 6, 7).

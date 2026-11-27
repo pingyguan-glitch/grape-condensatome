@@ -1,0 +1,98 @@
+{
+  "version": "1.5.0",
+  "layer": "structure_score_joint",
+  "n_proteins": 25972,
+  "n_af_covered": 23421,
+  "n_tier_ab": 3870,
+  "n_tier_ab_af": 3423,
+  "flag_threshold": 0.25,
+  "n_flag_rows": 3423,
+  "n_joint_high_plantllps_low_plddt": 1872,
+  "by_tier": {
+    "A": {
+      "n": 1142,
+      "n_with_af": 983,
+      "mean_af_frac_very_low": 0.514017,
+      "median_af_frac_very_low": 0.533,
+      "mean_af_mean_plddt": 55.2847,
+      "frac_af_frac_ge_flag_thr": 0.868769
+    },
+    "B": {
+      "n": 2728,
+      "n_with_af": 2440,
+      "mean_af_frac_very_low": 0.249616,
+      "median_af_frac_very_low": 0.202,
+      "mean_af_mean_plddt": 73.1252,
+      "frac_af_frac_ge_flag_thr": 0.417213
+    },
+    "C": {
+      "n": 9653,
+      "n_with_af": 8614,
+      "mean_af_frac_very_low": 0.280883,
+      "median_af_frac_very_low": 0.235,
+      "mean_af_mean_plddt": 70.4304,
+      "frac_af_frac_ge_flag_thr": 0.473996
+    },
+    "D": {
+      "n": 12449,
+      "n_with_af": 11384,
+      "mean_af_frac_very_low": 0.170204,
+      "median_af_frac_very_low": 0.101,
+      "mean_af_mean_plddt": 78.0385,
+      "frac_af_frac_ge_flag_thr": 0.208626
+    }
+  },
+  "enrichment": [
+    {
+      "test": "af_frac_very_low>=0.15",
+      "threshold": 0.15,
+      "n_background_af": 23421,
+      "n_tier_ab_af": 3423,
+      "n_high_low_plddt": 12460,
+      "n_high_intersect_tier_ab": 2420,
+      "enrichment_fold": 1.175417,
+      "hypergeom_pvalue": 0.0,
+      "bh_fdr": 0.0
+    },
+    {
+      "test": "af_frac_very_low>=0.25",
+      "threshold": 0.25,
+      "n_background_af": 23421,
+      "n_tier_ab_af": 3423,
+      "n_high_low_plddt": 8330,
+      "n_high_intersect_tier_ab": 1872,
+      "enrichment_fold": 1.360051,
+      "hypergeom_pvalue": 0.0,
+      "bh_fdr": 0.0
+    },
+    {
+      "test": "af_frac_very_low>=0.35",
+      "threshold": 0.35,
+      "n_background_af": 23421,
+      "n_tier_ab_af": 3423,
+      "n_high_low_plddt": 5539,
+      "n_high_intersect_tier_ab": 1398,
+      "enrichment_fold": 1.527462,
+      "hypergeom_pvalue": 0.0,
+      "bh_fdr": 0.0
+    },
+    {
+      "test": "af_frac_very_low>=0.5",
+      "threshold": 0.5,
+      "n_background_af": 23421,
+      "n_tier_ab_af": 3423,
+      "n_high_low_plddt": 2987,
+      "n_high_intersect_tier_ab": 832,
+      "enrichment_fold": 1.685709,
+      "hypergeom_pvalue": 0.0,
+      "bh_fdr": 0.0
+    }
+  ],
+  "n_enrichment_fdr_lt_0.05": 4,
+  "paths": {
+    "enrichment": "data/structure_score/enrichment_thresholds.tsv",
+    "flags": "data/structure_score/tier_ab_low_plddt_flags.tsv",
+    "ui_tables": "data/structure_score/ui_tables.json"
+  },
+  "honesty": "Joint overlap of PlantLLPS Tier A\u222aB with AlphaFold low-pLDDT (af_frac_very_low \u2265 0.25 for per-protein flags). Hypergeometric tests across discrete fraction thresholds are BH-controlled; the ranked flag table is exploratory co-occurrence, not proof of LLPS. AF coverage incomplete (23421/25972 proteins)."
+}

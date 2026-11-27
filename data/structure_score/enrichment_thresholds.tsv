@@ -1,0 +1,5 @@
+test	threshold	n_background_af	n_tier_ab_af	n_high_low_plddt	n_high_intersect_tier_ab	enrichment_fold	hypergeom_pvalue	bh_fdr
+af_frac_very_low>=0.15	0.15	23421	3423	12460	2420	1.175417	0.0	0.0
+af_frac_very_low>=0.25	0.25	23421	3423	8330	1872	1.360051	0.0	0.0
+af_frac_very_low>=0.35	0.35	23421	3423	5539	1398	1.527462	0.0	0.0
+af_frac_very_low>=0.5	0.5	23421	3423	2987	832	1.685709	0.0	0.0
