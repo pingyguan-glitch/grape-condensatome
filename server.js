@@ -23,6 +23,7 @@ import {
   listStringEnrichment,
   stringNetworkMeta,
   loadStringTopNeighbors,
+  listLlpsGold,
   DEFAULT_DB,
 } from "./lib/db.js";
 import { loadModel, scoreSequence } from "./lib/model.js";
@@ -174,6 +175,8 @@ function layout(title, body, query = "") {
       <a href="/tiers/C">Tier C</a>
       <a href="/tiers/D">Tier D</a>
       <a href="/compare">Compare</a>
+      <a href="/gold">LLPS gold</a>
+      <a href="/map">MAP screen</a>
       <a href="/hooks">Cross-crop</a>
       <a href="/network">STRING</a>
       <a href="/download">Download</a>
@@ -182,7 +185,8 @@ function layout(title, body, query = "") {
   </header>
   <div class="banner">
     PlantLLPS hybrid model (v13). Disorder: composition proxy by default; metapredict + AlphaFold pLDDT
-    joined where computed. Orthologs (Ath/rice via OrthoDB), STRING Vitis neighborhoods (/network),
+    joined where computed. Curated LLPS gold badges + reconstructed MAP-screen ρ on /gold and /map.
+    Orthologs (Ath/rice via OrthoDB), STRING Vitis neighborhoods (/network),
     and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC). Treat ranks as hypotheses.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
@@ -212,8 +216,12 @@ function proteinTable(rows, empty = "No proteins found.") {
           ? Number(r.expr_mean_tpm).toFixed(2)
           : "—";
       const ath = esc(r.ortholog_ath_gene || r.ortholog_ath || "—");
+      const gold =
+        Number(r.llps_gold) > 0
+          ? `<span class="badge gold" title="Curated LLPS evidence join">LLPS</span>`
+          : "";
       return `<tr>
-        <td class="mono"><a href="/protein/${pid}">${pid}</a></td>
+        <td class="mono"><a href="/protein/${pid}">${pid}</a> ${gold}</td>
         <td class="mono">${gene}</td>
         <td><span class="tier ${tier}">${tier}</span></td>
         <td>${fmtScore(r.score)}</td>
@@ -422,7 +430,12 @@ app.get("/protein/:id", (req, res) => {
   const body = `
     <div class="detail-hero">
       <div class="card">
-        <h2 class="mono">${esc(p.protein_id)}</h2>
+        <h2 class="mono">${esc(p.protein_id)}
+          ${
+            Number(p.llps_gold) > 0
+              ? `<span class="badge gold">LLPS evidence</span>`
+              : ""
+          }</h2>
         <p><strong>${esc(p.gene_name || "—")}</strong>
            · <span class="tier ${esc(p.tier)}">${esc(p.tier)}</span>
            · length ${esc(p.length)}</p>
@@ -462,6 +475,23 @@ app.get("/protein/:id", (req, res) => {
         }</p>
       </div>
     </div>
+    ${
+      p.llps_gold_entries && p.llps_gold_entries.length
+        ? `<div class="card" style="margin-top:1rem">
+            <h3>Curated LLPS evidence</h3>
+            <p class="muted">Joined from <span class="mono">data/curated/llps_experimental_gold.tsv</span>
+               (companion gold + modest literature / LLPSDB rows). Not an exhaustive catalog.</p>
+            <div class="features">${p.llps_gold_entries
+              .map(
+                (e) =>
+                  `<div><span class="k">${esc(e.gene_symbol || e.protein_id)}</span>
+                   <span class="v">${esc(e.label)} · ${esc(e.condensate_type)} · ${esc(
+                     e.citation
+                   )}</span></div>`
+              )
+              .join("")}</div></div>`
+        : ""
+    }
     <div class="card" style="margin-top:1rem">
       <h3>Orthologs / cross-crop</h3>
       <p>Family: <strong>${esc(p.cross_crop_family || "—")}</strong>
@@ -635,7 +665,7 @@ app.get("/network", (req, res) => {
       <p class="muted">Fold = (neighbor Tier A∪B fraction) / (proteome A∪B rate ≈ 0.149).
          Hypergeometric p is descriptive only — STRING channels include textmining;
          this is <strong>not</strong> experimental condensate membership.
-         Gold LLPS overlay (open PR #7) is separate; seeds here are score tiers.</p>
+         Gold LLPS overlay (/gold) is separate; seeds here are score tiers.</p>
       <p>
         Sort:
         <a href="/network?order=pvalue&min_n=${minN}">p-value</a> ·
@@ -682,6 +712,85 @@ function pagerHtml(base, page, pages, query = {}) {
     page < pages ? `<a class="btn secondary" href="${esc(mk(page + 1))}">Next →</a>` : "";
   return `<div class="pager" style="margin-top:1rem">${prev} ${next}</div>`;
 }
+
+app.get("/gold", (req, res) => {
+  const page = Math.max(1, Number(req.query.page || 1));
+  const { rows, total } = listLlpsGold(db, {
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+  });
+  let curatedMeta = "";
+  try {
+    const m = getMeta(db);
+    const g = m.llps_curated_gold ? JSON.parse(m.llps_curated_gold) : null;
+    if (g) {
+      curatedMeta = `Curated table rows: <strong>${esc(g.n_curated_rows)}</strong>
+        · grape proteins marked: <strong>${esc(g.n_grape_proteins_marked)}</strong>`;
+    }
+  } catch {
+    /* ignore */
+  }
+  const body = `
+    <div class="card">
+      <h2>Curated experimentally anchored LLPS</h2>
+      <p class="muted">${curatedMeta || "Run scripts/enrich_curated_llps_gold.py"}</p>
+      <p>Filter download: <a href="/download?evidence=llps">/download?evidence=llps</a>
+         · source TSV <span class="mono">data/curated/llps_experimental_gold.tsv</span></p>
+    </div>
+    ${proteinTable(rows, "No curated LLPS joins in DB.")}
+    ${pager("/gold", page, total)}`;
+  res.type("html").send(layout("LLPS gold", body));
+});
+
+app.get("/map", (_req, res) => {
+  const sidePath = join(__dirname, "data", "map_screen", "map_screen_spearman.json");
+  let report = null;
+  if (existsSync(sidePath)) {
+    try {
+      report = JSON.parse(readFileSync(sidePath, "utf8"));
+    } catch {
+      report = null;
+    }
+  }
+  const ann = report?.metrics?.annotation;
+  const go = report?.metrics?.go8017_only;
+  const body = `
+    <div class="card">
+      <h2>MAP screen (reconstructed)</h2>
+      <p class="muted">Companion Supplemental Data S1 (208 GO-annotated MAPs + original PSAP columns)
+        was never deposited. This page summarizes the <strong>annotation reconstruction</strong>
+        in <span class="mono">data/map_screen/</span> with native proteome PSAP / LLPhyScore.</p>
+      ${
+        ann
+          ? `<p>Annotation set n=<strong>${esc(ann.n)}</strong>
+               (GO:0008017 n=${esc(ann.n_go8017)}) ·
+               ρ(companion vs native PSAP)≈<strong>${esc(
+                 Number(ann.spearman_companion_vs_psap.rho).toFixed(3)
+               )}</strong> ·
+               ρ(PlantLLPS vs PSAP)≈<strong>${esc(
+                 Number(ann.spearman_plantllps_vs_psap.rho).toFixed(3)
+               )}</strong></p>
+             <p class="muted">Companion-cited ρ=0.368 remains the manuscript transfer-gap number;
+               recomputed ρ uses atlas native PSAP (see map_screen README).</p>
+             <p>F6HET4 native PSAP rank ${esc(ann.F6HET4.psap_rank)} / ${esc(
+                 ann.F6HET4.psap_n
+               )}
+               · LLPhyScore rank ${esc(ann.F6HET4.llphyscore_rank)} / ${esc(
+                 ann.F6HET4.llphyscore_n
+               )}
+               · PlantLLPS ${fmtScore(ann.F6HET4.score_plantllps)}</p>
+             <p class="muted">GO-only n=${esc(go?.n)} ·
+               ρ(companion vs LLPhyScore)≈${esc(
+                 Number(go?.spearman_companion_vs_llphyscore?.rho ?? NaN).toFixed(3)
+               )}</p>`
+          : `<p class="err">Missing data/map_screen/map_screen_spearman.json — run scripts/deposit_map_screen.py</p>`
+      }
+      <p><a href="/download?keyword=Microtubule">Download KW-Microtubule</a> ·
+         <a href="/protein/F6HET4">VvMAP65-1 F6HET4</a></p>
+    </div>`;
+  res.type("html").send(layout("MAP screen", body));
+});
+
 
 app.get("/compare", (_req, res) => {
   // Prefer deposited gold side-by-side (includes Ath/human IDs not in grape proteome)
@@ -799,6 +908,7 @@ const DOWNLOAD_TSV_COLS = [
   "domain_pfam_ids",
   "cross_crop_family",
   "keywords",
+  "llps_gold",
 ];
 
 function downloadFilters(query) {
@@ -807,6 +917,7 @@ function downloadFilters(query) {
     family: String(query.family || "").trim(),
     keyword: String(query.keyword || query.keywords || "").trim(),
     q: String(query.q || "").trim(),
+    evidence: String(query.evidence || "").trim(),
     limit: Number(query.limit || 0) || 0,
   };
 }
@@ -885,9 +996,9 @@ app.get("/download", (req, res) => {
   const body = `
     <div class="card">
       <h2>Bulk download</h2>
-      <p class="muted">Filter the scored proteome by tier, cross-crop family, keyword, or free-text,
+      <p class="muted">Filter the scored proteome by tier, cross-crop family, keyword, curated LLPS evidence, or free-text,
       then download TSV (score columns) or FASTA (sequences from UP000009183).
-      API: <span class="mono">GET /api/download?tier=A&amp;format=tsv|fasta</span></p>
+      API: <span class="mono">GET /api/download?tier=A&amp;evidence=llps&amp;format=tsv|fasta</span></p>
       <form method="get" action="/download" class="inline">
         <label>Tier
           <select name="tier">
@@ -898,6 +1009,12 @@ app.get("/download", (req, res) => {
                   `<option value="${t}" ${filters.tier === t ? "selected" : ""}>${t}</option>`
               )
               .join("")}
+          </select>
+        </label>
+        <label>Evidence
+          <select name="evidence">
+            <option value="">Any</option>
+            <option value="llps" ${filters.evidence === "llps" ? "selected" : ""}>LLPS gold join</option>
           </select>
         </label>
         <label>Family <input name="family" value="${esc(filters.family)}" placeholder="MAP65"/></label>

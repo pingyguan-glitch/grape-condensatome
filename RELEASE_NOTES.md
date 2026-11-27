@@ -2,18 +2,26 @@
 
 ## v0.9.0 (2026-11-27)
 
-Additive **STRING neighborhood + condensatome enrichment** layer on `main` v0.6.0.
-Ships as **v0.9.0** so it does not fight open Wave 2 **v0.8.0** (PR #7 gold/MAP/hold-out).
+Additive **STRING neighborhood + condensatome enrichment** on top of Wave 2 **v0.8.0** (gold/MAP/hold-out).
 
 - `scripts/enrich_string_neighborhood.py` — native *Vitis* STRING (taxid 29760) v12 downloads;
   UniProt mapping **25 867 / 25 972** (99.6%); 1-hop neighborhoods at combined_score ≥ 400.
-- SQLite: `string_neighborhood` for **Tier A seeds** (~1 142) + `string_id` on mapped proteins
-  (full-proteome neighbor JSON would exceed GitHub's 100 MB SQLite limit).
+- SQLite: `string_neighborhood` for **Tier A seeds** (~833 deposited seed rows) + `string_id` on mapped proteins
+  (full-proteome neighbor JSON would exceed GitHub's 100 MB SQLite limit); combined DB also keeps curated LLPS gold columns from v0.8.0.
 - UI: protein-page neighborhood snippet + `/network` enrichment table; `/api/health` reports STRING meta.
 - Deposits: `data/string/enrichment_summary.json`, `neighborhood_stats.tsv.gz` (19 523),
   `top_neighbors.tsv.gz`, `seed_edges.tsv.gz` (44 932), `README.md`.
 - Honest limits: combined score ≠ LLPS evidence (includes textmining); no Ath PPI transfer;
-  gold overlay from PR #7 not required (seeds = score Tier A).
+  seeds = score Tier A (gold overlay is separate).
+
+## v0.8.0 (2026-11-27)
+
+Wave 2 resource-quality: curated LLPS gold, MAP-screen deposit + Spearman ρ, family / transfer AUCs.
+
+- **Curated LLPS gold** — `data/curated/llps_experimental_gold.tsv` (protein ID, species, condensate type, assay/evidence, citation, grape ortholog); `scripts/enrich_curated_llps_gold.py` joins SQLite `llps_gold` / `llps_gold_json`; UI `/gold` + protein-page badge + download `evidence=llps`.
+- **MAP screen deposit** — reconstructed GO:0008017 ∪ KW-Microtubule table under `data/map_screen/` with provenance README; recomputed Spearman ρ vs PlantLLPS / native PSAP / LLPhyScore (`map_screen_spearman.json`). Companion-cited ρ=0.368 retained as manuscript number (original 208-ID PSAP table still not recovered).
+- **Family hold-out / transfer** — `scripts/eval_family_holdout.py` → `data/benchmarks/family_holdout_metrics.json` + README; mean hybrid family-hold-out AUC ≈ **0.833** (13 families); Ath→rice hybrid AUC = **1.00** on tiny n=6 (honesty: small rice slice). Contrasts in-sample gold hybrid AUC ≈ 0.990.
+- Version **0.8.0** (skips 0.7.x to avoid collision with in-flight P1 AF-segments / stress RNA-seq work).
 
 ## v0.6.0 (2026-11-27)
 

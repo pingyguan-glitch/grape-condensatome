@@ -91,8 +91,11 @@ python3 scripts/score_psap_proteome.py --db-ids-only --batch-size 500 \
 
 Checkpoint: `data/benchmarks/psap_proteome.checkpoint.json` (gitignored).
 
-**MAP-screen Spearman ρ** still cannot be recomputed until the companion 208-protein
-table (with PSAP columns) is deposited.
+**MAP-screen Spearman ρ:** companion Supplemental Data S1 (208 IDs + original PSAP
+columns) was never recovered. `scripts/deposit_map_screen.py` deposits an
+annotation reconstruction under `data/map_screen/` and recomputes ρ vs **native
+proteome PSAP** (annotation set companion-vs-PSAP ≈ 0.20). Cite companion ρ =
+0.368 for the published transfer gap; cite the deposit for the public atlas.
 
 ### LLPhyScore (Cai / Forman-Kay lab)
 
