@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520">
+<rect width="920" height="520" fill="#fbfaf7"/>
+<text x="460.0" y="28" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#1a1a1a">PlantLLPS feature ablation (v13 stratified 5-fold)</text>
+<text x="460.0" y="46" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#555">full-model mean logistic AUC = 0.863 · Δ = ablated − full (negative = group contributes)</text>
+<text x="230.0" y="38" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700">Leave-one-group-out ΔAUC (logistic)</text>
+<line x1="252.0" y1="56" x2="252.0" y2="472" stroke="#888" stroke-width="1"/>
+<rect x="126.4" y="62.0" width="125.6" height="39.6" fill="#c45c26" opacity="0.85"/>
+<text x="14.0" y="90.5" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">map65_cterm</text>
+<text x="446.0" y="90.5" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">-0.036</text>
+<rect x="179.6" y="107.6" width="72.4" height="39.6" fill="#c45c26" opacity="0.85"/>
+<text x="14.0" y="136.0" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">disorder</text>
+<text x="446.0" y="136.0" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">-0.021</text>
+<rect x="192.2" y="153.1" width="59.8" height="39.6" fill="#c45c26" opacity="0.85"/>
+<text x="14.0" y="181.6" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">sp_tp</text>
+<text x="446.0" y="181.6" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">-0.017</text>
+<rect x="219.5" y="198.7" width="32.5" height="39.6" fill="#c45c26" opacity="0.85"/>
+<text x="14.0" y="227.1" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">ser_arg</text>
+<text x="446.0" y="227.1" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">-0.009</text>
+<rect x="230.5" y="244.2" width="21.5" height="39.6" fill="#c45c26" opacity="0.85"/>
+<text x="14.0" y="272.7" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">low_complexity</text>
+<text x="446.0" y="272.7" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">-0.006</text>
+<rect x="252.0" y="289.8" width="5.5" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="14.0" y="318.3" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">qn_polar</text>
+<text x="446.0" y="318.3" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">+0.002</text>
+<rect x="252.0" y="335.3" width="7.0" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="14.0" y="363.8" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">aromatic</text>
+<text x="446.0" y="363.8" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">+0.002</text>
+<rect x="252.0" y="380.9" width="8.6" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="14.0" y="409.4" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">charge_blockiness</text>
+<text x="446.0" y="409.4" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">+0.002</text>
+<rect x="252.0" y="426.4" width="42.7" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="14.0" y="454.9" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">length</text>
+<text x="446.0" y="454.9" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">+0.012</text>
+<text x="690.0" y="38" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="13" font-weight="700">Group-only mean AUC (logistic)</text>
+<line x1="712.0" y1="56" x2="712.0" y2="472" stroke="#888" stroke-width="1"/>
+<rect x="478.0" y="62.0" width="424.0" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="474.0" y="90.5" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">qn_polar</text>
+<text x="906.0" y="90.5" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.735</text>
+<rect x="478.0" y="107.6" width="407.2" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="474.0" y="136.0" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">disorder</text>
+<text x="906.0" y="136.0" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.706</text>
+<rect x="478.0" y="153.1" width="402.5" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="474.0" y="181.6" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">aromatic</text>
+<text x="906.0" y="181.6" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.698</text>
+<rect x="478.0" y="198.7" width="390.6" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="474.0" y="227.1" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">ser_arg</text>
+<text x="906.0" y="227.1" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.677</text>
+<rect x="478.0" y="244.2" width="361.5" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="474.0" y="272.7" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">low_complexity</text>
+<text x="906.0" y="272.7" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.627</text>
+<rect x="478.0" y="289.8" width="356.3" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="474.0" y="318.3" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">map65_cterm</text>
+<text x="906.0" y="318.3" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.618</text>
+<rect x="478.0" y="335.3" width="353.5" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="474.0" y="363.8" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">charge_blockiness</text>
+<text x="906.0" y="363.8" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.613</text>
+<rect x="478.0" y="380.9" width="352.8" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="474.0" y="409.4" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">length</text>
+<text x="906.0" y="409.4" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.612</text>
+<rect x="478.0" y="426.4" width="280.4" height="39.6" fill="#2a6f6f" opacity="0.85"/>
+<text x="474.0" y="454.9" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">sp_tp</text>
+<text x="906.0" y="454.9" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333">0.486</text>
+</svg>
