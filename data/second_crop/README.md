@@ -5,7 +5,7 @@ Wave 2 gold (**v0.8.0** / PR #7) or STRING (**v0.9.0** / PR #8).
 
 | File | Role |
 |------|------|
-| `soybean_condensatome.proteome.tsv.gz` | Full PlantLLPS scores (composition-proxy disorder) |
+| `soybean_condensatome.proteome.tsv.gz` | Full PlantLLPS scores (gitignored; rebuild via score script / Zenodo) |
 | `soybean_condensatome.sqlite` | Slim browse DB (scores + grape ortholog pointers) |
 | `soybean_condensatome.summary.json` | Tier counts / honesty / wall-time |
 | `soybean_grape_ortholog_join.json` | OrthoDB join coverage vs grape atlas |

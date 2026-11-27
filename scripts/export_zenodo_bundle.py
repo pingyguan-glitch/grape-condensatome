@@ -29,7 +29,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB = ROOT / "data" / "grape_condensatome.sqlite"
 DEFAULT_MODEL = ROOT / "data" / "model_formal.json"
-DEFAULT_VERSION = "1.1.0"
+
+
+def _read_version() -> str:
+    path = ROOT / "VERSION"
+    if path.is_file():
+        return path.read_text(encoding="utf-8").strip().lstrip("v") or "1.1.1"
+    return "1.1.1"
+
+
+DEFAULT_VERSION = _read_version()
 
 # Slim columnar export (skip huge JSON blobs that are already in SQLite).
 PROTEINS_PARQUET_COLS = [

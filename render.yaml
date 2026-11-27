@@ -1,0 +1,21 @@
+# Render Blueprint — GrapeCondensatome (Node + SQLite)
+# Dashboard: New → Blueprint → connect this repo, or:
+#   https://dashboard.render.com/blueprints
+#
+# Free Web Service: spins down after idle; cold start ~30–60s.
+# After deploy, paste the issued https://*.onrender.com URL into docs/HOSTING.md.
+services:
+  - type: web
+    name: grape-condensatome
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: HOST
+        value: "0.0.0.0"
+      # PORT is injected by Render

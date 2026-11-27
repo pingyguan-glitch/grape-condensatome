@@ -11,6 +11,7 @@ version: "1.1.1"
 date-released: "2026-11-27"
 license: MIT
 repository-code: "https://github.com/pingyguan-glitch/grape-condensatome"
+url: "https://grape-condensatome.apps.grok.bot"
 # identifiers:   # uncomment after Zenodo publish — do NOT invent a DOI
 #   - type: doi
 #     value: "10.5281/zenodo.PASTE_REAL_ID_HERE"

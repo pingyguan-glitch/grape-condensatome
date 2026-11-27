@@ -2,7 +2,15 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 1.1.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+[![Version](https://img.shields.io/badge/version-1.1.1-0B6E4F)](./VERSION)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
+[![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
+[![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
+
+**Version:** 1.1.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+
+> Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
 > **v1.0.0** combines Wave 2 curated gold/MAP/hold-out, STRING neighborhoods, and the soybean second-crop condensatome.
 
@@ -16,14 +24,14 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Training history | `data/train_formal_v*.csv`, `data/training/` | v1–v13 snapshots + metrics |
 | Model weights | `data/model_formal.json` | **v13** hybrid logistic + companion |
 | Proteome SQLite | `data/grape_condensatome.sqlite` | 25 972 scored rows + UniProt + Expression Atlas |
-| Proteome TSV | `data/grape_condensatome.proteome.tsv` | flat table |
+| Proteome TSV | Zenodo bundle / local export | flat table (gitignored; rebuild from SQLite or `export_zenodo_bundle.py`) |
 | Node web UI | `server.js` + `lib/` + `public/` | Express + `node:sqlite` (Node ≥22) |
 | Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + family hold-out / transfer + **feature ablation** |
 | Experimental models | `data/experimental/` | optional metapredict / AF-pLDDT disorder retrains (**not** production default) |
 | Curated LLPS gold | `data/curated/` | experimentally anchored overlay + SQLite/UI badge |
 | MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
 | External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
-| Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **Local server only** until a real public URL exists; publish-app / Railway / Render / Fly |
+| Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **https://grape-condensatome.apps.grok.bot** (+ local / Render / Railway / Fly fallbacks) |
 | Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
 
 ## Honesty (read before citing metrics)
@@ -122,9 +130,9 @@ python3 -m plantllps serve --host 0.0.0.0 --port 8765
 npm start
 ```
 
-Public hosting: see [`docs/HOSTING.md`](./docs/HOSTING.md) — **local server only** unless a confirmed public URL is recorded there. **GitHub Pages will not work** (needs a SQLite server).
+Public hosting: **https://grape-condensatome.apps.grok.bot** (see [`docs/HOSTING.md`](./docs/HOSTING.md)). Local `npm start` still works. **GitHub Pages will not work** (needs a SQLite server). Deploy configs: `render.yaml`, `railway.toml`, `fly.toml`, `Dockerfile`.
 
-Data/model deposit for Zenodo: [`docs/ZENODO.md`](./docs/ZENODO.md) (`python3 scripts/export_zenodo_bundle.py`). Paste the real DOI into `CITATION.cff` after publish — do not invent one.
+Data/model deposit for Zenodo: [`docs/ZENODO.md`](./docs/ZENODO.md) (`python3 scripts/export_zenodo_bundle.py [--parquet]`). Archives land under gitignored `dist/` — upload to Zenodo; paste the real DOI into `CITATION.cff` after publish — do not invent one.
 
 ## Benchmarks vs PSAP / LLPhyScore
 
@@ -167,8 +175,8 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 ## Still open (not claimed done)
 
 - Exact RBGD4 AGI  
-- Confirmed public hosted URL (local-only until publish-app confirm or Railway/Render/Fly deploy — see `docs/HOSTING.md`)  
-- Zenodo DOI (bundle script + steps in `docs/ZENODO.md`; paste DOI after you publish)  
+- Zenodo DOI (bundle verified for v1.1.1 under `dist/`; mint on Zenodo then paste DOI — `docs/ZENODO.md`)  
+- Host hardening follow-up (publish review: resource exhaustion / data exposure — noted in `docs/HOSTING.md`)  
 - Splice isoforms; coexpression-only track; tomato second-crop deposit  
 
 

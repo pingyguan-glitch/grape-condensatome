@@ -22,6 +22,14 @@ Figure 3 feature-ablation panels + optional experimental disorder retrains (comp
 - `docs/ZENODO.md` + `scripts/export_zenodo_bundle.py` — build Zenodo bundle (weights, SQLite, TSV.gz, optional Parquet, checksums). **No invented DOI**; user publishes on Zenodo and pastes DOI into `CITATION.cff`.
 - `docs/HOSTING.md` — clarified **local-server-only** until a real public URL exists; Railway/Render one-liners; SQLite size note (~100 MiB).
 
+## Public host + Zenodo automation (post-v1.1.1)
+
+- Deploy configs: `render.yaml`, `railway.toml`, `fly.toml`, `.dockerignore` (+ existing `Dockerfile`); health path `/api/health`.
+- **Public URL live:** https://grape-condensatome.apps.grok.bot (Cursor publish-app). README badges + `CITATION.cff` `url` updated; Zenodo DOI still pending.
+- `docs/HOSTING.md` / `docs/ZENODO.md` for **v1.1.1**; export script reads `VERSION`. Security review: resource_exhaustion / data_exposure noted for later hardening.
+- Bundle built locally with `--parquet` into gitignored `dist/` (~33 MiB zip); not committed.
+- Untracked `data/grape_condensatome.proteome.tsv` + `data/second_crop/*.proteome.tsv.gz` (gitignored) so Cursor publish-app stays under the 50 MiB pack limit; tables remain in the Zenodo bundle / regenerable from SQLite.
+
 ## v1.1.0 (2026-11-27)
 
 P1 atlas layers on v1.0.0: full scored-proteome AlphaFold low-pLDDT segments + multi-stress RNA-seq.
