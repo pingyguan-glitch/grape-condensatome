@@ -103,6 +103,20 @@ Deposits under `data/second_crop/` (TSV.gz + slim SQLite). Grape atlas gains thi
 under GitHub’s ~100 MB limit. UI: `/hooks` soybean panel. Uses grape-trained PlantLLPS
 v13 with composition-proxy disorder; tiers recalibrated per crop proteome.
 
+## Fair NAR+ benchmark suite
+
+Leakage-controlled same-set comparison (PlantLLPS vs PSAP / LLPhyScore / PLAAC-approx /
+ProX-style). See [`BENCHMARK_LEADERBOARD.md`](./BENCHMARK_LEADERBOARD.md).
+
+```bash
+export PSAP_PYTHON="$(micromamba run -n psap39 which python)"
+export LLPHYSCORE_HOME=/tmp/LLPhyScore/standalone_package/LLPhyScore
+export LLPHYSCORE_PYTHON="$(micromamba run -n llphy39 which python)"  # optional
+python3 scripts/eval_fair_benchmark.py
+# → data/benchmarks/fair_comparison_*.json|tsv + docs/BENCHMARK_LEADERBOARD.md
+# Reuse deposited OOB cache: python3 scripts/eval_fair_benchmark.py --skip-oob-run
+```
+
 ## Side-by-side comparators (PSAP / LLPhyScore / PLAAC)
 
 ```bash
