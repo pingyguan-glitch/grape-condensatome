@@ -1,0 +1,814 @@
+{
+  "n_curated_rows": 32,
+  "n_grape_proteins_marked": 34,
+  "n_positives": 31,
+  "n_excluded": 1,
+  "source_tsv": "data/curated/llps_experimental_gold.tsv",
+  "honesty": "Curated overlay from companion gold + modest literature/LLPSDB rows already in project docs/train; not an exhaustive LLPSDB dump.",
+  "rows": [
+    {
+      "protein_id": "Q9FLP0",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "MAP65-1",
+      "condensate_type": "microtubule_bundling_condensate",
+      "assay_evidence": "in_vitro_droplets;c_crit_approx_48nM;MT_aster_nucleation",
+      "citation": "Sahu et al. 2023",
+      "label": "positive",
+      "grape_ortholog": "F6HET4",
+      "in_plantllps_train": "yes",
+      "notes": "Companion mechanism-matched gold; Ser-rich C-terminal driver"
+    },
+    {
+      "protein_id": "F6HET4",
+      "species": "Vitis vinifera",
+      "gene_symbol": "VvMAP65-1",
+      "condensate_type": "microtubule_bundling_condensate",
+      "assay_evidence": "ortholog_of_AtMAP65-1;composition_conserved_tail",
+      "citation": "Sahu et al. 2023; Guan companion MAP/LLPS",
+      "label": "positive",
+      "grape_ortholog": "F6HET4",
+      "in_plantllps_train": "yes",
+      "notes": "Grape ortholog of proven AtMAP65-1 driver; atlas anchor"
+    },
+    {
+      "protein_id": "A0A0R4J2T3",
+      "species": "Glycine max",
+      "gene_symbol": "MAP65-1a",
+      "condensate_type": "microtubule_bundling_condensate",
+      "assay_evidence": "ortholog_tail_composition_conservation",
+      "citation": "Sahu et al. 2023; Guan companion MAP/LLPS",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Soybean MAP65-1a ortholog in formal train"
+    },
+    {
+      "protein_id": "O82804",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "ELF3",
+      "condensate_type": "thermosensor_prion-like",
+      "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+      "citation": "Jung et al. 2020",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Companion plant positive"
+    },
+    {
+      "protein_id": "Q8VZR8",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "FLOE1",
+      "condensate_type": "hydration_sensor",
+      "assay_evidence": "hydration-dependent_LLPS;seed_germination_gate",
+      "citation": "Dorone et al. 2021",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "AT4G28300"
+    },
+    {
+      "protein_id": "Q7DZS7",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "RBGD2",
+      "condensate_type": "stress_granule_like",
+      "assay_evidence": "heat-induced_LLPS",
+      "citation": "Zhu et al. 2022",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Companion plant positive; RBGD4 AGI still open"
+    },
+    {
+      "protein_id": "Q8W234",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "SEUSS",
+      "condensate_type": "osmotic_stress_condensate",
+      "assay_evidence": "hyperosmotic_stress_condensation",
+      "citation": "Wang et al. 2022",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Companion plant positive"
+    },
+    {
+      "protein_id": "O04425",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "FCA",
+      "condensate_type": "nuclear_RNA_processing",
+      "assay_evidence": "FLL2-promoted_co-condensation",
+      "citation": "Fang et al. 2019",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Companion plant positive"
+    },
+    {
+      "protein_id": "Q84TD8",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "FLL2",
+      "condensate_type": "polyadenylation_condensate",
+      "assay_evidence": "literature_curated_condensate_scaffold",
+      "citation": "Fang et al. 2019",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Literature expansion (train)"
+    },
+    {
+      "protein_id": "Q0WW84",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "RBP47B",
+      "condensate_type": "stress_granule",
+      "assay_evidence": "stress-related_RNA-binding_protein",
+      "citation": "literature_curated (train note)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Stress RBP; modest expansion"
+    },
+    {
+      "protein_id": "Q9LIS2",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "RBG4",
+      "condensate_type": "RNA_granule",
+      "assay_evidence": "glycine-rich_RBP",
+      "citation": "literature_curated (train note)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "GR-RBP family"
+    },
+    {
+      "protein_id": "Q9LQI9",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "UBP1B",
+      "condensate_type": "stress_granule",
+      "assay_evidence": "polyU-binding_RBP",
+      "citation": "literature_curated (train note)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "SG-associated"
+    },
+    {
+      "protein_id": "Q9C658",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "DCP5",
+      "condensate_type": "processing_body",
+      "assay_evidence": "decapping_condensate_component",
+      "citation": "literature_curated (train note)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "P-body component"
+    },
+    {
+      "protein_id": "Q9LDX1",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "SGS3",
+      "condensate_type": "RNA_silencing_condensate",
+      "assay_evidence": "RNA_silencing_condensate-associated",
+      "citation": "literature_curated (train note)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Mechanism-associated; not primary droplet paper"
+    },
+    {
+      "protein_id": "Q9FIX7",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "TZP",
+      "condensate_type": "photobody_associated",
+      "assay_evidence": "tandem_zinc-knuckle_photobody-associated",
+      "citation": "literature_curated (train note)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Photobody-associated"
+    },
+    {
+      "protein_id": "O23593",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "RGGB",
+      "condensate_type": "nuclear_RBP_condensate",
+      "assay_evidence": "RGG-repeat_nuclear_RBP",
+      "citation": "literature_curated (train note)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "RBGD-family related"
+    },
+    {
+      "protein_id": "P14713",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "PHYB",
+      "condensate_type": "photobody",
+      "assay_evidence": "phytochrome_photobody",
+      "citation": "round_v4 train curation",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Photobody; folded chromophore domain \u2014 use with mechanism caution"
+    },
+    {
+      "protein_id": "P43254",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "COP1",
+      "condensate_type": "photomorphogenesis_condensate",
+      "assay_evidence": "COP1-SPA_complex",
+      "citation": "round_v4 train curation",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Photomorphogenesis"
+    },
+    {
+      "protein_id": "Q9S7N5",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "SPA1",
+      "condensate_type": "photomorphogenesis_condensate",
+      "assay_evidence": "COP1-SPA_complex",
+      "citation": "round_v4 train curation",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Photomorphogenesis"
+    },
+    {
+      "protein_id": "Q96525",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "CRY2",
+      "condensate_type": "photobody",
+      "assay_evidence": "blue-light_photobody_LLPS",
+      "citation": "Wang et al. 2021",
+      "label": "excluded_mechanism_mismatch",
+      "grape_ortholog": "",
+      "in_plantllps_train": "no",
+      "notes": "Folded-domain oligomerization; held out of IDR-driver training (eval_mechanism_special)"
+    },
+    {
+      "protein_id": "O43663",
+      "species": "Homo sapiens",
+      "gene_symbol": "PRC1",
+      "condensate_type": "microtubule_bundling_condensate",
+      "assay_evidence": "in_vitro_droplets_with_MAP65-1_study",
+      "citation": "Sahu et al. 2023",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Animal MAP65 ortholog / mechanism control"
+    },
+    {
+      "protein_id": "Q9ULW0",
+      "species": "Homo sapiens",
+      "gene_symbol": "TPX2",
+      "condensate_type": "spindle_condensate",
+      "assay_evidence": "co-condensation_with_tubulin",
+      "citation": "King and Petry 2020",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Animal mechanism control"
+    },
+    {
+      "protein_id": "P10636",
+      "species": "Homo sapiens",
+      "gene_symbol": "MAPT",
+      "condensate_type": "neuronal_condensate",
+      "assay_evidence": "in_vitro_LLPS_initiating_aggregation",
+      "citation": "Wegmann et al. 2018",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "tau; animal mechanism control"
+    },
+    {
+      "protein_id": "P35637",
+      "species": "Homo sapiens",
+      "gene_symbol": "FUS",
+      "condensate_type": "RNP_granule",
+      "assay_evidence": "liquid-to-solid_transition",
+      "citation": "Patel et al. 2015",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Animal mechanism control"
+    },
+    {
+      "protein_id": "P09651",
+      "species": "Homo sapiens",
+      "gene_symbol": "HNRNPA1",
+      "condensate_type": "RNP_granule",
+      "assay_evidence": "LCD_phase_separation",
+      "citation": "Molliex et al. 2015",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Animal mechanism control"
+    },
+    {
+      "protein_id": "Q9NQI0",
+      "species": "Homo sapiens",
+      "gene_symbol": "DDX4",
+      "condensate_type": "nuage",
+      "assay_evidence": "nuage_phase_transition",
+      "citation": "Nott et al. 2015",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Animal mechanism control"
+    },
+    {
+      "protein_id": "Q9NP74",
+      "species": "Homo sapiens",
+      "gene_symbol": "ZNF207",
+      "condensate_type": "spindle_assembly_condensate",
+      "assay_evidence": "phase_transition_in_spindle_assembly",
+      "citation": "Jiang et al. 2015",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "BuGZ; UniProt Q9NP74 used in reconstructed gold (companion table also cites O43670)"
+    },
+    {
+      "protein_id": "Q8L3W1",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "VRN1",
+      "condensate_type": "nuclear_chromatin_related",
+      "assay_evidence": "LLPSDB_v2_plant_entry",
+      "citation": "Li et al. 2020 (LLPSDB)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "LLPSDB plant PS entry"
+    },
+    {
+      "protein_id": "F4IS91",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "EMB1579",
+      "condensate_type": "nuclear",
+      "assay_evidence": "LLPSDB_v2_plant_entry",
+      "citation": "Li et al. 2020 (LLPSDB)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "RSA1/emb1579"
+    },
+    {
+      "protein_id": "A0A2K3DA85",
+      "species": "Chlamydomonas reinhardtii",
+      "gene_symbol": "EPYC1",
+      "condensate_type": "pyrenoid",
+      "assay_evidence": "LLPSDB_v2_plant_entry",
+      "citation": "Li et al. 2020 (LLPSDB)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Algal pyrenoid linker"
+    },
+    {
+      "protein_id": "P42763",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "ERD14",
+      "condensate_type": "dehydrin_stress",
+      "assay_evidence": "LLPSDB_v2_plant_entry",
+      "citation": "Li et al. 2020 (LLPSDB)",
+      "label": "positive",
+      "grape_ortholog": "",
+      "in_plantllps_train": "yes",
+      "notes": "Dehydrin-class LLPSDB entry"
+    },
+    {
+      "protein_id": "Q84ZT9",
+      "species": "Arabidopsis thaliana",
+      "gene_symbol": "WVD2",
+      "condensate_type": "plant_MAP_scaffold",
+      "assay_evidence": "literature_MAP_family;extreme_disorder",
+      "citation": "round_v12; Guan companion MAP/LLPS",
+      "label": "positive",
+      "grape_ortholog": "F6HG33,F6HN32",
+      "in_plantllps_train": "yes",
+      "notes": "Plant-specific disordered MAP; companion top hit A0ACT1LGI9 not in current UP000009183 atlas \u2014 linked to deposited WVD2-like accessions"
+    }
+  ],
+  "grape_join": {
+    "D7SI60": [
+      {
+        "protein_id": "O82804",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "ELF3",
+        "condensate_type": "thermosensor_prion-like",
+        "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+        "citation": "Jung et al. 2020",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "D7SPX1": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "D7SQC4": [
+      {
+        "protein_id": "O82804",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "ELF3",
+        "condensate_type": "thermosensor_prion-like",
+        "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+        "citation": "Jung et al. 2020",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "D7SUY1": [
+      {
+        "protein_id": "O82804",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "ELF3",
+        "condensate_type": "thermosensor_prion-like",
+        "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+        "citation": "Jung et al. 2020",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "D7T7A2": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "D7T8T9": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "D7TC28": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "D7TDR0": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "D7TNK1": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "D7TT92": [
+      {
+        "protein_id": "O82804",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "ELF3",
+        "condensate_type": "thermosensor_prion-like",
+        "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+        "citation": "Jung et al. 2020",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "D7TWC4": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "D7TXI7": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "E0CTG6": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "F6GZF1": [
+      {
+        "protein_id": "P43254",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "COP1",
+        "condensate_type": "photomorphogenesis_condensate",
+        "assay_evidence": "COP1-SPA_complex",
+        "citation": "round_v4 train curation",
+        "label": "positive",
+        "notes": "Photomorphogenesis"
+      }
+    ],
+    "F6H269": [
+      {
+        "protein_id": "P43254",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "COP1",
+        "condensate_type": "photomorphogenesis_condensate",
+        "assay_evidence": "COP1-SPA_complex",
+        "citation": "round_v4 train curation",
+        "label": "positive",
+        "notes": "Photomorphogenesis"
+      }
+    ],
+    "F6H270": [
+      {
+        "protein_id": "P43254",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "COP1",
+        "condensate_type": "photomorphogenesis_condensate",
+        "assay_evidence": "COP1-SPA_complex",
+        "citation": "round_v4 train curation",
+        "label": "positive",
+        "notes": "Photomorphogenesis"
+      }
+    ],
+    "F6H328": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "F6H384": [
+      {
+        "protein_id": "O82804",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "ELF3",
+        "condensate_type": "thermosensor_prion-like",
+        "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+        "citation": "Jung et al. 2020",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "F6H5N3": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "F6H711": [
+      {
+        "protein_id": "O04425",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "FCA",
+        "condensate_type": "nuclear_RNA_processing",
+        "assay_evidence": "FLL2-promoted_co-condensation",
+        "citation": "Fang et al. 2019",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "F6H8R3": [
+      {
+        "protein_id": "P43254",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "COP1",
+        "condensate_type": "photomorphogenesis_condensate",
+        "assay_evidence": "COP1-SPA_complex",
+        "citation": "round_v4 train curation",
+        "label": "positive",
+        "notes": "Photomorphogenesis"
+      }
+    ],
+    "F6HCE8": [
+      {
+        "protein_id": "P43254",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "COP1",
+        "condensate_type": "photomorphogenesis_condensate",
+        "assay_evidence": "COP1-SPA_complex",
+        "citation": "round_v4 train curation",
+        "label": "positive",
+        "notes": "Photomorphogenesis"
+      }
+    ],
+    "F6HCZ2": [
+      {
+        "protein_id": "O82804",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "ELF3",
+        "condensate_type": "thermosensor_prion-like",
+        "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+        "citation": "Jung et al. 2020",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "F6HET4": [
+      {
+        "protein_id": "Q9FLP0",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "MAP65-1",
+        "condensate_type": "microtubule_bundling_condensate",
+        "assay_evidence": "in_vitro_droplets;c_crit_approx_48nM;MT_aster_nucleation",
+        "citation": "Sahu et al. 2023",
+        "label": "positive",
+        "notes": "Companion mechanism-matched gold; Ser-rich C-terminal driver"
+      },
+      {
+        "protein_id": "F6HET4",
+        "species": "Vitis vinifera",
+        "gene_symbol": "VvMAP65-1",
+        "condensate_type": "microtubule_bundling_condensate",
+        "assay_evidence": "ortholog_of_AtMAP65-1;composition_conserved_tail",
+        "citation": "Sahu et al. 2023; Guan companion MAP/LLPS",
+        "label": "positive",
+        "notes": "Grape ortholog of proven AtMAP65-1 driver; atlas anchor"
+      }
+    ],
+    "F6HEZ1": [
+      {
+        "protein_id": "O82804",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "ELF3",
+        "condensate_type": "thermosensor_prion-like",
+        "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+        "citation": "Jung et al. 2020",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "F6HG33": [
+      {
+        "protein_id": "Q84ZT9",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "WVD2",
+        "condensate_type": "plant_MAP_scaffold",
+        "assay_evidence": "literature_MAP_family;extreme_disorder",
+        "citation": "round_v12; Guan companion MAP/LLPS",
+        "label": "positive",
+        "notes": "Plant-specific disordered MAP; companion top hit A0ACT1LGI9 not in current UP000009183 atlas \u2014 linked to deposited WVD2-like accessions"
+      }
+    ],
+    "F6HI06": [
+      {
+        "protein_id": "Q9ULW0",
+        "species": "Homo sapiens",
+        "gene_symbol": "TPX2",
+        "condensate_type": "spindle_condensate",
+        "assay_evidence": "co-condensation_with_tubulin",
+        "citation": "King and Petry 2020",
+        "label": "positive",
+        "notes": "Animal mechanism control"
+      }
+    ],
+    "F6HN32": [
+      {
+        "protein_id": "Q84ZT9",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "WVD2",
+        "condensate_type": "plant_MAP_scaffold",
+        "assay_evidence": "literature_MAP_family;extreme_disorder",
+        "citation": "round_v12; Guan companion MAP/LLPS",
+        "label": "positive",
+        "notes": "Plant-specific disordered MAP; companion top hit A0ACT1LGI9 not in current UP000009183 atlas \u2014 linked to deposited WVD2-like accessions"
+      }
+    ],
+    "F6HP96": [
+      {
+        "protein_id": "O82804",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "ELF3",
+        "condensate_type": "thermosensor_prion-like",
+        "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+        "citation": "Jung et al. 2020",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "F6HUR9": [
+      {
+        "protein_id": "Q9S7N5",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "SPA1",
+        "condensate_type": "photomorphogenesis_condensate",
+        "assay_evidence": "COP1-SPA_complex",
+        "citation": "round_v4 train curation",
+        "label": "positive",
+        "notes": "Photomorphogenesis"
+      }
+    ],
+    "F6HXQ3": [
+      {
+        "protein_id": "P43254",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "COP1",
+        "condensate_type": "photomorphogenesis_condensate",
+        "assay_evidence": "COP1-SPA_complex",
+        "citation": "round_v4 train curation",
+        "label": "positive",
+        "notes": "Photomorphogenesis"
+      }
+    ],
+    "F6HY45": [
+      {
+        "protein_id": "O82804",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "ELF3",
+        "condensate_type": "thermosensor_prion-like",
+        "assay_evidence": "prion-like_domain_thermosensor;temperature-dependent_condensation",
+        "citation": "Jung et al. 2020",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "F6HZB4": [
+      {
+        "protein_id": "O04425",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "FCA",
+        "condensate_type": "nuclear_RNA_processing",
+        "assay_evidence": "FLL2-promoted_co-condensation",
+        "citation": "Fang et al. 2019",
+        "label": "positive",
+        "notes": "Companion plant positive"
+      }
+    ],
+    "F6HZE7": [
+      {
+        "protein_id": "P43254",
+        "species": "Arabidopsis thaliana",
+        "gene_symbol": "COP1",
+        "condensate_type": "photomorphogenesis_condensate",
+        "assay_evidence": "COP1-SPA_complex",
+        "citation": "round_v4 train curation",
+        "label": "positive",
+        "notes": "Photomorphogenesis"
+      }
+    ]
+  }
+}
