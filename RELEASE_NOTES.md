@@ -1,5 +1,10 @@
 # Release notes
 
+## Deposit / hosting prep (post-v1.1.0)
+
+- `docs/ZENODO.md` + `scripts/export_zenodo_bundle.py` — build Zenodo bundle (weights, SQLite, TSV.gz, optional Parquet, checksums). **No invented DOI**; user publishes on Zenodo and pastes DOI into `CITATION.cff`.
+- `docs/HOSTING.md` — clarified **local-server-only** until a real public URL exists; Railway/Render one-liners; SQLite size note (~100 MiB).
+
 ## v1.1.0 (2026-11-27)
 
 P1 atlas layers on v1.0.0: full scored-proteome AlphaFold low-pLDDT segments + multi-stress RNA-seq.
