@@ -24,7 +24,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Training history | `data/train_formal_v*.csv`, `data/training/` | v1–v13 snapshots + metrics |
 | Model weights | `data/model_formal.json` | **v13** hybrid logistic + companion |
 | Proteome SQLite | `data/grape_condensatome.sqlite` | 25 972 scored rows + UniProt + Expression Atlas |
-| Proteome TSV | `data/grape_condensatome.proteome.tsv` | flat table |
+| Proteome TSV | Zenodo bundle / local export | flat table (gitignored; rebuild from SQLite or `export_zenodo_bundle.py`) |
 | Node web UI | `server.js` + `lib/` + `public/` | Express + `node:sqlite` (Node ≥22) |
 | Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + family hold-out / transfer + **feature ablation** |
 | Experimental models | `data/experimental/` | optional metapredict / AF-pLDDT disorder retrains (**not** production default) |

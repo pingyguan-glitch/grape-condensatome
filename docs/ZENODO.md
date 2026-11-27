@@ -13,7 +13,7 @@ GitHub tag (e.g. `v1.1.1`) via [`CITATION.cff`](../CITATION.cff).
 | PlantLLPS v13 weights | `data/model_formal.json` | Scorable model |
 | Training set + metrics | `data/train_formal_v13.csv`, `data/model_formal.metrics.v13.json` | Reproducibility |
 | GrapeCondensatome SQLite | `data/grape_condensatome.sqlite` | Full atlas (~100 MiB) |
-| Slim proteins table | generated TSV.gz / optional Parquet | Analyst-friendly export |
+| Slim proteins table | generated TSV.gz / optional Parquet | Analyst-friendly export (preferred over the gitignored full proteome TSV) |
 | Soybean second crop | `data/second_crop/soybean_condensatome.sqlite` (+ summary/join JSON) | Cross-crop layer |
 | Citation metadata | `CITATION.cff` | Software citation (**DOI empty until publish**) |
 | License | `LICENSE` | MIT |

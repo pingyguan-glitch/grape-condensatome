@@ -28,6 +28,7 @@ Figure 3 feature-ablation panels + optional experimental disorder retrains (comp
 - README pending badges for public atlas / uptime / Zenodo DOI (grey until real URL/DOI).
 - `docs/HOSTING.md` / `docs/ZENODO.md` updated for **v1.1.1** with exact user deploy + Zenodo mint steps; export script reads `VERSION`.
 - Bundle built locally with `--parquet` into gitignored `dist/` (~33 MiB zip); not committed.
+- Untracked `data/grape_condensatome.proteome.tsv` + `data/second_crop/*.proteome.tsv.gz` (gitignored) so Cursor publish-app stays under the 50 MiB pack limit; tables remain in the Zenodo bundle / regenerable from SQLite.
 
 ## v1.1.0 (2026-11-27)
 

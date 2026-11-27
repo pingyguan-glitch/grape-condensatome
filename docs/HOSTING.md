@@ -30,6 +30,10 @@ Ship `data/grape_condensatome.sqlite` (~100 MiB at v1.1.x) with the app.
 
 ## Cursor publish-app
 
+Pack limit is **50 MiB gzipped**. Flat proteome TSV dumps are gitignored so the
+pack stays under the limit (SQLite + FASTA remain). If a pack still exceeds 50 MiB,
+use Render/Railway/Fly instead.
+
 From a Cloud Agent / Cursor environment with this repo committed **and pushed**:
 
 1. Start the preview: `npm install && npm start` → `http://127.0.0.1:8765/`
@@ -37,7 +41,7 @@ From a Cloud Agent / Cursor environment with this repo committed **and pushed**:
 3. Confirm in the Cursor publish dialog (visibility: **public** for NAR/database citation; private / team also available).
 4. Only after confirm: paste the issued URL into this file’s status table and the README badges.
 
-If publish-app is blocked (unpushed git, security review, or platform refusal), use a
+If publish-app is blocked (pack size, unpushed git, security review, or platform refusal), use a
 container host below.
 
 ## Deploy configs (in this repo)
