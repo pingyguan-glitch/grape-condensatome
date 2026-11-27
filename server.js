@@ -28,6 +28,13 @@ import {
   loadStressModulesUi,
   getStressModulesUi,
   stressModulesMeta,
+  loadAtlasAnalysesUi,
+  getFamilyEnrichmentUi,
+  getComparatorDisagreementUi,
+  getStructureScoreUi,
+  familyEnrichmentMeta,
+  comparatorDisagreementMeta,
+  structureScoreMeta,
   listLlpsGold,
   DEFAULT_DB,
 } from "./lib/db.js";
@@ -361,6 +368,7 @@ function layout(title, body, query = "") {
       <a href="/network">STRING</a>
       <a href="/expression">Expression</a>
       <a href="/modules">Stress modules</a>
+      <a href="/analyses">Atlas analyses</a>
       <a href="/download">Download</a>
       <a href="/score">Score FASTA</a>
     </nav>
@@ -369,8 +377,9 @@ function layout(title, body, query = "") {
     PlantLLPS hybrid model (v13). Disorder: composition proxy by default; metapredict + AlphaFold pLDDT
     joined where computed. Curated LLPS gold badges + reconstructed MAP-screen ρ on /gold and /map.
     Orthologs (Ath/rice + soybean via OrthoDB), STRING Vitis neighborhoods (/network),
-    stress DE × condensatome enrichment + modules (/modules), and side-by-side
-    PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
+    stress DE × condensatome enrichment + modules (/modules), atlas analyses
+    (family enrichment / comparator disagreement / structure–score on /analyses),
+    and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
     Second-crop soybean condensatome on /hooks. Treat ranks as hypotheses.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
@@ -477,6 +486,9 @@ function secondCropMeta() {
 app.get("/api/health", (_req, res) => {
   const sn = stringNetworkMeta(db);
   const sm = stressModulesMeta(db);
+  const fe = familyEnrichmentMeta(db);
+  const cd = comparatorDisagreementMeta(db);
+  const ss = structureScoreMeta(db);
   let explainMeta = null;
   let atlasAnalyses = null;
   try {
@@ -518,14 +530,36 @@ app.get("/api/health", (_req, res) => {
           accessions: sm.accessions,
         }
       : null,
-    atlas_analyses: atlasAnalyses
-      ? {
-          version: atlasAnalyses.version,
-          deepdive_primary_fdr_terms: deep?.n_primary_term_fdr_lt_0_05 ?? deep?.["n_primary_term_fdr_lt_0.05"],
-          hubs_top_n: hubs?.top_n_deposited,
-          isoform_multi_vit: iso?.n_multi_accession_vit,
-        }
-      : null,
+    atlas_analyses: {
+      stress_network_isoforms: atlasAnalyses
+        ? {
+            version: atlasAnalyses.version,
+            deepdive_primary_fdr_terms: deep?.n_primary_term_fdr_lt_0_05 ?? deep?.["n_primary_term_fdr_lt_0.05"],
+            hubs_top_n: hubs?.top_n_deposited,
+            isoform_multi_vit: iso?.n_multi_accession_vit,
+          }
+        : null,
+      family_enrichment: fe
+        ? {
+            n_pfam_fdr_lt_0_05: fe["n_pfam_fdr_lt_0.05"],
+            n_pfam_tested: fe.n_pfam_tested,
+            n_interpro_fdr_lt_0_05: fe["n_interpro_fdr_lt_0.05"],
+          }
+        : null,
+      comparator_disagreement: cd
+        ? {
+            n_disagreement: cd.n_disagreement,
+            n_low_both: cd.n_low_both,
+            n_ser_map_focus: cd.n_ser_map_focus,
+          }
+        : null,
+      structure_score: ss
+        ? {
+            n_joint: ss.n_joint_high_plantllps_low_plddt,
+            n_enrichment_fdr_lt_0_05: ss["n_enrichment_fdr_lt_0.05"],
+          }
+        : null,
+    },
     explainability: {
       loaded: explainById.size,
       meta: explainMeta,
@@ -807,6 +841,232 @@ app.get("/modules", (req, res) => {
       ${pagerHtml("/modules", page, pages, { tab })}
     </div>`;
   res.type("html").send(layout("Stress modules", body));
+});
+
+app.get("/analyses", (req, res) => {
+  const tabRaw = String(req.query.tab || "family");
+  const tab = ["family", "disagreement", "structure"].includes(tabRaw)
+    ? tabRaw
+    : "family";
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const feMeta = familyEnrichmentMeta(db);
+  const cdMeta = comparatorDisagreementMeta(db);
+  const ssMeta = structureScoreMeta(db);
+  const feUi = getFamilyEnrichmentUi();
+  const cdUi = getComparatorDisagreementUi();
+  const ssUi = getStructureScoreUi();
+
+  if (!feUi && !cdUi && !ssUi && !feMeta && !cdMeta && !ssMeta) {
+    const body = `
+      <div class="card">
+        <h2>Atlas analyses</h2>
+        <p class="muted">Not deposited yet. Run
+          <span class="mono">python3 scripts/enrich_family_enrichment.py</span>,
+          <span class="mono">python3 scripts/enrich_comparator_disagreement.py</span>,
+          <span class="mono">python3 scripts/enrich_structure_score_joint.py</span>.
+        </p>
+      </div>`;
+    return res.type("html").send(layout("Atlas analyses", body));
+  }
+
+  let tableHtml = "";
+  let honesty = "";
+  let total = 0;
+  let headline = "";
+
+  if (tab === "family") {
+    honesty = feUi?.honesty || feMeta?.honesty || "";
+    const dbFilter = String(req.query.db || "pfam").toLowerCase() === "interpro"
+      ? "interpro"
+      : "pfam";
+    const rows = (dbFilter === "interpro" ? feUi?.interpro : feUi?.pfam) || [];
+    total = rows.length;
+    const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const slice = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    headline = `Pfam tested <strong>${esc(feMeta?.n_pfam_tested ?? "—")}</strong>
+      (FDR&lt;0.05: <strong>${esc(feMeta?.["n_pfam_fdr_lt_0.05"] ?? "—")}</strong>)
+      · InterPro tested <strong>${esc(feMeta?.n_interpro_tested ?? "—")}</strong>
+      (FDR&lt;0.05: <strong>${esc(feMeta?.["n_interpro_fdr_lt_0.05"] ?? "—")}</strong>)
+      · background Tier A∪B rate ≈ <strong>${esc(
+        feMeta?.background_tier_ab_rate ?? feUi?.parameters?.background_tier_ab_rate ?? "—"
+      )}</strong>`;
+    const trs = slice
+      .map((r) => {
+        const fold =
+          r.enrichment_fold != null ? Number(r.enrichment_fold).toFixed(3) : "—";
+        const fdr =
+          r.bh_fdr != null && Number(r.bh_fdr) < 0.001
+            ? Number(r.bh_fdr).toExponential(2)
+            : r.bh_fdr != null
+              ? Number(r.bh_fdr).toFixed(4)
+              : "—";
+        return `<tr>
+          <td class="mono">${esc(r.family_id)}</td>
+          <td>${esc(r.label || "")}</td>
+          <td>${esc(r.n_tier_ab)} / ${esc(r.n_background)}</td>
+          <td>${fold}</td>
+          <td>${fmtP(r.hypergeom_pvalue)}</td>
+          <td>${esc(fdr)}</td>
+        </tr>`;
+      })
+      .join("");
+    tableHtml = `
+      <p>Family DB:
+        <a href="/analyses?tab=family&db=pfam">Pfam</a> ·
+        <a href="/analyses?tab=family&db=interpro">InterPro</a>
+        · figure <a href="${esc(feUi?.figure || "/figures/top_families_pfam.svg")}">SVG</a>
+      </p>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Family</th><th>Label</th><th>A∪B / bg</th><th>Fold</th><th>p</th><th>FDR</th>
+        </tr></thead>
+        <tbody>${trs || '<tr><td colspan="6" class="muted">No rows.</td></tr>'}</tbody>
+      </table></div>
+      ${pagerHtml("/analyses", page, pages, { tab: "family", db: dbFilter })}`;
+  } else if (tab === "disagreement") {
+    honesty = cdUi?.honesty || cdMeta?.honesty || "";
+    const rows = cdUi?.rows || [];
+    total = rows.length;
+    const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const slice = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    headline = `Disagreement <strong>${esc(cdMeta?.n_disagreement ?? "—")}</strong>
+      · both-low <strong>${esc(cdMeta?.n_low_both ?? "—")}</strong>
+      · Ser/MAP focus <strong>${esc(cdMeta?.n_ser_map_focus ?? "—")}</strong>
+      · PSAP ≤ <strong>${esc(cdMeta?.psap_low_threshold ?? "—")}</strong>
+      · LLPhy %ile ≤ <strong>${esc(cdMeta?.llphyscore_low_threshold ?? "—")}</strong>`;
+    const trs = slice
+      .map((r) => {
+        const flags = [
+          r.low_both ? "both" : null,
+          r.low_psap ? "PSAP↓" : null,
+          r.low_llphyscore ? "LLPhy↓" : null,
+          r.ser_map_focus ? "Ser/MAP" : null,
+        ]
+          .filter(Boolean)
+          .join(" ");
+        return `<tr>
+          <td>${esc(r.rank)}</td>
+          <td><a class="mono" href="/protein/${esc(r.protein_id)}">${esc(
+            r.protein_id
+          )}</a></td>
+          <td><span class="tier ${esc(r.tier)}">${esc(r.tier)}</span></td>
+          <td>${fmtScore(r.score_plantllps)}</td>
+          <td>${esc(r.score_psap)}</td>
+          <td>${esc(r.score_llphyscore_percentile)}</td>
+          <td>${esc(flags)}</td>
+        </tr>`;
+      })
+      .join("");
+    tableHtml = `
+      <p class="muted">Full ranked deposit:
+        <span class="mono">data/comparator_disagreement/disagreement_ranked.tsv</span>
+        · method <span class="mono">METHOD.md</span></p>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>#</th><th>Protein</th><th>Tier</th><th>PlantLLPS</th>
+          <th>PSAP</th><th>LLPhy %ile</th><th>Flags</th>
+        </tr></thead>
+        <tbody>${trs || '<tr><td colspan="7" class="muted">No rows.</td></tr>'}</tbody>
+      </table></div>
+      ${pagerHtml("/analyses", page, pages, { tab: "disagreement" })}`;
+  } else {
+    honesty = ssUi?.honesty || ssMeta?.honesty || "";
+    const enrich = ssUi?.enrichment || ssMeta?.enrichment || [];
+    const flags = ssUi?.flags || [];
+    const show = String(req.query.view || "enrichment") === "flags" ? "flags" : "enrichment";
+    const rows = show === "flags" ? flags : enrich;
+    total = rows.length;
+    const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const slice = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    headline = `AF-covered <strong>${esc(ssMeta?.n_af_covered ?? "—")}</strong>
+      · Tier A∪B∩AF <strong>${esc(ssMeta?.n_tier_ab_af ?? "—")}</strong>
+      · joint (af_frac≥${esc(ssMeta?.flag_threshold ?? 0.25)}) <strong>${esc(
+        ssMeta?.n_joint_high_plantllps_low_plddt ?? "—"
+      )}</strong>
+      · enrichment FDR&lt;0.05: <strong>${esc(
+        ssMeta?.["n_enrichment_fdr_lt_0.05"] ?? "—"
+      )}</strong>`;
+    if (show === "enrichment") {
+      const trs = slice
+        .map((r) => {
+          const fold =
+            r.enrichment_fold != null ? Number(r.enrichment_fold).toFixed(3) : "—";
+          const fdr =
+            r.bh_fdr != null && Number(r.bh_fdr) < 0.001
+              ? Number(r.bh_fdr).toExponential(2)
+              : r.bh_fdr != null
+                ? Number(r.bh_fdr).toFixed(4)
+                : "—";
+          return `<tr>
+            <td class="mono">${esc(r.test)}</td>
+            <td>${esc(r.n_high_intersect_tier_ab)} / ${esc(r.n_high_low_plddt)}</td>
+            <td>${fold}</td>
+            <td>${fmtP(r.hypergeom_pvalue)}</td>
+            <td>${esc(fdr)}</td>
+          </tr>`;
+        })
+        .join("");
+      tableHtml = `
+        <p>View:
+          <a href="/analyses?tab=structure&view=enrichment">Threshold enrichment</a> ·
+          <a href="/analyses?tab=structure&view=flags">Per-protein flags</a>
+        </p>
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>Test</th><th>∩ A∪B / high</th><th>Fold</th><th>p</th><th>FDR</th>
+          </tr></thead>
+          <tbody>${trs || '<tr><td colspan="5" class="muted">No rows.</td></tr>'}</tbody>
+        </table></div>
+        ${pagerHtml("/analyses", page, pages, { tab: "structure", view: "enrichment" })}`;
+    } else {
+      const trs = slice
+        .map((r) => {
+          return `<tr>
+            <td>${esc(r.rank)}</td>
+            <td><a class="mono" href="/protein/${esc(r.protein_id)}">${esc(
+              r.protein_id
+            )}</a></td>
+            <td><span class="tier ${esc(r.tier)}">${esc(r.tier)}</span></td>
+            <td>${fmtScore(r.score_plantllps)}</td>
+            <td>${esc(r.af_frac_very_low)}</td>
+            <td>${esc(r.af_n_disorder_residues)}</td>
+            <td>${r.joint_high_plantllps_low_plddt ? "yes" : "—"}</td>
+          </tr>`;
+        })
+        .join("");
+      tableHtml = `
+        <p>View:
+          <a href="/analyses?tab=structure&view=enrichment">Threshold enrichment</a> ·
+          <a href="/analyses?tab=structure&view=flags">Per-protein flags</a>
+        </p>
+        <div class="table-wrap"><table>
+          <thead><tr>
+            <th>#</th><th>Protein</th><th>Tier</th><th>PlantLLPS</th>
+            <th>af_frac&lt;50</th><th>n low-pLDDT</th><th>Joint</th>
+          </tr></thead>
+          <tbody>${trs || '<tr><td colspan="7" class="muted">No rows.</td></tr>'}</tbody>
+        </table></div>
+        ${pagerHtml("/analyses", page, pages, { tab: "structure", view: "flags" })}`;
+    }
+  }
+
+  const body = `
+    <div class="card">
+      <h2>Atlas analyses</h2>
+      <p>Three deposited atlas layers: Tier A∪B domain enrichment, comparator
+         disagreement (PlantLLPS high / PSAP·LLPhy low), and structure–score joint
+         (high PlantLLPS ∩ low-pLDDT).</p>
+      <p class="muted">${headline}</p>
+      <p class="muted">${esc(honesty)}</p>
+      <p>
+        <a href="/analyses?tab=family">Family enrichment</a> ·
+        <a href="/analyses?tab=disagreement">Comparator disagreement</a> ·
+        <a href="/analyses?tab=structure">Structure–score</a>
+      </p>
+      <p class="muted">${esc(total)} UI rows (page ${esc(page)}).</p>
+      ${tableHtml}
+    </div>`;
+  res.type("html").send(layout("Atlas analyses", body));
 });
 
 app.get("/search", (req, res) => {
@@ -1740,6 +2000,7 @@ Promise.all([
     console.error("Stress sidecar failed:", err);
   }),
   Promise.resolve().then(() => loadStressModulesUi()),
+  Promise.resolve().then(() => loadAtlasAnalysesUi()),
   loadExplainability().catch((err) => {
     console.error("Explainability sidecar failed:", err);
   }),

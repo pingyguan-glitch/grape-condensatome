@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="564" viewBox="0 0 920 564">
+<rect width="920" height="564" fill="#fbfaf7"/>
+<text x="460" y="28" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="16" font-weight="700" fill="#1a1a1a">Tier A∪B Pfam enrichment (−log10 FDR)</text>
+<text x="460" y="46" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#555">Hypergeometric vs scored proteome · BH FDR within Pfam tests · exploratory if FDR≥0.05</text>
+<text x="8" y="70" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF13178</text>
+<rect x="210" y="56" width="670.0" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="886.0" y="69" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=6.00  k=17/19</text>
+<text x="8" y="92" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF03000  NPH3</text>
+<rect x="210" y="78" width="670.0" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="886.0" y="91" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=4.90  k=19/26</text>
+<text x="8" y="114" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF05922  Inhibitor I9</text>
+<rect x="210" y="100" width="670.0" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="886.0" y="113" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=4.06  k=43/71</text>
+<text x="8" y="136" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF17766  Subtilisin-like protease …</text>
+<rect x="210" y="122" width="670.0" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="886.0" y="135" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=4.06  k=49/81</text>
+<text x="8" y="158" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF25598  U-box</text>
+<rect x="210" y="144" width="670.0" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="886.0" y="157" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.86  k=23/40</text>
+<text x="8" y="180" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF02225  PA</text>
+<rect x="210" y="166" width="670.0" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="886.0" y="179" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.65  k=25/46</text>
+<text x="8" y="202" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF00082  Peptidase S8/S53</text>
+<rect x="210" y="188" width="670.0" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="886.0" y="201" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.64  k=51/94</text>
+<text x="8" y="224" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF00225  Kinesin motor</text>
+<rect x="210" y="210" width="670.0" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="886.0" y="223" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.09  k=29/63</text>
+<text x="8" y="246" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF00076  RRM</text>
+<rect x="210" y="232" width="670.0" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="886.0" y="245" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=2.41  k=75/209</text>
+<text x="8" y="268" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF00612  IQ calmodulin-binding motif</text>
+<rect x="210" y="254" width="13.4" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="229.4" y="267" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.43  k=22/43</text>
+<text x="8" y="290" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF04564  U-box</text>
+<rect x="210" y="276" width="10.7" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="226.7" y="289" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=2.88  k=24/56</text>
+<text x="8" y="312" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF02893  GRAM</text>
+<rect x="210" y="298" width="10.5" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="226.5" y="311" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.70  k=16/29</text>
+<text x="8" y="334" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF00439  Bromo</text>
+<rect x="210" y="320" width="9.9" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="225.9" y="333" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=4.15  k=13/21</text>
+<text x="8" y="356" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF30470  Oxidative stress 3</text>
+<rect x="210" y="342" width="9.5" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="225.5" y="355" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=5.97  k=8/9</text>
+<text x="8" y="378" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF02984</text>
+<rect x="210" y="364" width="9.4" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="225.4" y="377" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.76  k=14/25</text>
+<text x="8" y="400" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF14009  PADRE domain</text>
+<rect x="210" y="386" width="9.4" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="225.4" y="399" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.76  k=14/25</text>
+<text x="8" y="422" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF00134  Cyclin-like</text>
+<rect x="210" y="408" width="8.9" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="224.9" y="421" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.17  k=17/36</text>
+<text x="8" y="444" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF00098  CCHC-type</text>
+<rect x="210" y="430" width="8.7" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="224.7" y="443" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=3.02  k=18/40</text>
+<text x="8" y="466" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF03106  WRKY</text>
+<rect x="210" y="452" width="8.7" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="224.7" y="465" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=2.62  k=23/59</text>
+<text x="8" y="488" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#222">PF03081</text>
+<rect x="210" y="474" width="8.5" height="16" fill="#0B6E4F" opacity="0.85"/>
+<text x="224.5" y="487" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333">fold=4.47  k=10/15</text>
+</svg>

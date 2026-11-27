@@ -33,11 +33,12 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
 | External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
 | Stress condensatome modules | `data/stress_modules/` | DE × Tier A∪B enrichment + response modules; UI `/modules` |
-| Atlas analyses 2/6/7 (v1.5) | `data/stress_modules/deepdive/`, `data/string/stress_seed_hubs.tsv`, `data/isoforms/` | Botrytis GO/keyword deep dive + STRING/stress hubs + VIT multi-accession deltas |
+| Atlas analyses 2/6/7 (v1.5.0) | `data/stress_modules/deepdive/`, `data/string/stress_seed_hubs.tsv`, `data/isoforms/` | Botrytis GO/keyword deep dive + STRING/stress hubs + VIT multi-accession deltas |
+| Atlas analyses family/comparator/structure (v1.5.1) | `data/family_enrichment/`, `data/comparator_disagreement/`, `data/structure_score/` | Domain enrichment + comparator disagreement + structure–score; UI `/analyses` |
 | Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **https://grape-condensatome.apps.grok.bot** (+ local / Render / Railway / Fly fallbacks) |
 | Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
 | Explainability | `data/explainability/` + `plantllps/explain.py` | SHAP-equivalent Ser-rich / charge-block / IDR attributions (gold ∪ Tier A; F6HET4 example) |
-| NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.0 adds atlas analyses 2/6/7 deposits; Zenodo DOI pending |
+| NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.x atlas analysis deposits; Zenodo DOI pending |
 
 ## Honesty (read before citing metrics)
 
@@ -53,6 +54,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - **STRING** Vitis PPI neighborhoods + Tier A∪B enrichment via `scripts/enrich_string_neighborhood.py` (UI `/network`); combined scores are **not** LLPS evidence.
 - **Stress condensatome modules** via `scripts/enrich_stress_condensatome_modules.py` (UI `/modules`): DE × Tier A∪B enrichment for E-MTAB-4324 / E-GEOD-67932 + response-pattern modules + deposited gene sets (`data/stress_modules/`).
 - **Atlas analyses 2/6/7 (v1.5.0)** via `scripts/analyze_stress_network_isoforms.py`: Botrytis-down GO/keyword deep dive + heatmap matrix; STRING/stress seed hubs TSV; VIT multi-accession score deltas (`data/isoforms/` — nearly 1:1 in UP000009183).
+- **Atlas analyses family/comparator/structure (v1.5.1)** (UI `/analyses`): Pfam/InterPro Tier A∪B enrichment (`scripts/enrich_family_enrichment.py`); comparator disagreement (`scripts/enrich_comparator_disagreement.py`); structure–score joint (`scripts/enrich_structure_score_joint.py`). Family/structure threshold tests are FDR-controlled; disagreement flags are exploratory.
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
 - Gold-standard PlantLLPS AUCs from the production model are **partially in-sample** (IDs overlap the training corpus). Prefer the **leakage-controlled fair suite** (`scripts/eval_fair_benchmark.py` → `data/benchmarks/fair_comparison_metrics.json`, leaderboard [`docs/BENCHMARK_LEADERBOARD.md`](./docs/BENCHMARK_LEADERBOARD.md)): leave-gold-out PlantLLPS hybrid ≈ **0.959**, family-hold-out mean ≈ **0.833**, vs OOB LLPhyScore ≈ **0.769** / PSAP ≈ **0.718** on gold. ProX/PU-style is a feature-family logistic baseline (not the published Plant PS proteins model).
 - **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
@@ -77,8 +79,19 @@ npm install
 npm start
 # → http://127.0.0.1:8765/  (HOST/PORT env; default 0.0.0.0:8765)
 # Routes: /compare, /gold, /map, /hooks (Ath/rice + soybean), /network (STRING),
-#         /expression, /modules (stress DE enrichment), /download, /protein/:id
+#         /expression, /modules (stress DE enrichment), /analyses (atlas analyses),
+#         /download, /protein/:id
 # API:    GET /api/download?tier=A&evidence=llps&format=tsv|fasta
+```
+
+## Atlas analyses (NAR+)
+
+```bash
+python3 scripts/enrich_family_enrichment.py
+python3 scripts/enrich_comparator_disagreement.py
+python3 scripts/enrich_structure_score_joint.py
+# deposits: data/family_enrichment/, data/comparator_disagreement/, data/structure_score/
+# UI: /analyses
 ```
 
 ## Stress condensatome modules (NAR+)

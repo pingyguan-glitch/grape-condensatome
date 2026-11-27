@@ -206,6 +206,25 @@ python3 scripts/enrich_domains_idr.py
 Cache: `data/domains/uniprot_up000009183_domains.tsv.gz` (committed). InterPro checkpoint
 `data/domains/interpro_pfam_backfill.checkpoint.json` is gitignored.
 
+## Atlas analyses (family / disagreement / structure)
+
+```bash
+python3 scripts/enrich_family_enrichment.py
+# Tier A∪B Pfam/InterPro hypergeometric enrichment + BH FDR
+# → data/family_enrichment/ + public/figures/top_families_pfam.svg; UI /analyses?tab=family
+
+python3 scripts/enrich_comparator_disagreement.py
+# Tier A∪B ∩ (PSAP and/or LLPhyScore ≤ proteome Q25); Ser-rich/MAP focus flags
+# → data/comparator_disagreement/; UI /analyses?tab=disagreement
+
+python3 scripts/enrich_structure_score_joint.py
+# Tier A∪B ∩ AF low-pLDDT (af_frac_very_low thresholds + per-protein flags)
+# → data/structure_score/; UI /analyses?tab=structure
+```
+
+Honesty: family + structure threshold tests are FDR-controlled; comparator disagreement
+and per-protein structure flags are exploratory. SQLite stores meta summaries only.
+
 ## STRING neighborhood (Vitis PPI)
 
 ```bash

@@ -1,0 +1,43 @@
+{
+  "version": "1.5.0",
+  "layer": "comparator_disagreement",
+  "n_tier_ab": 3870,
+  "low_quantile": 0.25,
+  "psap_low_threshold": 0.01083333,
+  "llphyscore_low_threshold": 33.249816,
+  "n_disagreement": 1555,
+  "n_low_psap": 906,
+  "n_low_llphyscore": 926,
+  "n_low_both": 277,
+  "n_ser_map_focus": 448,
+  "n_llps_gold": 4,
+  "anchor_F6HET4": {
+    "protein_id": "F6HET4",
+    "gene_name": "VIT_19s0090g01230",
+    "protein_name": "65-kDa microtubule-associated protein 1",
+    "tier": "B",
+    "score_plantllps": 0.76176665,
+    "plantllps_percentile": 91.202,
+    "score_psap": 0.01666667,
+    "psap_percentile": 52.9128,
+    "score_llphyscore_percentile": 29.84524687,
+    "low_psap": 0,
+    "low_llphyscore": 1,
+    "low_both": 0,
+    "ser_map_focus": 1,
+    "ser_map_reasons": "cross_crop_MAP,name_MAP,llps_gold",
+    "frac_ser": 0.071429,
+    "c_term_ser_frac_100": 0.1,
+    "map65_tail_like": 1.0,
+    "cross_crop_family": "MAP65-1",
+    "llps_gold": 1,
+    "disagreement_gap": 61.3568,
+    "rank": 517
+  },
+  "paths": {
+    "ranked": "data/comparator_disagreement/disagreement_ranked.tsv",
+    "method": "data/comparator_disagreement/METHOD.md",
+    "ui_tables": "data/comparator_disagreement/ui_tables.json"
+  },
+  "honesty": "Tier A\u222aB proteins with native PSAP and/or LLPhyScore percentile in the bottom proteome quartile (q=0.25). Ser-rich/MAP focus = frac_ser\u22650.12 or C-term Ser\u22650.15 or MAP annotation/name or gold (map65_tail_like alone is not sufficient). Exploratory disagreement set \u2014 not an FDR-controlled claim."
+}
