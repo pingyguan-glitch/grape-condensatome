@@ -11,6 +11,9 @@
   `top_neighbors.tsv.gz`, `seed_edges.tsv.gz` (44,932 edges).
 - **Enrichment:** Tier A∪B fraction among 1-hop neighbors vs proteome background
   (0.1490); hypergeometric p-value. See `enrichment_summary.json`.
+- **v1.5 hubs:** `stress_seed_hubs.tsv` (top 100) + `stress_seed_hubs_full.tsv.gz` —
+  Tier A∪B STRING neighborhood enrichment ranked jointly with stress log2FC
+  coexpression seed hubs (`python3 scripts/analyze_stress_network_isoforms.py`).
 
 ## Honesty
 

@@ -1,5 +1,16 @@
 # Release notes
 
+## v1.5.0 (2026-11-27)
+
+NAR+ atlas analyses on existing stress_modules / STRING / UniProt joins (analyses 2, 6, 7).
+
+- `scripts/analyze_stress_network_isoforms.py` — one pass depositing:
+  1. **Stress module deep dive** — GO-ID + UniProt keyword enrichment for the FDR-significant Botrytis stage-3 down ∩ Tier A∪B set (`E-GEOD-67932` `g1_g4` down); exploratory tests for other contrasts; heatmap-ready log2FC matrix → `data/stress_modules/deepdive/`
+  2. **STRING / stress seed hubs** — rank Tier A∪B STRING neighborhood enrichment (min 5 neighbors) and stress log2FC coexpression seed hubs; top-100 TSV → `data/string/stress_seed_hubs.tsv`
+  3. **Isoform / multi-protein genes** — PlantLLPS score deltas for UniProt accessions sharing a `VIT_*` locus → `data/isoforms/`
+- Honesty: no KEGG table in DB (keywords = functional-class proxy); exploratory contrasts labeled; STRING ≠ LLPS evidence; UP000009183 is nearly 1:1 VIT↔accession (1 multi-accession VIT deposited).
+- Meta pointer `atlas_analyses_stress_network_isoforms`; `/api/health` surfaces summary counts. SQLite stays at the GitHub ~100 MiB limit (sidecars).
+
 ## v1.4.0 (2026-11-27)
 
 NAR+ explainability: Ser-rich / charge-block / IDR-domain attributions on protein pages.

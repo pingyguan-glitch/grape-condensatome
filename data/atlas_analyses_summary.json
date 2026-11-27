@@ -1,0 +1,64 @@
+{
+  "version": "1.5.0",
+  "layer": "atlas_analyses_stress_network_isoforms",
+  "analyses": {
+    "2_stress_module_deepdive": {
+      "layer": "stress_module_deepdive",
+      "version": "1.5.0",
+      "primary_set_id": "DE_E-GEOD-67932_g1_g4_down_TierAB",
+      "primary_contrast": {
+        "accession": "E-GEOD-67932",
+        "contrast_id": "g1_g4",
+        "contrast_label": "control; control vs stage 3; Botrytis cinerea",
+        "direction": "down",
+        "n_de_tier_ab": 493,
+        "enrichment_fold": 1.167796,
+        "bh_fdr": 0.001
+      },
+      "n_primary_members": 493,
+      "n_enrichment_rows": 2334,
+      "n_primary_term_tests": 184,
+      "n_primary_term_fdr_lt_0.05": 53,
+      "n_exploratory_term_tests": 2150,
+      "annotation_note": "GO IDs and UniProt keywords from proteins.go_terms / keywords. No KEGG pathway table is deposited in this atlas; keyword enrichment is the KEGG-style functional-class proxy.",
+      "paths": {
+        "go_keyword_enrichment": "data/stress_modules/deepdive/go_keyword_enrichment.tsv",
+        "heatmap_matrix": "data/stress_modules/deepdive/heatmap_matrix.tsv.gz"
+      },
+      "honesty": "Primary scope = FDR-significant Botrytis stage-3 down \u2229 Tier A\u222aB only. All other contrast\u00d7direction GO/keyword tests are exploratory and must not be cited as confirmed pathway hits. Enrichment is descriptive hypergeometric overlap on UniProt annotations \u2014 not g:Profiler/clusterProfiler with ontology propagation, and not KEGG pathway analysis."
+    },
+    "6_string_stress_seed_hubs": {
+      "layer": "string_stress_seed_hubs",
+      "version": "1.5.0",
+      "min_string_neighbors": 5,
+      "n_string_tier_ab_ranked": 2217,
+      "n_stress_seeds_ranked": 1120,
+      "n_combined": 2723,
+      "top_n_deposited": 100,
+      "paths": {
+        "top_hubs": "data/string/stress_seed_hubs.tsv",
+        "full_hubs": "data/string/stress_seed_hubs_full.tsv.gz"
+      },
+      "honesty": "STRING combined_score neighborhoods are descriptive adjacency (experiments/databases/coexpression/textmining mixed) \u2014 not LLPS evidence. Stress hubs use Pearson r on short Atlas log2FC vectors from the modules pass (Tier A seeds). Combined rank blends available STRING and stress ranks."
+    },
+    "7_isoform_multi_protein_genes": {
+      "layer": "isoform_multi_protein_genes",
+      "version": "1.5.0",
+      "n_proteins_with_vit": 25894,
+      "n_vit_loci": 25939,
+      "n_multi_accession_vit": 1,
+      "min_delta": 0.05,
+      "n_high_delta_deposited": 1,
+      "max_observed_delta": 0.069686,
+      "paths": {
+        "deltas": "data/isoforms/multi_accession_vit_score_deltas.tsv"
+      },
+      "honesty": "Grouping key = VIT_* locus IDs parsed from UniProt gene_name / gene_names. UP000009183 is nearly one UniProt accession per VIT locus, so multi-accession isoform sets are rare. Score deltas are PlantLLPS hybrid score spreads across accessions of the same VIT \u2014 not experimentally confirmed splice-isoform LLPS differences. Shared gene symbols that map to distinct VIT IDs (paralogs) are intentionally excluded from this deposit."
+    }
+  },
+  "honesty": {
+    "deepdive": "Primary scope = FDR-significant Botrytis stage-3 down \u2229 Tier A\u222aB only. All other contrast\u00d7direction GO/keyword tests are exploratory and must not be cited as confirmed pathway hits. Enrichment is descriptive hypergeometric overlap on UniProt annotations \u2014 not g:Profiler/clusterProfiler with ontology propagation, and not KEGG pathway analysis.",
+    "hubs": "STRING combined_score neighborhoods are descriptive adjacency (experiments/databases/coexpression/textmining mixed) \u2014 not LLPS evidence. Stress hubs use Pearson r on short Atlas log2FC vectors from the modules pass (Tier A seeds). Combined rank blends available STRING and stress ranks.",
+    "isoforms": "Grouping key = VIT_* locus IDs parsed from UniProt gene_name / gene_names. UP000009183 is nearly one UniProt accession per VIT locus, so multi-accession isoform sets are rare. Score deltas are PlantLLPS hybrid score spreads across accessions of the same VIT \u2014 not experimentally confirmed splice-isoform LLPS differences. Shared gene symbols that map to distinct VIT IDs (paralogs) are intentionally excluded from this deposit."
+  }
+}

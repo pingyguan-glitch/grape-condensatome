@@ -2,13 +2,13 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.4.0-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.5.0-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.4.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.5.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
 
 > Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
@@ -33,10 +33,11 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
 | External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
 | Stress condensatome modules | `data/stress_modules/` | DE × Tier A∪B enrichment + response modules; UI `/modules` |
+| Atlas analyses 2/6/7 (v1.5) | `data/stress_modules/deepdive/`, `data/string/stress_seed_hubs.tsv`, `data/isoforms/` | Botrytis GO/keyword deep dive + STRING/stress hubs + VIT multi-accession deltas |
 | Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **https://grape-condensatome.apps.grok.bot** (+ local / Render / Railway / Fly fallbacks) |
 | Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
 | Explainability | `data/explainability/` + `plantllps/explain.py` | SHAP-equivalent Ser-rich / charge-block / IDR attributions (gold ∪ Tier A; F6HET4 example) |
-| NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** (fair suite + stress modules + SHAP); Zenodo DOI pending |
+| NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.0 adds atlas analyses 2/6/7 deposits; Zenodo DOI pending |
 
 ## Honesty (read before citing metrics)
 
@@ -51,6 +52,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - **Bulk download** UI `/download` and `GET /api/download?tier=A&format=tsv|fasta` (optional `family` / `keyword` / `q`).
 - **STRING** Vitis PPI neighborhoods + Tier A∪B enrichment via `scripts/enrich_string_neighborhood.py` (UI `/network`); combined scores are **not** LLPS evidence.
 - **Stress condensatome modules** via `scripts/enrich_stress_condensatome_modules.py` (UI `/modules`): DE × Tier A∪B enrichment for E-MTAB-4324 / E-GEOD-67932 + response-pattern modules + deposited gene sets (`data/stress_modules/`).
+- **Atlas analyses 2/6/7 (v1.5.0)** via `scripts/analyze_stress_network_isoforms.py`: Botrytis-down GO/keyword deep dive + heatmap matrix; STRING/stress seed hubs TSV; VIT multi-accession score deltas (`data/isoforms/` — nearly 1:1 in UP000009183).
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
 - Gold-standard PlantLLPS AUCs from the production model are **partially in-sample** (IDs overlap the training corpus). Prefer the **leakage-controlled fair suite** (`scripts/eval_fair_benchmark.py` → `data/benchmarks/fair_comparison_metrics.json`, leaderboard [`docs/BENCHMARK_LEADERBOARD.md`](./docs/BENCHMARK_LEADERBOARD.md)): leave-gold-out PlantLLPS hybrid ≈ **0.959**, family-hold-out mean ≈ **0.833**, vs OOB LLPhyScore ≈ **0.769** / PSAP ≈ **0.718** on gold. ProX/PU-style is a feature-family logistic baseline (not the published Plant PS proteins model).
 - **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
@@ -84,7 +86,9 @@ npm start
 ```bash
 python3 scripts/enrich_stress_rnaseq.py                         # prerequisite
 python3 scripts/enrich_stress_condensatome_modules.py
-# deposits: data/stress_modules/{de_enrichment,coexpression_modules,gene_sets.gmt.gz,…}
+python3 scripts/analyze_stress_network_isoforms.py              # v1.5 analyses 2/6/7
+# deposits: data/stress_modules/{de_enrichment,coexpression_modules,gene_sets.gmt.gz,deepdive/…}
+#           data/string/stress_seed_hubs.tsv · data/isoforms/
 # UI: /modules
 ```
 
@@ -130,6 +134,7 @@ python3 scripts/enrich_stress_condensatome_modules.py   # DE × Tier A∪B + mod
 python3 scripts/enrich_alphafold_plddt.py --segments-only --segments-tier ALL --workers 24
 python3 scripts/enrich_string_neighborhood.py   # Vitis STRING PPI + enrichment
 python3 scripts/deposit_explainability.py       # SHAP/grammar attributions (gold ∪ Tier A)
+python3 scripts/analyze_stress_network_isoforms.py  # deep dive + hubs + isoform deltas
 ```
 
 Optional metapredict (subset recommended on CPU):
@@ -199,13 +204,14 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 **`v1.1.1`** = feature ablation + experimental disorder retrains.  
 **`v1.2.0`** = stress DE × condensatome modules (parallel PR).
 **`v1.3.0`** = fair NAR+ benchmark suite + leaderboard (leave-gold-out / family / expanded species).  
-**`v1.4.0`** = explainability SHAP/grammar attributions on protein pages (gold ∪ Tier A).
+**`v1.4.0`** = explainability SHAP/grammar attributions on protein pages (gold ∪ Tier A).  
+**`v1.5.0`** = stress GO/keyword deep dive + STRING/stress hubs + VIT multi-accession score deltas.
 
 ## Still open (not claimed done)
 
 - Exact RBGD4 AGI  
 - Zenodo DOI (bundle verified for v1.1.1 under `dist/`; mint on Zenodo then paste DOI — `docs/ZENODO.md`)  
 - Host hardening follow-up (publish review: resource exhaustion / data exposure — noted in `docs/HOSTING.md`)  
-- Splice isoforms; coexpression-only track; tomato second-crop deposit  
+- Broader splice-isoform annotation (UP000009183 is nearly 1:1 VIT↔accession; v1.5 deposits the rare multi-accession deltas); coexpression-only track; tomato second-crop deposit  
 
 
