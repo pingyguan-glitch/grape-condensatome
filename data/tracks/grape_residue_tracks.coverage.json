@@ -1,0 +1,12 @@
+{
+  "species": "grape",
+  "coverage": {
+    "n_proteins": 25972,
+    "n_with_disorder": 25972,
+    "n_with_plddt": 3956,
+    "n_with_both": 3956,
+    "schema_version": 1,
+    "updated_at_utc": "2026-11-27T08:16:04Z"
+  },
+  "note": "Disorder complete. pLDDT partial+resumable (AFDB rate-limited). Run: python3 scripts/deposit_residue_tracks.py --species grape --plddt --workers 8"
+}

@@ -46,6 +46,14 @@ import {
 } from "./lib/db.js";
 import { loadModel, scoreSequence } from "./lib/model.js";
 import { explainFeatures } from "./lib/explain.js";
+import {
+  openTracksDb,
+  loadInterproEntries,
+  getResidueTracks,
+  getTracksCoverage,
+  annotateInterproIds,
+  downsample,
+} from "./lib/tracks.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8765);
@@ -289,6 +297,127 @@ function trackHtml(length, segments, { title, tone }) {
   </div>`;
 }
 
+/** SVG sparkline for per-residue float tracks (disorder 0–1 or pLDDT 0–100). */
+function residueSparklineHtml(values, { title, ymin = 0, ymax = 1, stroke = "#2f5d3a", thr = null } = {}) {
+  if (!values || !values.length) {
+    return `<div class="track"><div class="track-label">${esc(title)}</div>
+      <p class="muted" style="margin:0.25rem 0">No deposited trajectory.</p></div>`;
+  }
+  const pts = downsample(values, 900);
+  const n = pts.length;
+  const W = 900;
+  const H = 64;
+  const pad = 2;
+  const span = Math.max(1e-9, ymax - ymin);
+  const coords = pts
+    .map((v, i) => {
+      const x = pad + (i / Math.max(1, n - 1)) * (W - 2 * pad);
+      const y = H - pad - ((Number(v) - ymin) / span) * (H - 2 * pad);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  let thrLine = "";
+  if (thr != null && Number.isFinite(Number(thr))) {
+    const y =
+      H - pad - ((Number(thr) - ymin) / span) * (H - 2 * pad);
+    thrLine = `<line class="spark-thr" x1="${pad}" x2="${W - pad}" y1="${y.toFixed(
+      1
+    )}" y2="${y.toFixed(1)}" />`;
+  }
+  const mean = values.reduce((a, b) => a + Number(b), 0) / values.length;
+  return `<div class="track spark-track">
+    <div class="track-label">${esc(title)}
+      <span class="muted">n=${esc(values.length)} · mean ${mean.toFixed(3)}
+      · axis ${esc(ymin)}–${esc(ymax)}</span></div>
+    <svg class="sparkline" viewBox="0 0 ${W} ${H}" role="img"
+         aria-label="${esc(title)}">${thrLine}
+      <polyline fill="none" stroke="${esc(stroke)}" stroke-width="1.6"
+                points="${coords}" /></svg>
+  </div>`;
+}
+
+/** Orthogonal disorder cross-check: metapredict ≥ thr vs AF pLDDT < plddtThr. */
+function orthogonalCrossCheckHtml(disorder, plddt, { dThr = 0.5, pThr = 50 } = {}) {
+  if (!disorder?.length || !plddt?.length) {
+    return `<p class="muted">Cross-check needs both metapredict and pLDDT trajectories deposited.</p>`;
+  }
+  const n = Math.min(disorder.length, plddt.length);
+  let nDis = 0;
+  let nLow = 0;
+  let nBoth = 0;
+  let nEither = 0;
+  for (let i = 0; i < n; i++) {
+    const d = Number(disorder[i]) >= dThr;
+    const p = Number(plddt[i]) < pThr;
+    if (d) nDis++;
+    if (p) nLow++;
+    if (d && p) nBoth++;
+    if (d || p) nEither++;
+  }
+  const jaccard = nEither > 0 ? nBoth / nEither : 0;
+  const fracDis = nDis / n;
+  const fracLow = nLow / n;
+  const covBoth = nBoth / n;
+  return `<div class="crosscheck">
+    <h4 style="margin:0.75rem 0 0.35rem">Orthogonal disorder cross-check</h4>
+    <p class="muted">Per-residue agreement between metapredict disorder ≥ ${esc(dThr)}
+       and AF pLDDT &lt; ${esc(pThr)} (NAR A2). Not a gold-standard IDR call — two
+       independent deposited rails.</p>
+    <div class="features">
+      <div><span class="k">length (min)</span><span class="v">${esc(n)}</span></div>
+      <div><span class="k">frac metapredict≥${esc(dThr)}</span><span class="v">${fracDis.toFixed(3)} (${esc(nDis)})</span></div>
+      <div><span class="k">frac pLDDT&lt;${esc(pThr)}</span><span class="v">${fracLow.toFixed(3)} (${esc(nLow)})</span></div>
+      <div><span class="k">frac both</span><span class="v">${covBoth.toFixed(3)} (${esc(nBoth)})</span></div>
+      <div><span class="k">Jaccard (both / either)</span><span class="v">${jaccard.toFixed(3)}</span></div>
+    </div>
+  </div>`;
+}
+
+function expressionBarsHtml(exprTpm, experiment) {
+  if (!exprTpm || typeof exprTpm !== "object") return "";
+  const entries = Object.entries(exprTpm).filter(([, v]) => Number.isFinite(Number(v)));
+  if (!entries.length) return "";
+  const max = Math.max(...entries.map(([, v]) => Number(v)), 1e-9);
+  const rows = entries
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .map(([k, v]) => {
+      const n = Number(v);
+      const pct = Math.max(0.5, (n / max) * 100);
+      return `<div class="expr-row">
+        <div class="expr-label" title="${esc(k)}">${esc(k)}</div>
+        <div class="expr-track"><span class="expr-fill" style="width:${pct}%"></span></div>
+        <div class="expr-val mono">${n.toFixed(2)}</div>
+      </div>`;
+    })
+    .join("");
+  return `<div class="card" style="margin-top:1rem"><h3>Grape expression atlas (TPM)</h3>
+    <p class="muted">EMBL-EBI Expression Atlas baseline
+      <span class="mono">${esc(experiment || "E-MTAB-8758")}</span>
+      (Pinot Noir berry RNA-seq; GeneID = <span class="mono">VIT_*</span>).
+      Offline deposit in SQLite <span class="mono">expr_tpm_json</span>.
+      Stress differentials below when joined.</p>
+    <div class="expr-bars">${rows}</div></div>`;
+}
+
+function interproListHtml(ids) {
+  const ann = annotateInterproIds(ids || []);
+  if (!ann.length) return "—";
+  return ann
+    .slice(0, 24)
+    .map((e) => {
+      const tip = e.name ? `${e.accession} · ${e.name}` : e.accession;
+      const label = e.name
+        ? `<span class="mono">${esc(e.accession)}</span> ${esc(e.name)}${
+            e.type ? ` <span class="muted">(${esc(e.type)})</span>` : ""
+          }`
+        : `<span class="mono">${esc(e.accession)}</span>`;
+      return `<a href="https://www.ebi.ac.uk/interpro/entry/InterPro/${encodeURIComponent(
+        e.accession
+      )}/" target="_blank" rel="noopener" title="${esc(tip)}">${label}</a>`;
+    })
+    .join("; ");
+}
+
 function shapBarHtml(label, value, { maxAbs = 0.2, companion = null } = {}) {
   const v = Number(value) || 0;
   const m = Math.max(maxAbs, Math.abs(v), 1e-6);
@@ -463,8 +592,9 @@ function layout(title, body, query = "") {
     </nav>
   </header>
   <div class="banner">
-    PlantLLPS hybrid model (v13). Disorder: composition proxy by default; metapredict + AlphaFold pLDDT
-    joined where computed. Curated LLPS gold badges + reconstructed MAP-screen ρ on /gold and /map.
+    PlantLLPS hybrid model (v13). Disorder: composition proxy by default; metapredict trajectories +
+    AlphaFold pLDDT tracks deposited under <span class="mono">data/tracks/</span> and plotted on protein pages.
+    Curated LLPS gold badges + reconstructed MAP-screen ρ on /gold and /map.
     Orthologs (Ath/rice + soybean via OrthoDB), STRING Vitis neighborhoods (/network),
     stress DE × condensatome enrichment + modules (/modules), atlas analyses
     (family enrichment / comparator disagreement / structure–score on /analyses),
@@ -683,11 +813,27 @@ app.get("/api/health", (_req, res) => {
   const deep = atlasAnalyses?.analyses?.["2_stress_module_deepdive"];
   const hubs = atlasAnalyses?.analyses?.["6_string_stress_seed_hubs"];
   const iso = atlasAnalyses?.analyses?.["7_isoform_multi_protein_genes"];
+  let residueTracksMeta = null;
+  try {
+    const raw = getMeta(db).residue_tracks;
+    residueTracksMeta = raw ? JSON.parse(raw) : getTracksCoverage();
+  } catch {
+    residueTracksMeta = getTracksCoverage();
+  }
+  let interproEntriesMeta = null;
+  try {
+    const raw = getMeta(db).interpro_entries;
+    interproEntriesMeta = raw ? JSON.parse(raw) : null;
+  } catch {
+    interproEntriesMeta = null;
+  }
   res.json({
     ok: true,
     version: APP_VERSION,
     db: DB_PATH,
     n: summarize(db).n_proteins,
+    residue_tracks: residueTracksMeta,
+    interpro_entries: interproEntriesMeta,
     second_crop: secondCropMeta(),
     string: sn.version
       ? {
@@ -1390,9 +1536,70 @@ app.get("/tiers/:tier", (req, res) => {
   res.type("html").send(layout(`Tier ${tier}`, body));
 });
 
+app.get("/api/protein/:id/tracks", (req, res) => {
+  const id = String(req.params.id || "").trim();
+  const tracks = getResidueTracks(id);
+  if (!tracks) {
+    return res.status(404).json({
+      ok: false,
+      error: "no_tracks",
+      protein_id: id,
+      hint: "Run scripts/deposit_residue_tracks.py --species grape --disorder --plddt",
+    });
+  }
+  const maxPts = Math.min(2000, Math.max(50, Number(req.query.max_points) || 900));
+  res.json({
+    ok: true,
+    protein_id: tracks.protein_id,
+    length: tracks.length,
+    disorder_source: tracks.disorder_source,
+    plddt_source: tracks.plddt_source,
+    disorder_mean: tracks.disorder_mean,
+    plddt_mean: tracks.plddt_mean,
+    disorder: downsample(tracks.disorder, maxPts),
+    plddt: downsample(tracks.plddt, maxPts),
+    disorder_n: tracks.disorder?.length ?? 0,
+    plddt_n: tracks.plddt?.length ?? 0,
+    downsampled_to: maxPts,
+  });
+});
+
 app.get("/protein/:id", (req, res) => {
   const p = getProtein(db, req.params.id);
   if (!p) {
+    // NAR A2: fruit/crop candidate accessions may have tracks without a grape row
+    const tracksOnly = getResidueTracks(req.params.id);
+    if (tracksOnly) {
+      const disorderSpark = residueSparklineHtml(tracksOnly.disorder, {
+        title: "metapredict disorder",
+        ymin: 0,
+        ymax: 1,
+        stroke: "#b86b2a",
+        thr: 0.5,
+      });
+      const plddtSpark = residueSparklineHtml(tracksOnly.plddt, {
+        title: "AlphaFold pLDDT",
+        ymin: 0,
+        ymax: 100,
+        stroke: "#2f5d3a",
+        thr: 50,
+      });
+      const body = `
+        <div class="card">
+          <h2 class="mono">${esc(tracksOnly.protein_id)}</h2>
+          <p class="muted">Not in the grape atlas SQLite — showing deposited residue tracks
+             (fruit/crop high-score candidate set, NAR A2). Length ${esc(tracksOnly.length)}.</p>
+          <p><a href="/hooks#fruit-cross-species">Cross-species candidates</a>
+             · <a href="/api/protein/${encodeURIComponent(tracksOnly.protein_id)}/tracks">tracks JSON</a></p>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <h3>Per-residue tracks</h3>
+          ${disorderSpark}
+          ${plddtSpark}
+          ${orthogonalCrossCheckHtml(tracksOnly.disorder, tracksOnly.plddt)}
+        </div>`;
+      return res.type("html").send(layout(tracksOnly.protein_id, body));
+    }
     return res
       .status(404)
       .type("html")
@@ -1415,14 +1622,35 @@ app.get("/protein/:id", (req, res) => {
   const kw = (p.keywords || []).slice(0, 24).map((g) => esc(g)).join(", ") || "—";
   const pfamList =
     (p.domain_pfam_ids || []).map((x) => esc(x)).join(", ") || "—";
-  const iprList =
-    (p.domain_interpro_ids || []).slice(0, 12).map((x) => esc(x)).join(", ") || "—";
+  const iprList = interproListHtml((p.domain_interpro_ids || []).slice(0, 24));
+  const tracks = getResidueTracks(p.protein_id);
+  const disorderSpark = residueSparklineHtml(tracks?.disorder, {
+    title: "metapredict disorder",
+    ymin: 0,
+    ymax: 1,
+    stroke: "#b86b2a",
+    thr: 0.5,
+  });
+  const plddtSpark = residueSparklineHtml(tracks?.plddt, {
+    title: "AlphaFold pLDDT",
+    ymin: 0,
+    ymax: 100,
+    stroke: "#2f5d3a",
+    thr: 50,
+  });
+  const afdbLink = p.af_model_id
+    ? `https://alphafold.ebi.ac.uk/entry/${encodeURIComponent(
+        String(p.protein_id)
+      )}`
+    : `https://alphafold.ebi.ac.uk/search/text/${encodeURIComponent(
+        String(p.protein_id)
+      )}`;
   const domainTrack = trackHtml(p.length, p.domains, {
-    title: "Domains",
+    title: "Domains (UniProt / InterPro)",
     tone: "tone-domain",
   });
   const idrTrack = trackHtml(p.length, p.idr_segments, {
-    title: "IDR",
+    title: "IDR segments",
     tone: "tone-idr",
   });
   const domainRows = (p.domains || [])
@@ -1635,10 +1863,22 @@ app.get("/protein/:id", (req, res) => {
          }</p>
     </div>
     <div class="card" style="margin-top:1rem">
+      <h3>Per-residue tracks</h3>
+      <p class="muted">Offline deposit in <span class="mono">data/tracks/grape_residue_tracks.sqlite</span>
+         (uint8-quantized). Disorder = metapredict trajectory (threshold 0.5 dashed).
+         pLDDT = AlphaFold DB confidence JSON
+         (<a href="${afdbLink}" target="_blank" rel="noopener">AFDB entry</a>
+         ${p.af_model_id ? `· <span class="mono">${esc(p.af_model_id)}</span>` : ""}).
+         JSON: <a href="/api/protein/${encodeURIComponent(p.protein_id)}/tracks"><span class="mono">/api/protein/…/tracks</span></a>.</p>
+      ${disorderSpark}
+      ${plddtSpark}
+      ${orthogonalCrossCheckHtml(tracks?.disorder, tracks?.plddt)}
+    </div>
+    <div class="card" style="margin-top:1rem">
       <h3>Domain / IDR track</h3>
-      <p class="muted">Domains: UniProt FT Domain + InterPro Pfam coords where FT empty.
-         IDR: AlphaFold pLDDT&lt;50 (when deposited) ∪ UniProt REGION Disordered (MobiDB-lite).
-         metapredict supplies mean frac only — no per-residue IDR track.</p>
+      <p class="muted">Domains: UniProt FT Domain + InterPro member-DB locations (Pfam backfill +
+         Tier A∪B InterPro API refresh). Same residue axis as sparklines above.
+         IDR: AlphaFold pLDDT&lt;50 ∪ UniProt REGION Disordered (MobiDB-lite).</p>
       ${domainTrack}
       ${idrTrack}
       ${
@@ -1669,20 +1909,7 @@ app.get("/protein/:id", (req, res) => {
              .join("")}</div></div>`
         : ""
     }
-    ${
-      p.expr_tpm
-        ? `<div class="card" style="margin-top:1rem"><h3>Expression Atlas TPM by condition</h3>
-           <p class="muted">Baseline <span class="mono">${esc(
-             p.expr_experiment || "E-MTAB-8758"
-           )}</span></p>
-           <div class="features">${Object.entries(p.expr_tpm)
-             .map(
-               ([k, v]) =>
-                 `<div><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`
-             )
-             .join("")}</div></div>`
-        : ""
-    }
+    ${expressionBarsHtml(p.expr_tpm, p.expr_experiment)}
     ${stressExprHtml(p.expr_stress)}
     ${stringNeighborhoodHtml(p.protein_id)}
     ${explainabilityHtml(explainById.get(p.protein_id), { length: p.length })}
@@ -2377,7 +2604,7 @@ function fruitCrossSpeciesPanel(req) {
         .slice(0, 6)
         .map(([s, m]) => {
           const id = m?.protein_id
-            ? `<a class="mono" href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(m.protein_id)}/entry" target="_blank" rel="noopener">${esc(m.protein_id)}</a>`
+            ? `<a class="mono" href="/protein/${esc(m.protein_id)}" title="Residue tracks (A2)">${esc(m.protein_id)}</a>`
             : "—";
           return `<span class="muted">${esc(s)}</span> ${id}` +
             (m?.tier ? ` <span class="tier ${esc(m.tier)}">${esc(m.tier)}</span>` : "");
@@ -2850,6 +3077,10 @@ Promise.all([
   loadExplainability().catch((err) => {
     console.error("Explainability sidecar failed:", err);
   }),
+  Promise.resolve().then(() => openTracksDb()),
+  loadInterproEntries().catch((err) => {
+    console.error("InterPro entries cache failed:", err);
+  }),
 ]).finally(() => {
   app.listen(PORT, HOST, () => {
     console.log(
@@ -2860,5 +3091,7 @@ Promise.all([
     console.log(`Model: ${MODEL_PATH}`);
     console.log(`FASTA sequences indexed: ${seqById.size}`);
     console.log(`Explainability attributions: ${explainById.size}`);
+    const tc = getTracksCoverage();
+    if (tc) console.log(`Residue tracks coverage: ${JSON.stringify(tc)}`);
   });
 });

@@ -2,13 +2,13 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.9.0-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.10.0-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.9.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.10.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
 
 > Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
@@ -44,12 +44,13 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Fruit cross-species high-score (v1.7.0) | `data/fruit_crops/cross_species/` | Conservative vs species-specific Tier A∪B clusters; UI `/hooks#fruit-cross-species` |
 | LLPS DB crosswalk (v1.8.0) | `data/llps_crosswalk/` | PhaSePro / LLPSDB / DrLLPS / CD-CODE ID joins; unique vs shared; UI `/crosswalk` · [`docs/LLPS_CROSSWALK.md`](./docs/LLPS_CROSSWALK.md) |
 | RNA-binding crosswalk (v1.9.0) | `data/rbp/` | RBP2GO Ath × OrthoDB + ATtRACT + UniProt GO/KW + RG/RGG; UI `/rbp` |
+| Per-protein tracks (v1.10.0) | `data/tracks/` | metapredict + AF pLDDT rails + orthogonal cross-check; grape + candidate deposits |
 | NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.x atlas + cross-crop/tomato deposits; Zenodo DOI pending |
 | Supplemental figures S1–S5 (v1.5.3) | [`docs/figures/supp/`](./docs/figures/supp/) | PNG/PDF + [`LEGENDS.md`](./docs/figures/supp/LEGENDS.md); regenerate via `scripts/generate_supp_figures.py` (`requirements-figures.txt`) |
 
 ## Honesty (read before citing metrics)
 
-- Default disorder is a **composition proxy** (`data/model_formal.json`). **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed). Optional experimental retrains that *replace* the proxy live under `data/experimental/` (`scripts/retrain_disorder_features.py`) and must not silently replace production weights.
+- Default disorder is a **composition proxy** (`data/model_formal.json`). **metapredict** mean fractions via `scripts/score_metapredict_proteome.py`; **per-residue trajectories** via `scripts/deposit_residue_tracks.py` → `data/tracks/` (protein-page sparklines). Optional experimental retrains that *replace* the proxy live under `data/experimental/` (`scripts/retrain_disorder_features.py`) and must not silently replace production weights.
 - **Feature-ablation panels** for Figure 3: `scripts/eval_feature_ablation.py` → `data/benchmarks/feature_ablation_*`.
 - **Explainability (NAR+):** exact logistic SHAP (`φ=w·z`) + companion decomposition + Gly-occlusion windows via `scripts/deposit_explainability.py` → `data/explainability/` (gold ∪ Tier A; protein-page panel). Not KernelSHAP.
 - **AlphaFold pLDDT** summaries + **scored-proteome low-pLDDT segments** via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache; browser-like User-Agent).

@@ -22,6 +22,10 @@ python3 scripts/score_metapredict_proteome.py --db-ids-only --batch-size 200 \
   --metapredict-python "$METAPREDICT_PYTHON"
 # → data/benchmarks/metapredict_proteome.tsv + SQLite frac_disorder_metapredict
 
+# Per-residue trajectories (uint8 sidecar for the protein-page sparkline)
+python3 scripts/deposit_residue_tracks.py --species grape --disorder --batch-size 50
+# → data/tracks/grape_residue_tracks.sqlite (disorder_u8) + coverage JSON
+
 # CLI path (stores frac_disorder_metapredict in TSV / features_json)
 python3 -m plantllps score seed.fasta -o out.tsv --use-metapredict \
   --metapredict-python "$METAPREDICT_PYTHON"
@@ -55,12 +59,18 @@ python3 scripts/enrich_alphafold_plddt.py --workers 16 --with-segments --segment
 python3 scripts/enrich_alphafold_plddt.py --segments-only --segments-tier ALL --workers 24
 # Full proteome is network-bound (~15–45+ min depending on rate limits / workers).
 # v1.1 default segment scope = ALL scored proteins with an AFDB model.
+
+# Per-residue pLDDT trajectories (uint8 sidecar; prefer after --disorder finishes
+# if sharing the same tracks SQLite writer)
+python3 scripts/deposit_residue_tracks.py --species grape --plddt --workers 16
+# → data/tracks/grape_residue_tracks.sqlite (plddt_u8)
 ```
 
 Columns: `af_mean_plddt`, `af_frac_very_low` (pLDDT&lt;50 fraction; matches companion
 “pLDDT-based disorder”), `af_disorder_segments_json`, …
 
 Cache: `data/alphafold/*.json` (gitignored). Coverage: `data/alphafold/coverage.json` + `meta.alphafold_plddt`.
+Per-residue deposit: `data/tracks/` (committed sidecar; see that README).
 
 ## Stress RNA-seq (Expression Atlas)
 
@@ -233,10 +243,15 @@ python3 scripts/enrich_domains_idr.py
 # UniProt FT Domain + Pfam/InterPro xrefs; InterPro API backfill for Pfam coords
 # IDR = AF pLDDT<50 segments (when present) ∪ UniProt REGION Disordered (MobiDB-lite)
 # → SQLite domains_json / idr_segments_json; UI protein-page track
+
+# Entry name/type cache + optional Tier A∪B InterPro protein locations (all member DBs)
+python3 scripts/deposit_interpro_entries.py --protein-locations --tier-ab --workers 12
+# → data/tracks/interpro_entries.json.gz (+ merges locations into domains_json)
 ```
 
 Cache: `data/domains/uniprot_up000009183_domains.tsv.gz` (committed). InterPro checkpoint
 `data/domains/interpro_pfam_backfill.checkpoint.json` is gitignored.
+Entry metadata: `data/tracks/interpro_entries.json.gz`.
 
 ## Atlas analyses (family / disagreement / structure)
 
