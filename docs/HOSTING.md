@@ -9,8 +9,8 @@ It is **not** a static site: GitHub Pages cannot serve the SQLite-backed API/UI.
 |------|--------|
 | **Local server** | Supported — `npm install && npm start` → `http://127.0.0.1:8765/` |
 | **Confirmed public URL** | **None yet.** Do not invent or paste placeholder hostnames as live. |
-| Cursor **publish-app** | Propose from a Cloud Agent after commit+push + local preview; only live after the owner confirms the publish dialog. |
-| Railway / Render / Fly | Configs in-repo (`railway.toml`, `render.yaml`, `fly.toml`, `Dockerfile`). Deploy requires your account login — see steps below. |
+| Cursor **publish-app** | **Proposed** (slug `grape-condensatome`, proposal awaiting owner confirm + terms). Not live until confirmed — then paste the issued URL here. |
+| Railway / Render / Fly | Configs in-repo (`railway.toml`, `render.yaml`, `fly.toml`, `Dockerfile`). No platform tokens in the Cloud Agent; deploy requires your account login — see steps below. |
 
 When a real public HTTPS URL exists, replace the table row above and the README badges in the same PR. Health check path: `GET /api/health`.
 
