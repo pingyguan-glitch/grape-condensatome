@@ -1,0 +1,35 @@
+{
+  "n": 162,
+  "n_pos": 76,
+  "n_neg": 86,
+  "k": 5,
+  "fold_auc_logistic": [
+    0.8888888888888888,
+    0.8549019607843137,
+    0.7568627450980392,
+    0.8941176470588236,
+    0.9176470588235294
+  ],
+  "fold_auc_companion": [
+    0.7951388888888888,
+    0.6470588235294118,
+    0.7372549019607844,
+    0.8117647058823529,
+    0.8588235294117647
+  ],
+  "mean_auc_logistic": 0.8624836601307189,
+  "mean_auc_companion": 0.7700081699346406,
+  "oof_auc_logistic": 0.863984088127295,
+  "oof_auc_companion": 0.7815177478580171,
+  "spearman_logistic_vs_companion": 0.539703709348948,
+  "disorder_variant": "af_plddt",
+  "experimental": true,
+  "coverage": {
+    "n": 162,
+    "n_metapredict": 162,
+    "n_af_plddt": 156,
+    "n_af_fallback_composition": 6,
+    "af_coverage": 0.9629629629629629
+  },
+  "delta_mean_auc_logistic_vs_composition": -0.00017973856209163586
+}

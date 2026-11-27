@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "train_csv": "data/train_formal_v13.csv",
+  "n": 162,
+  "n_pos": 76,
+  "n_neg": 86,
+  "seed": 7,
+  "k": 5,
+  "production_model_untouched": "data/model_formal.json",
+  "variants": {
+    "composition": {
+      "metrics_path": "data/experimental/model_formal.composition.metrics.json",
+      "model_path": null,
+      "note": "baseline CV only; production weights unchanged",
+      "mean_auc_logistic": 0.8626633986928105,
+      "mean_auc_companion": 0.7737091503267973,
+      "oof_auc_logistic": 0.868421052631579,
+      "oof_auc_companion": 0.7671358629130967,
+      "delta_mean_auc_logistic_vs_composition": 0.0,
+      "coverage": {
+        "n": 162,
+        "n_metapredict": 0,
+        "n_af_plddt": 0,
+        "n_af_fallback_composition": 0,
+        "af_coverage": 0.0
+      }
+    },
+    "metapredict": {
+      "metrics_path": "data/experimental/model_formal.metapredict.metrics.json",
+      "model_path": "data/experimental/model_formal.metapredict.json",
+      "mean_auc_logistic": 0.8821813725490196,
+      "mean_auc_companion": 0.7595669934640523,
+      "oof_auc_logistic": 0.8812729498164015,
+      "oof_auc_companion": 0.767594859241126,
+      "delta_mean_auc_logistic_vs_composition": 0.019517973856209125,
+      "coverage": {
+        "n": 162,
+        "n_metapredict": 162,
+        "n_af_plddt": 0,
+        "n_af_fallback_composition": 0,
+        "af_coverage": 0.0
+      }
+    },
+    "af_plddt": {
+      "metrics_path": "data/experimental/model_formal.af_plddt.metrics.json",
+      "model_path": "data/experimental/model_formal.af_plddt.json",
+      "mean_auc_logistic": 0.8624836601307189,
+      "mean_auc_companion": 0.7700081699346406,
+      "oof_auc_logistic": 0.863984088127295,
+      "oof_auc_companion": 0.7815177478580171,
+      "delta_mean_auc_logistic_vs_composition": -0.00017973856209163586,
+      "coverage": {
+        "n": 162,
+        "n_metapredict": 162,
+        "n_af_plddt": 156,
+        "n_af_fallback_composition": 6,
+        "af_coverage": 0.9629629629629629
+      }
+    },
+    "metapredict_af_mean": {
+      "metrics_path": "data/experimental/model_formal.metapredict_af_mean.metrics.json",
+      "model_path": "data/experimental/model_formal.metapredict_af_mean.json",
+      "mean_auc_logistic": 0.8767810457516341,
+      "mean_auc_companion": 0.7698284313725491,
+      "oof_auc_logistic": 0.8811199510403916,
+      "oof_auc_companion": 0.7783047735618115,
+      "delta_mean_auc_logistic_vs_composition": 0.014117647058823568,
+      "coverage": {
+        "n": 162,
+        "n_metapredict": 162,
+        "n_af_plddt": 156,
+        "n_af_fallback_composition": 0,
+        "af_coverage": 0.9629629629629629
+      }
+    }
+  },
+  "honesty": "Experimental disorder retrains only. Production PlantLLPS remains the composition-proxy weights in data/model_formal.json. AF disorder uses AFDB frac pLDDT<50 when a model exists; otherwise falls back to the composition proxy for that row (documented in coverage)."
+}

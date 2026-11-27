@@ -1,6 +1,23 @@
 # Release notes
 
-## Deposit / hosting prep (post-v1.1.0)
+## v1.1.1 (2026-11-27)
+
+Figure 3 feature-ablation panels + optional experimental disorder retrains (composition production weights unchanged).
+
+### Feature ablation (Figure 3)
+
+- `scripts/eval_feature_ablation.py` — leave-one-group-out + group-only stratified 5-fold CV on v13 (same seed as production).
+- Deposits: `data/benchmarks/feature_ablation_metrics.{json,tsv}`, `feature_ablation_panel.svg`, `FEATURE_ABLATION_README.md`.
+- Headline (composition proxy): full-model mean logistic AUC ≈ **0.863** / hybrid ≈ **0.859**; largest LOGO drop **map65_cterm** (Δlogistic ≈ **−0.036**), then **disorder** (≈ **−0.021**). Family hold-out remains the transfer probe (`family_holdout_metrics.json`).
+
+### Experimental disorder retrains (optional)
+
+- `scripts/retrain_disorder_features.py` — comparable CV with metapredict and/or AFDB `fractionPlddtVeryLow` replacing `frac_disorder_proxy`.
+- **Does not overwrite** `data/model_formal.json`. Experimental weights under `data/experimental/`.
+- Side-by-side (mean logistic AUC / Δ vs composition): composition **0.863**; metapredict **0.882** (+0.020); AF pLDDT **0.862** (−0.000); metapredict+AF mean **0.877** (+0.014). AF coverage **156 / 162** (6 rows fall back to composition).
+- Install notes unchanged in `docs/EXTERNAL_TOOLS.md` (`METAPREDICT_PYTHON`).
+
+### Deposit / hosting prep (retained from post-v1.1.0)
 
 - `docs/ZENODO.md` + `scripts/export_zenodo_bundle.py` — build Zenodo bundle (weights, SQLite, TSV.gz, optional Parquet, checksums). **No invented DOI**; user publishes on Zenodo and pastes DOI into `CITATION.cff`.
 - `docs/HOSTING.md` — clarified **local-server-only** until a real public URL exists; Railway/Render one-liners; SQLite size note (~100 MiB).

@@ -29,9 +29,20 @@ python3 -m plantllps score seed.fasta -o out.tsv --use-metapredict \
 
 Notes:
 
-- v13 logistic weights were trained on the **composition** `frac_disorder_proxy`.
-- `--metapredict-replace-proxy` overwrites that field for companion/tiers only; retrain
-  if you want logistic weights to use metapredict.
+- v13 **production** logistic weights were trained on the **composition** `frac_disorder_proxy`
+  (`data/model_formal.json`).
+- `--metapredict-replace-proxy` overwrites that field for companion/tiers only.
+- Optional experimental retrain (comparable CV; does **not** overwrite production)::
+
+    export METAPREDICT_PYTHON="$(micromamba run -n meta311 which python)"
+    python3 scripts/retrain_disorder_features.py --metapredict-python "$METAPREDICT_PYTHON"
+    # → data/experimental/model_formal.metapredict.json (+ af_plddt / metapredict_af_mean)
+
+- Feature-ablation panels (Figure 3)::
+
+    python3 scripts/eval_feature_ablation.py
+    # → data/benchmarks/feature_ablation_metrics.json + feature_ablation_panel.svg
+
 - Checkpoint: `data/benchmarks/metapredict_proteome.checkpoint.json` (gitignored).
 
 ## AlphaFold pLDDT
