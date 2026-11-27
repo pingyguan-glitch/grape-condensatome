@@ -11,6 +11,10 @@ version: "1.1.1"
 date-released: "2026-11-27"
 license: MIT
 repository-code: "https://github.com/pingyguan-glitch/grape-condensatome"
+# identifiers:   # uncomment after Zenodo publish — do NOT invent a DOI
+#   - type: doi
+#     value: "10.5281/zenodo.PASTE_REAL_ID_HERE"
+#     description: "Zenodo deposit (see docs/ZENODO.md)"
 abstract: >-
   PlantLLPS is a plant-aware sequence scorer for liquid–liquid phase separation
   propensity. GrapeCondensatome is the PlantLLPS-scored UniProt UP000009183
@@ -27,4 +31,4 @@ preferred-citation:
   authors:
     - family-names: Guan
       given-names: Pingyin
-  notes: "Manuscript in preparation; cite this software release and the companion MAP/LLPS screen when available."
+  notes: "Manuscript in preparation; cite this software release and the companion MAP/LLPS screen when available. Zenodo DOI pending — see docs/ZENODO.md."

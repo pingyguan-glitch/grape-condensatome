@@ -17,6 +17,11 @@ Figure 3 feature-ablation panels + optional experimental disorder retrains (comp
 - Side-by-side (mean logistic AUC / Δ vs composition): composition **0.863**; metapredict **0.882** (+0.020); AF pLDDT **0.862** (−0.000); metapredict+AF mean **0.877** (+0.014). AF coverage **156 / 162** (6 rows fall back to composition).
 - Install notes unchanged in `docs/EXTERNAL_TOOLS.md` (`METAPREDICT_PYTHON`).
 
+### Deposit / hosting prep (retained from post-v1.1.0)
+
+- `docs/ZENODO.md` + `scripts/export_zenodo_bundle.py` — build Zenodo bundle (weights, SQLite, TSV.gz, optional Parquet, checksums). **No invented DOI**; user publishes on Zenodo and pastes DOI into `CITATION.cff`.
+- `docs/HOSTING.md` — clarified **local-server-only** until a real public URL exists; Railway/Render one-liners; SQLite size note (~100 MiB).
+
 ## v1.1.0 (2026-11-27)
 
 P1 atlas layers on v1.0.0: full scored-proteome AlphaFold low-pLDDT segments + multi-stress RNA-seq.

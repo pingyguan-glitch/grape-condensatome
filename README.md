@@ -23,7 +23,8 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Curated LLPS gold | `data/curated/` | experimentally anchored overlay + SQLite/UI badge |
 | MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
 | External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
-| Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | publish-app + Railway/Render/Fly; not GitHub Pages |
+| Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **Local server only** until a real public URL exists; publish-app / Railway / Render / Fly |
+| Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
 
 ## Honesty (read before citing metrics)
 
@@ -121,7 +122,9 @@ python3 -m plantllps serve --host 0.0.0.0 --port 8765
 npm start
 ```
 
-Public hosting: see [`docs/HOSTING.md`](./docs/HOSTING.md). **GitHub Pages will not work** (needs a SQLite server).
+Public hosting: see [`docs/HOSTING.md`](./docs/HOSTING.md) — **local server only** unless a confirmed public URL is recorded there. **GitHub Pages will not work** (needs a SQLite server).
+
+Data/model deposit for Zenodo: [`docs/ZENODO.md`](./docs/ZENODO.md) (`python3 scripts/export_zenodo_bundle.py`). Paste the real DOI into `CITATION.cff` after publish — do not invent one.
 
 ## Benchmarks vs PSAP / LLPhyScore
 
@@ -163,8 +166,9 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 
 ## Still open (not claimed done)
 
-- MAP-screen table deposit (ρ vs PSAP)  
-- Exact RBGD4 AGI; family-held-out PlantLLPS transfer AUC  
-- Confirmed public URL after publish-app / Railway / Render / Fly deploy  
-- Splice isoforms; STRING / coexpression layers  
+- Exact RBGD4 AGI  
+- Confirmed public hosted URL (local-only until publish-app confirm or Railway/Render/Fly deploy — see `docs/HOSTING.md`)  
+- Zenodo DOI (bundle script + steps in `docs/ZENODO.md`; paste DOI after you publish)  
+- Splice isoforms; coexpression-only track; tomato second-crop deposit  
+
 
