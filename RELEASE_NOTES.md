@@ -1,5 +1,19 @@
 # Release notes
 
+## v0.9.0 (2026-11-27)
+
+Additive **STRING neighborhood + condensatome enrichment** on top of Wave 2 **v0.8.0** (gold/MAP/hold-out).
+
+- `scripts/enrich_string_neighborhood.py` — native *Vitis* STRING (taxid 29760) v12 downloads;
+  UniProt mapping **25 867 / 25 972** (99.6%); 1-hop neighborhoods at combined_score ≥ 400.
+- SQLite: `string_neighborhood` for **Tier A seeds** (~833 deposited seed rows) + `string_id` on mapped proteins
+  (full-proteome neighbor JSON would exceed GitHub's 100 MB SQLite limit); combined DB also keeps curated LLPS gold columns from v0.8.0.
+- UI: protein-page neighborhood snippet + `/network` enrichment table; `/api/health` reports STRING meta.
+- Deposits: `data/string/enrichment_summary.json`, `neighborhood_stats.tsv.gz` (19 523),
+  `top_neighbors.tsv.gz`, `seed_edges.tsv.gz` (44 932), `README.md`.
+- Honest limits: combined score ≠ LLPS evidence (includes textmining); no Ath PPI transfer;
+  seeds = score Tier A (gold overlay is separate).
+
 ## v0.8.0 (2026-11-27)
 
 Wave 2 resource-quality: curated LLPS gold, MAP-screen deposit + Spearman ρ, family / transfer AUCs.

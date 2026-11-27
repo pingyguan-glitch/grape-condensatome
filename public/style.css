@@ -162,6 +162,7 @@ tr:hover td { background: #f7f3ea; }
 }
 
 .pager { display: flex; gap: 0.75rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
+.table-wrap { overflow-x: auto; margin-top: 0.75rem; }
 .muted { color: var(--muted); }
 .err { color: var(--danger); }
 

@@ -19,6 +19,10 @@ import {
   listByTier,
   topProteins,
   filterProteins,
+  getStringNeighborhood,
+  listStringEnrichment,
+  stringNetworkMeta,
+  loadStringTopNeighbors,
   listLlpsGold,
   DEFAULT_DB,
 } from "./lib/db.js";
@@ -33,6 +37,13 @@ const MODEL_PATH =
   process.env.GRAPE_MODEL || join(__dirname, "data", "model_formal.json");
 const FASTA_PATH =
   process.env.GRAPE_FASTA || join(__dirname, "data", "UP000009183.fasta.gz");
+const APP_VERSION = (() => {
+  try {
+    return readFileSync(join(__dirname, "VERSION"), "utf8").trim() || "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+})();
 
 if (!existsSync(DB_PATH)) {
   console.error(`SQLite not found: ${DB_PATH}`);
@@ -167,6 +178,7 @@ function layout(title, body, query = "") {
       <a href="/gold">LLPS gold</a>
       <a href="/map">MAP screen</a>
       <a href="/hooks">Cross-crop</a>
+      <a href="/network">STRING</a>
       <a href="/download">Download</a>
       <a href="/score">Score FASTA</a>
     </nav>
@@ -174,7 +186,8 @@ function layout(title, body, query = "") {
   <div class="banner">
     PlantLLPS hybrid model (v13). Disorder: composition proxy by default; metapredict + AlphaFold pLDDT
     joined where computed. Curated LLPS gold badges + reconstructed MAP-screen ρ on /gold and /map.
-    Treat ranks as hypotheses for experiment.
+    Orthologs (Ath/rice via OrthoDB), STRING Vitis neighborhoods (/network),
+    and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC). Treat ranks as hypotheses.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -249,11 +262,21 @@ function pager(base, page, total) {
 }
 
 app.get("/api/health", (_req, res) => {
+  const sn = stringNetworkMeta(db);
   res.json({
     ok: true,
-    version: "0.8.0",
+    version: APP_VERSION,
     db: DB_PATH,
     n: summarize(db).n_proteins,
+    string: sn.version
+      ? {
+          version: sn.version,
+          taxon: sn.taxon,
+          min_score: sn.min_score,
+          mapped: sn.mapped,
+          seed_edges: sn.seed_edges,
+        }
+      : null,
   });
 });
 
@@ -534,12 +557,161 @@ app.get("/protein/:id", (req, res) => {
              .join("")}</div></div>`
         : ""
     }
+    ${stringNeighborhoodHtml(p.protein_id)}
     <div class="card" style="margin-top:1rem">
       <h3>Features</h3>
       <div class="features">${featHtml}</div>
     </div>`;
   res.type("html").send(layout(p.protein_id, body));
 });
+
+function fmtP(x) {
+  const n = Number(x);
+  if (!Number.isFinite(n)) return "—";
+  if (n < 1e-4) return n.toExponential(2);
+  return n.toFixed(4);
+}
+
+function stringNeighborhoodHtml(proteinId) {
+  const nb = getStringNeighborhood(db, proteinId);
+  if (!nb) {
+    return `<div class="card" style="margin-top:1rem">
+      <h3>STRING neighborhood</h3>
+      <p class="muted">No STRING neighborhood deposited for this protein (unmapped or no edges
+         ≥ medium confidence). See <a href="/network">/network</a>.</p>
+    </div>`;
+  }
+  const top = nb.top_neighbors || [];
+  const rows = top
+    .slice(0, 15)
+    .map((t) => {
+      const pid = t.protein_id;
+      return `<tr>
+        <td class="mono"><a href="/protein/${esc(pid)}">${esc(pid)}</a></td>
+        <td>${esc(t.gene_name || "—")}</td>
+        <td><span class="tier ${esc(t.tier || "")}">${esc(t.tier || "—")}</span></td>
+        <td>${fmtScore(t.score)}</td>
+        <td>${esc(t.combined_score)}</td>
+      </tr>`;
+    })
+    .join("");
+  const fold =
+    nb.enrichment_fold != null && Number.isFinite(Number(nb.enrichment_fold))
+      ? Number(nb.enrichment_fold).toFixed(2)
+      : "—";
+  return `<div class="card" style="margin-top:1rem">
+    <h3>STRING neighborhood</h3>
+    <p class="muted">Vitis STRING (taxid 29760) combined_score ≥ medium (see meta).
+       Enrichment = Tier A∪B fraction among neighbors vs proteome background.
+       Combined scores mix experiments, databases, coexpression, and <em>textmining</em> —
+       not LLPS evidence. <a href="/network">Enrichment table</a></p>
+    <p>STRING id: <span class="mono">${esc(nb.string_id || "—")}</span>
+       · neighbors: <strong>${esc(nb.n_neighbors)}</strong>
+       · Tier A∪B: ${esc(nb.n_neighbors_tier_ab)}
+         (${nb.frac_tier_ab != null ? (100 * Number(nb.frac_tier_ab)).toFixed(1) : "—"}%)
+       · fold: <strong>${fold}</strong>
+       · hypergeom p: ${fmtP(nb.hypergeom_pvalue)}
+       ${nb.is_seed ? "· <span class=\"muted\">Tier A seed</span>" : ""}</p>
+    ${
+      rows
+        ? `<div class="table-wrap"><table>
+            <thead><tr><th>Neighbor</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th><th>STRING</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table></div>`
+        : `<p class="muted">No neighbors above threshold.</p>`
+    }
+  </div>`;
+}
+
+app.get("/network", (req, res) => {
+  const order = String(req.query.order || "pvalue") === "fold" ? "fold" : "pvalue";
+  const minN = Math.max(1, Number(req.query.min_n) || 5);
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const { rows, total, available } = listStringEnrichment(db, {
+    seedsOnly: true,
+    minNeighbors: minN,
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+    order,
+  });
+  const sn = stringNetworkMeta(db);
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const tableRows = rows
+    .map((r) => {
+      const fold =
+        r.enrichment_fold != null && Number.isFinite(Number(r.enrichment_fold))
+          ? Number(r.enrichment_fold).toFixed(2)
+          : "—";
+      return `<tr>
+        <td class="mono"><a href="/protein/${esc(r.protein_id)}">${esc(r.protein_id)}</a></td>
+        <td>${esc(r.gene_name || "—")}</td>
+        <td><span class="tier ${esc(r.tier || "")}">${esc(r.tier || "—")}</span></td>
+        <td>${fmtScore(r.plantllps_score)}</td>
+        <td>${esc(r.n_neighbors)}</td>
+        <td>${esc(r.n_neighbors_tier_ab)}</td>
+        <td>${fold}</td>
+        <td>${fmtP(r.hypergeom_pvalue)}</td>
+      </tr>`;
+    })
+    .join("");
+  const body = `
+    <div class="card">
+      <h2>STRING neighborhood enrichment</h2>
+      <p>1-hop neighbors of <strong>Tier A</strong> seeds in native <em>Vitis vinifera</em>
+         STRING (NCBI ${esc(sn.taxon || "29760")}), combined_score ≥
+         <strong>${esc(sn.min_score || "400")}</strong>. Mapped
+         ${esc(sn.mapped || "—")} / 25 972 atlas IDs; deposited seed edges:
+         ${esc(sn.seed_edges || "—")}.</p>
+      <p class="muted">Fold = (neighbor Tier A∪B fraction) / (proteome A∪B rate ≈ 0.149).
+         Hypergeometric p is descriptive only — STRING channels include textmining;
+         this is <strong>not</strong> experimental condensate membership.
+         Gold LLPS overlay (/gold) is separate; seeds here are score tiers.</p>
+      <p>
+        Sort:
+        <a href="/network?order=pvalue&min_n=${minN}">p-value</a> ·
+        <a href="/network?order=fold&min_n=${minN}">fold</a>
+        · min neighbors:
+        <a href="/network?order=${order}&min_n=3">3</a> /
+        <a href="/network?order=${order}&min_n=5">5</a> /
+        <a href="/network?order=${order}&min_n=10">10</a>
+      </p>
+      ${
+        !available
+          ? `<p class="muted">STRING tables not in this DB. Run
+             <span class="mono">python3 scripts/enrich_string_neighborhood.py</span>.</p>`
+          : total === 0
+            ? `<p class="muted">No seed neighborhoods with ≥${esc(minN)} neighbors.</p>`
+            : `<p class="muted">${esc(total)} seed rows (page ${esc(page)} / ${esc(pages)}).</p>
+               <div class="table-wrap"><table>
+                 <thead><tr>
+                   <th>Protein</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th>
+                   <th>N</th><th>N A∪B</th><th>Fold</th><th>p</th>
+                 </tr></thead>
+                 <tbody>${tableRows}</tbody>
+               </table></div>
+               ${pagerHtml("/network", page, pages, { order, min_n: minN })}`
+      }
+    </div>`;
+  res.type("html").send(layout("STRING network", body));
+});
+
+function pagerHtml(base, page, pages, query = {}) {
+  if (pages <= 1) return "";
+  const q = new URLSearchParams(
+    Object.fromEntries(
+      Object.entries(query).map(([k, v]) => [k, String(v)])
+    )
+  );
+  const mk = (p) => {
+    const qq = new URLSearchParams(q);
+    qq.set("page", String(p));
+    return `${base}?${qq.toString()}`;
+  };
+  const prev = page > 1 ? `<a class="btn secondary" href="${esc(mk(page - 1))}">← Prev</a>` : "";
+  const next =
+    page < pages ? `<a class="btn secondary" href="${esc(mk(page + 1))}">Next →</a>` : "";
+  return `<div class="pager" style="margin-top:1rem">${prev} ${next}</div>`;
+}
 
 app.get("/gold", (req, res) => {
   const page = Math.max(1, Number(req.query.page || 1));
@@ -618,6 +790,7 @@ app.get("/map", (_req, res) => {
     </div>`;
   res.type("html").send(layout("MAP screen", body));
 });
+
 
 app.get("/compare", (_req, res) => {
   // Prefer deposited gold side-by-side (includes Ath/human IDs not in grape proteome)
@@ -968,16 +1141,21 @@ app.post("/score", (req, res) => {
   res.type("html").send(layout("Score FASTA", scoreForm(result)));
 });
 
-loadFastaIndex(FASTA_PATH)
-  .catch((err) => console.error("FASTA index failed:", err))
-  .finally(() => {
-    app.listen(PORT, HOST, () => {
-      console.log(
-        `GrapeCondensatome → http://${HOST === "0.0.0.0" ? "127.0.0.1" : HOST}:${PORT}/`
-      );
-      console.log(`Bound ${HOST}:${PORT}`);
-      console.log(`SQLite: ${DB_PATH}`);
-      console.log(`Model: ${MODEL_PATH}`);
-      console.log(`FASTA sequences indexed: ${seqById.size}`);
-    });
+Promise.all([
+  loadFastaIndex(FASTA_PATH).catch((err) => {
+    console.error("FASTA index failed:", err);
+  }),
+  loadStringTopNeighbors().catch((err) => {
+    console.error("STRING top neighbors failed:", err);
+  }),
+]).finally(() => {
+  app.listen(PORT, HOST, () => {
+    console.log(
+      `GrapeCondensatome → http://${HOST === "0.0.0.0" ? "127.0.0.1" : HOST}:${PORT}/`
+    );
+    console.log(`Bound ${HOST}:${PORT}`);
+    console.log(`SQLite: ${DB_PATH}`);
+    console.log(`Model: ${MODEL_PATH}`);
+    console.log(`FASTA sequences indexed: ${seqById.size}`);
   });
+});
