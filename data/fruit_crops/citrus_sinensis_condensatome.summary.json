@@ -1,0 +1,32 @@
+{
+  "crop": "citrus_sinensis",
+  "label": "Sweet orange",
+  "species": "Citrus sinensis",
+  "proteome": "UP000027120",
+  "taxon": 2711,
+  "n_fasta_parsed": 41603,
+  "n_scored": 41603,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1842,
+    "B": 4594,
+    "C": 15393,
+    "D": 19774
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8379670684380124,
+    "score_C": 0.3719497235303666,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 112.5,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "citrus_sinensis_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Citrus sinensis (UP000027120). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model. Note: Classic citrus reference (~44k). Larger Valencia UP000829398 also exists.",
+  "mean_score": 0.431405,
+  "note": "Classic citrus reference (~44k). Larger Valencia UP000829398 also exists.",
+  "ok": true,
+  "slug": "citrus_sinensis"
+}

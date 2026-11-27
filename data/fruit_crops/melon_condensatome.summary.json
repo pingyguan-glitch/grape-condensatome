@@ -1,0 +1,32 @@
+{
+  "crop": "melon",
+  "label": "Melon",
+  "species": "Cucumis melo",
+  "proteome": "UP001652600",
+  "taxon": 3656,
+  "n_fasta_parsed": 28113,
+  "n_scored": 28113,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1263,
+    "B": 3537,
+    "C": 10140,
+    "D": 13173
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8602459303180008,
+    "score_C": 0.41847492548862236,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 92.9,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "melon_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Cucumis melo (UP001652600). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.469714,
+  "note": null,
+  "ok": true,
+  "slug": "melon"
+}

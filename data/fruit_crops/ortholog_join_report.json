@@ -1,0 +1,204 @@
+{
+  "n_ok": 18,
+  "n_failed": 0,
+  "results": [
+    {
+      "slug": "apple",
+      "species": "Malus domestica",
+      "proteome": "UP000290289",
+      "n_crop_proteins": 39929,
+      "n_crop_orthodb_rows": 42526,
+      "n_with_grape_ortholog": 4472,
+      "n_with_ath_via_grape": 3558,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "pear",
+      "species": "Pyrus ussuriensis x Pyrus communis",
+      "proteome": "UP000327157",
+      "n_crop_proteins": 39683,
+      "n_crop_orthodb_rows": 41937,
+      "n_with_grape_ortholog": 28696,
+      "n_with_ath_via_grape": 21723,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "peach",
+      "species": "Prunus persica",
+      "proteome": "UP000006882",
+      "n_crop_proteins": 37173,
+      "n_crop_orthodb_rows": 38738,
+      "n_with_grape_ortholog": 16142,
+      "n_with_ath_via_grape": 12328,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "sweet_cherry",
+      "species": "Prunus avium",
+      "proteome": "UP000515124",
+      "n_crop_proteins": 30295,
+      "n_crop_orthodb_rows": 30515,
+      "n_with_grape_ortholog": 0,
+      "n_with_ath_via_grape": 0,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "citrus_sinensis",
+      "species": "Citrus sinensis",
+      "proteome": "UP000027120",
+      "n_crop_proteins": 41603,
+      "n_crop_orthodb_rows": 44118,
+      "n_with_grape_ortholog": 139,
+      "n_with_ath_via_grape": 0,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "citrus_clementina",
+      "species": "Citrus clementina",
+      "proteome": "UP000030687",
+      "n_crop_proteins": 30104,
+      "n_crop_orthodb_rows": 31352,
+      "n_with_grape_ortholog": 15627,
+      "n_with_ath_via_grape": 12016,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "banana",
+      "species": "Musa acuminata subsp. malaccensis",
+      "proteome": "UP000012960",
+      "n_crop_proteins": 37776,
+      "n_crop_orthodb_rows": 40347,
+      "n_with_grape_ortholog": 25671,
+      "n_with_ath_via_grape": 20283,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "strawberry",
+      "species": "Fragaria ananassa",
+      "proteome": "UP001783032",
+      "n_crop_proteins": 76950,
+      "n_crop_orthodb_rows": 78142,
+      "n_with_grape_ortholog": 0,
+      "n_with_ath_via_grape": 0,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "blueberry",
+      "species": "Vaccinium darrowii",
+      "proteome": "UP000828048",
+      "n_crop_proteins": 34273,
+      "n_crop_orthodb_rows": 34804,
+      "n_with_grape_ortholog": 0,
+      "n_with_ath_via_grape": 0,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "kiwifruit",
+      "species": "Actinidia chinensis var. chinensis",
+      "proteome": "UP000241394",
+      "n_crop_proteins": 32478,
+      "n_crop_orthodb_rows": 32913,
+      "n_with_grape_ortholog": 29090,
+      "n_with_ath_via_grape": 22321,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "avocado",
+      "species": "Persea americana",
+      "proteome": "UP001234297",
+      "n_crop_proteins": 40746,
+      "n_crop_orthodb_rows": 42442,
+      "n_with_grape_ortholog": 0,
+      "n_with_ath_via_grape": 0,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "pineapple",
+      "species": "Ananas comosus",
+      "proteome": "UP000515123",
+      "n_crop_proteins": 29488,
+      "n_crop_orthodb_rows": 29712,
+      "n_with_grape_ortholog": 23568,
+      "n_with_ath_via_grape": 17793,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "melon",
+      "species": "Cucumis melo",
+      "proteome": "UP001652600",
+      "n_crop_proteins": 28113,
+      "n_crop_orthodb_rows": 28315,
+      "n_with_grape_ortholog": 331,
+      "n_with_ath_via_grape": 0,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "date_palm",
+      "species": "Phoenix dactylifera",
+      "proteome": "UP000228380",
+      "n_crop_proteins": 39147,
+      "n_crop_orthodb_rows": 39393,
+      "n_with_grape_ortholog": 24355,
+      "n_with_ath_via_grape": 18741,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "olive",
+      "species": "Olea europaea subsp. europaea",
+      "proteome": "UP000594638",
+      "n_crop_proteins": 75223,
+      "n_crop_orthodb_rows": 78352,
+      "n_with_grape_ortholog": 56710,
+      "n_with_ath_via_grape": 43583,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "fig",
+      "species": "Ficus carica",
+      "proteome": "UP001187192",
+      "n_crop_proteins": 43146,
+      "n_crop_orthodb_rows": 50560,
+      "n_with_grape_ortholog": 0,
+      "n_with_ath_via_grape": 0,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "pomegranate",
+      "species": "Punica granatum",
+      "proteome": "UP000233551",
+      "n_crop_proteins": 47028,
+      "n_crop_orthodb_rows": 50426,
+      "n_with_grape_ortholog": 5918,
+      "n_with_ath_via_grape": 4584,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    },
+    {
+      "slug": "blackberry",
+      "species": "Rubus argutus",
+      "proteome": "UP001457282",
+      "n_crop_proteins": 38432,
+      "n_crop_orthodb_rows": 39955,
+      "n_with_grape_ortholog": 0,
+      "n_with_ath_via_grape": 0,
+      "ok": true,
+      "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+    }
+  ]
+}

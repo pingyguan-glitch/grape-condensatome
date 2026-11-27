@@ -1,0 +1,11 @@
+{
+  "slug": "apple",
+  "species": "Malus domestica",
+  "proteome": "UP000290289",
+  "n_crop_proteins": 39929,
+  "n_crop_orthodb_rows": 42526,
+  "n_with_grape_ortholog": 4472,
+  "n_with_ath_via_grape": 3558,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

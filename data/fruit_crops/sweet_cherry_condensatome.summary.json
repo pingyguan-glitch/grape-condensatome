@@ -1,0 +1,32 @@
+{
+  "crop": "sweet_cherry",
+  "label": "Sweet cherry",
+  "species": "Prunus avium",
+  "proteome": "UP000515124",
+  "taxon": 42229,
+  "n_fasta_parsed": 30295,
+  "n_scored": 30295,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1353,
+    "B": 3428,
+    "C": 11152,
+    "D": 14362
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8528213086292782,
+    "score_C": 0.40073504925364645,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 96.3,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "sweet_cherry_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Prunus avium (UP000515124). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.456025,
+  "note": null,
+  "ok": true,
+  "slug": "sweet_cherry"
+}

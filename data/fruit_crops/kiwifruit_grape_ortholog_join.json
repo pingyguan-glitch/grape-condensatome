@@ -1,0 +1,11 @@
+{
+  "slug": "kiwifruit",
+  "species": "Actinidia chinensis var. chinensis",
+  "proteome": "UP000241394",
+  "n_crop_proteins": 32478,
+  "n_crop_orthodb_rows": 32913,
+  "n_with_grape_ortholog": 29090,
+  "n_with_ath_via_grape": 22321,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

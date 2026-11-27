@@ -1,0 +1,32 @@
+{
+  "crop": "date_palm",
+  "label": "Date palm",
+  "species": "Phoenix dactylifera",
+  "proteome": "UP000228380",
+  "taxon": 42345,
+  "n_fasta_parsed": 39147,
+  "n_scored": 39147,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1712,
+    "B": 4801,
+    "C": 14158,
+    "D": 18476
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8540262660278457,
+    "score_C": 0.420674060900102,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 129.6,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "date_palm_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Phoenix dactylifera (UP000228380). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.470206,
+  "note": null,
+  "ok": true,
+  "slug": "date_palm"
+}

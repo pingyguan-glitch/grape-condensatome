@@ -1,0 +1,32 @@
+{
+  "crop": "pineapple",
+  "label": "Pineapple",
+  "species": "Ananas comosus",
+  "proteome": "UP000515123",
+  "taxon": 4615,
+  "n_fasta_parsed": 29488,
+  "n_scored": 29488,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1206,
+    "B": 3730,
+    "C": 10550,
+    "D": 14002
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8611354659175109,
+    "score_C": 0.4358640990680382,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 94.5,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "pineapple_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Ananas comosus (UP000515123). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.479824,
+  "note": null,
+  "ok": true,
+  "slug": "pineapple"
+}

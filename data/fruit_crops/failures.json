@@ -1,0 +1,53 @@
+{
+  "score_failures": [],
+  "unavailable_no_proteome": [
+    {
+      "slug": "plum",
+      "requested": "Prunus domestica",
+      "taxon": 3758,
+      "reason": "No UniProt proteome for P. domestica. Near-relative P. mume (UP000694861) exists but was not substituted."
+    },
+    {
+      "slug": "raspberry",
+      "requested": "Rubus idaeus",
+      "taxon": 32285,
+      "reason": "No UniProt proteome. Rubus argutus (blackberry) scored instead as blackberry."
+    },
+    {
+      "slug": "woodland_strawberry",
+      "requested": "Fragaria vesca",
+      "taxon": 57918,
+      "reason": "No UniProt proteome. Fragaria ananassa scored as strawberry."
+    },
+    {
+      "slug": "highbush_blueberry",
+      "requested": "Vaccinium corymbosum",
+      "taxon": 69266,
+      "reason": "No UniProt proteome. Vaccinium darrowii scored as blueberry."
+    },
+    {
+      "slug": "mango",
+      "requested": "Mangifera indica",
+      "taxon": 29780,
+      "reason": "No UniProt proteome available."
+    },
+    {
+      "slug": "papaya",
+      "requested": "Carica papaya",
+      "taxon": 3649,
+      "reason": "No UniProt proteome available."
+    },
+    {
+      "slug": "watermelon",
+      "requested": "Citrullus lanatus",
+      "taxon": 3654,
+      "reason": "No UniProt proteome for C. lanatus (C. colocynthis UP001642487 exists but is not watermelon)."
+    },
+    {
+      "slug": "pear_communis",
+      "requested": "Pyrus communis",
+      "taxon": 2326,
+      "reason": "No UniProt proteome for pure P. communis; hybrid P. ussuriensis x P. communis scored as pear."
+    }
+  ]
+}

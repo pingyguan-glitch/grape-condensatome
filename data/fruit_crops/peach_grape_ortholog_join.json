@@ -1,0 +1,11 @@
+{
+  "slug": "peach",
+  "species": "Prunus persica",
+  "proteome": "UP000006882",
+  "n_crop_proteins": 37173,
+  "n_crop_orthodb_rows": 38738,
+  "n_with_grape_ortholog": 16142,
+  "n_with_ath_via_grape": 12328,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

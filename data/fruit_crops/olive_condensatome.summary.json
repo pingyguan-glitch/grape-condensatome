@@ -1,0 +1,32 @@
+{
+  "crop": "olive",
+  "label": "Olive",
+  "species": "Olea europaea subsp. europaea",
+  "proteome": "UP000594638",
+  "taxon": 158383,
+  "n_fasta_parsed": 75223,
+  "n_scored": 75223,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 3427,
+    "B": 7911,
+    "C": 28264,
+    "D": 35621
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8500942440301955,
+    "score_C": 0.40739263022141814,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 204.7,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": null,
+  "sqlite": "olive_condensatome.sqlite",
+  "honesty": "Fruit-crop condensatome for Olea europaea subsp. europaea (UP000594638). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.460951,
+  "note": null,
+  "ok": true,
+  "slug": "olive"
+}

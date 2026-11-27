@@ -120,8 +120,27 @@ OPTIONAL_FILES = [
     ("data/cross_crop/conserved_orthodb_clusters.tsv.gz", "cross_crop/conserved_orthodb_clusters.tsv.gz"),
     ("data/cross_crop/arabidopsis_condensatome.sqlite", "cross_crop/arabidopsis_condensatome.sqlite"),
     ("data/cross_crop/arabidopsis_condensatome.summary.json", "cross_crop/arabidopsis_condensatome.summary.json"),
+    ("data/fruit_crops/species_manifest.yaml", "fruit_crops/species_manifest.yaml"),
+    ("data/fruit_crops/index.json", "fruit_crops/index.json"),
+    ("data/fruit_crops/failures.json", "fruit_crops/failures.json"),
+    ("data/fruit_crops/README.md", "fruit_crops/README.md"),
     ("data/string/enrichment_summary.json", "string/enrichment_summary.json"),
 ]
+
+
+def _fruit_crop_optional_files() -> list[tuple[str, str]]:
+    """Include deposited fruit-crop SQLite/summary/join sidecars when present."""
+    root = ROOT / "data" / "fruit_crops"
+    out: list[tuple[str, str]] = []
+    if not root.is_dir():
+        return out
+    for path in sorted(root.glob("*_condensatome.sqlite")):
+        out.append((str(path.relative_to(ROOT)), f"fruit_crops/{path.name}"))
+    for path in sorted(root.glob("*_condensatome.summary.json")):
+        out.append((str(path.relative_to(ROOT)), f"fruit_crops/{path.name}"))
+    for path in sorted(root.glob("*_grape_ortholog_join.json")):
+        out.append((str(path.relative_to(ROOT)), f"fruit_crops/{path.name}"))
+    return out
 
 
 def sha256_file(path: Path, chunk: int = 1 << 20) -> str:
@@ -156,7 +175,8 @@ This folder is the **deposit package** prepared by
 | `grape_condensatome.sqlite` | *Vitis vinifera* UP000009183 atlas (**{n_proteins}** proteins) |
 | `grape_condensatome.proteins.tsv.gz` | Slim proteins-table export (TSV) |
 | `grape_condensatome.proteins.parquet` | Same slim table (optional; needs pyarrow at export) |
-| `second_crop/` | Soybean condensatome SQLite + join JSON (when present) |
+| `second_crop/` | Soybean/tomato condensatome SQLite + join JSON (when present) |
+| `fruit_crops/` | Multi-species fruit-crop condensatome deposits (when present) |
 | `CITATION.cff` | Citation metadata (**DOI field empty until you publish**) |
 | `LICENSE` | MIT |
 | `SHA256SUMS.txt` | Checksums of every file in this bundle |
@@ -305,7 +325,7 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"Missing model: {args.model}")
 
     planned: list[tuple[Path, Path]] = []
-    for src_rel, dst_rel in CORE_FILES + OPTIONAL_FILES:
+    for src_rel, dst_rel in CORE_FILES + OPTIONAL_FILES + _fruit_crop_optional_files():
         src = ROOT / src_rel
         if src.is_file():
             planned.append((src, out_dir / dst_rel))

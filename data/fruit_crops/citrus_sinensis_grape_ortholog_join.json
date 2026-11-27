@@ -1,0 +1,11 @@
+{
+  "slug": "citrus_sinensis",
+  "species": "Citrus sinensis",
+  "proteome": "UP000027120",
+  "n_crop_proteins": 41603,
+  "n_crop_orthodb_rows": 44118,
+  "n_with_grape_ortholog": 139,
+  "n_with_ath_via_grape": 0,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

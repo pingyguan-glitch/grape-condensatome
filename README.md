@@ -2,13 +2,13 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.5.0-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.6.0-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.5.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.6.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
 
 > Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
@@ -40,6 +40,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Explainability | `data/explainability/` + `plantllps/explain.py` | SHAP-equivalent Ser-rich / charge-block / IDR attributions (gold ∪ Tier A; F6HET4 example) |
 | Cross-crop conserved (v1.5.2) | `data/cross_crop/` | Grape↔soy↔Ath Tier A∪B OrthoDB overlap + Ath score deposit |
 | Tomato third crop (v1.5.2) | `data/second_crop/tomato_*` | UP000004994 scores + grape `ortholog_sly*`; UI `/hooks` |
+| Fruit-crop condensatomes (v1.6.0) | `data/fruit_crops/` | Multi-species fruit-tree PlantLLPS deposits + manifest; UI `/hooks` |
 | NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.x atlas + cross-crop/tomato deposits; Zenodo DOI pending |
 | Supplemental figures S1–S5 (v1.5.3) | [`docs/figures/supp/`](./docs/figures/supp/) | PNG/PDF + [`LEGENDS.md`](./docs/figures/supp/LEGENDS.md); regenerate via `scripts/generate_supp_figures.py` (`requirements-figures.txt`) |
 
@@ -51,6 +52,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - **AlphaFold pLDDT** summaries + **scored-proteome low-pLDDT segments** via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache; browser-like User-Agent).
 - **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
 - **Soybean / tomato crop condensatomes** (UP000008827 / UP000004994) via `scripts/score_second_crop_proteome.py` + `scripts/enrich_second_crop_orthologs.py` → `data/second_crop/` + grape `ortholog_gma*` / `ortholog_sly*`; UI `/hooks`.
+- **Fruit-crop condensatomes** (apple, pear, peach, cherry, citrus, banana, …) via `scripts/score_fruit_crop_proteomes.py` + optional `scripts/enrich_fruit_crop_orthologs.py` → `data/fruit_crops/`; UI `/hooks` (grape-trained v13 — not species-retrained).
 - **Conserved cross-crop Tier A∪B** (grape↔soy↔Ath OrthoDB) via `scripts/analyze_cross_crop_conserved.py` → `data/cross_crop/`.
 - Side-by-side **PSAP / LLPhyScore / PLAAC-approx** via `scripts/enrich_comparator_scores.py`. Full-proteome native PSAP / LLPhyScore via `scripts/score_psap_proteome.py` and `scripts/score_llphyscore_proteome.py` (external envs; batched + checkpointed).
 - **Pfam / InterPro domains** + **IDR segments** (AF pLDDT&lt;50 ∪ UniProt MobiDB-lite disordered) via `scripts/enrich_domains_idr.py`; protein-page track + Ensembl Plants link-outs.
@@ -82,7 +84,7 @@ Optional extras / external tools: [`requirements.txt`](./requirements.txt), [`do
 npm install
 npm start
 # → http://127.0.0.1:8765/  (HOST/PORT env; default 0.0.0.0:8765)
-# Routes: /compare, /gold, /map, /hooks (Ath/rice + soybean), /network (STRING),
+# Routes: /compare, /gold, /map, /hooks (Ath/rice + soybean/tomato/fruit crops), /network (STRING),
 #         /expression, /modules (stress DE enrichment), /analyses (atlas analyses),
 #         /download, /protein/:id
 # API:    GET /api/download?tier=A&evidence=llps&format=tsv|fasta
@@ -120,6 +122,16 @@ python3 scripts/score_second_crop_proteome.py --crop arabidopsis --out-dir data/
 python3 scripts/analyze_cross_crop_conserved.py
 # deposits: data/second_crop/{soybean,tomato}_* ; data/cross_crop/conserved_*
 # optional: --crop tomato (UP000004994)
+```
+
+## Fruit-crop condensatomes (multi-species)
+
+```bash
+python3 scripts/score_fruit_crop_proteomes.py --list
+python3 scripts/score_fruit_crop_proteomes.py --all
+python3 scripts/enrich_fruit_crop_orthologs.py --all   # fruit→grape OrthoDB; crop DB only
+# deposits: data/fruit_crops/{slug}_condensatome.* + index.json
+# UI: /hooks fruit-crop panel
 ```
 
 ## Train
@@ -230,6 +242,7 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 **`v1.5.1`** = family enrichment + comparator disagreement + structure–score (UI `/analyses`).
 **`v1.5.2`** = conserved grape↔soy↔Ath Tier A∪B + tomato third-crop condensatome.
 **`v1.5.3`** = Supplemental Figures S1–S5 (PNG/PDF + generator).
+**`v1.6.0`** = multi-species fruit-crop condensatome pipeline (`data/fruit_crops/` + `/hooks`).
 
 ## Still open (not claimed done)
 

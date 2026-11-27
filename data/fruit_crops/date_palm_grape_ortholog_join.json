@@ -1,0 +1,11 @@
+{
+  "slug": "date_palm",
+  "species": "Phoenix dactylifera",
+  "proteome": "UP000228380",
+  "n_crop_proteins": 39147,
+  "n_crop_orthodb_rows": 39393,
+  "n_with_grape_ortholog": 24355,
+  "n_with_ath_via_grape": 18741,
+  "ok": true,
+  "note": "Fruit\u2192grape OrthoDB join written to crop SQLite only (no new grape atlas columns). Ath via grape.ortholog_ath when present."
+}

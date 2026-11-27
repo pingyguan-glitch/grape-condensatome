@@ -1,5 +1,17 @@
 # Release notes
 
+## v1.6.0 (2026-11-27)
+
+Multi-species fruit-tree / fruit-crop condensatome scoring pipeline.
+
+- `data/fruit_crops/species_manifest.yaml` — pinned UniProt proteome IDs for apple, pear, peach, sweet cherry, citrus (sinensis + clementina), banana, strawberry (*F. ananassa*), blueberry (*V. darrowii*), kiwifruit, avocado, pineapple, melon, date palm, olive, fig, pomegranate, blackberry (*R. argutus*), plus linked grape/soybean/tomato; documented unavailable species (plum, raspberry, *F. vesca*, *V. corymbosum*, mango, papaya, watermelon, pure *P. communis*).
+- `scripts/score_fruit_crop_proteomes.py` — bounded parallel FASTA download + PlantLLPS v13 composition-proxy scoring; deposits slim SQLite + summary JSON under `data/fruit_crops/`; `index.json` / `failures.json`.
+- `scripts/enrich_fruit_crop_orthologs.py` — OrthoDB fruit→grape joins (+ Ath via grape) written to **crop SQLite only** (no new grape atlas columns; keeps DB ≤100 MiB).
+- UI `/hooks` fruit-crop browser (species switcher); `/api/health.second_crop.fruit_crops`.
+- Honesty: grape-trained weights — **not** species-retrained; OrthoDB groups can be broad; no invented deposits for missing proteomes.
+- Headline (full proteomes scored): apple **39 929** (A/B/C/D 1728/4440/14846/18915); pear **39 683**; peach **37 173**; sweet cherry **30 295**; sweet orange **41 603**; clementine **30 104**; banana **37 776**; strawberry **76 950**; blueberry **34 273**; kiwifruit **32 478**; avocado **40 746**; pineapple **29 488**; melon **28 113**; date palm **39 147**; olive **75 223**; fig **43 146**; pomegranate **47 028**; blackberry **38 432**. Linked: grape **25 972**, soybean **71 064**, tomato **31 194**.
+- OrthoDB fruit→grape coverage varies by UniProt xref density (e.g. olive **56 710**, kiwifruit **29 090**, pear **28 696**; several proteomes lack OrthoDB xrefs entirely — joins recorded as 0, not invented).
+
 ## v1.5.3 (2026-11-27)
 
 Supplemental Figures S1–S5 for the NAR Database manuscript.

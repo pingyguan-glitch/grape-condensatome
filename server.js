@@ -6,9 +6,9 @@
 
 import express from "express";
 import { createGunzip } from "node:zlib";
-import { createReadStream, existsSync, readFileSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, readdirSync } from "node:fs";
 import { createInterface } from "node:readline";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
 import {
@@ -56,6 +56,9 @@ const SOY_DB_PATH =
 const TOM_DB_PATH =
   process.env.TOM_DB ||
   join(__dirname, "data", "second_crop", "tomato_condensatome.sqlite");
+const FRUIT_DIR =
+  process.env.FRUIT_CROPS_DIR || join(__dirname, "data", "fruit_crops");
+const FRUIT_INDEX_PATH = join(FRUIT_DIR, "index.json");
 const EXPLAIN_PATH =
   process.env.GRAPE_EXPLAIN ||
   join(__dirname, "data", "explainability", "attributions.json.gz");
@@ -90,6 +93,38 @@ if (existsSync(TOM_DB_PATH)) {
 } else {
   console.warn(`Tomato condensatome DB not found (${TOM_DB_PATH}); /hooks tomato panel limited.`);
 }
+
+/** @type {Map<string, DatabaseSync>} */
+const fruitDbs = new Map();
+/** @type {object | null} */
+let fruitIndex = null;
+function loadFruitCrops() {
+  fruitDbs.clear();
+  fruitIndex = null;
+  if (existsSync(FRUIT_INDEX_PATH)) {
+    try {
+      fruitIndex = JSON.parse(readFileSync(FRUIT_INDEX_PATH, "utf8"));
+    } catch (e) {
+      console.warn(`Fruit-crop index unreadable: ${e}`);
+    }
+  }
+  if (!existsSync(FRUIT_DIR)) {
+    console.warn(`Fruit-crop dir missing (${FRUIT_DIR}); /hooks fruit panel limited.`);
+    return;
+  }
+  const files = readdirSync(FRUIT_DIR).filter((f) => f.endsWith("_condensatome.sqlite"));
+  for (const f of files) {
+    const slug = basename(f, "_condensatome.sqlite");
+    const path = join(FRUIT_DIR, f);
+    try {
+      fruitDbs.set(slug, new DatabaseSync(path, { readOnly: true }));
+    } catch (e) {
+      console.warn(`Fruit-crop DB skip ${f}: ${e}`);
+    }
+  }
+  console.log(`Fruit-crop SQLite: ${fruitDbs.size} species under ${FRUIT_DIR}`);
+}
+loadFruitCrops();
 /** @type {Map<string, string>} */
 const seqById = new Map();
 /** @type {Map<string, object>} */
@@ -391,7 +426,7 @@ function layout(title, body, query = "") {
     stress DE × condensatome enrichment + modules (/modules), atlas analyses
     (family enrichment / comparator disagreement / structure–score on /analyses),
     and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
-    Soybean + tomato crop condensatomes and conserved grape↔soy↔Ath overlap on /hooks. Treat ranks as hypotheses.
+    Soybean + tomato + multi-species fruit-crop condensatomes and conserved grape↔soy↔Ath overlap on /hooks. Treat ranks as hypotheses.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -494,6 +529,46 @@ function cropDbMeta(cropDb, path, joinKey) {
   return { join, crop };
 }
 
+function fruitCropsMeta() {
+  const species = [];
+  for (const [slug, fdb] of fruitDbs.entries()) {
+    try {
+      const n = fdb.prepare("SELECT COUNT(*) AS n FROM proteins").get().n;
+      const tiers = {};
+      for (const r of fdb.prepare("SELECT tier, COUNT(*) AS c FROM proteins GROUP BY tier").all()) {
+        tiers[r.tier] = r.c;
+      }
+      let metaSpecies = null;
+      let proteome = null;
+      try {
+        const rows = fdb.prepare("SELECT key, value FROM meta").all();
+        const m = Object.fromEntries(rows.map((x) => [x.key, x.value]));
+        metaSpecies = m.species || null;
+        proteome = m.proteome || null;
+      } catch {
+        /* ignore */
+      }
+      species.push({ slug, n_proteins: n, tiers, species: metaSpecies, proteome });
+    } catch {
+      species.push({ slug, error: "unreadable" });
+    }
+  }
+  species.sort((a, b) => String(a.slug).localeCompare(String(b.slug)));
+  return {
+    dir: FRUIT_DIR,
+    n_loaded: fruitDbs.size,
+    index: fruitIndex
+      ? {
+          n_scored_species: fruitIndex.n_scored_species,
+          n_failed_species: fruitIndex.n_failed_species,
+          unavailable: (fruitIndex.unavailable || []).map((u) => u.slug || u),
+          generated_at_utc: fruitIndex.generated_at_utc,
+        }
+      : null,
+    species,
+  };
+}
+
 function secondCropMeta() {
   const soy = cropDbMeta(soyDb, SOY_DB_PATH, "second_crop_soybean");
   const tom = cropDbMeta(tomDb, TOM_DB_PATH, "second_crop_tomato");
@@ -510,6 +585,7 @@ function secondCropMeta() {
     tomato_join: tom.join,
     tomato: tom.crop,
     conserved,
+    fruit_crops: fruitCropsMeta(),
   };
 }
 
@@ -1956,8 +2032,12 @@ app.get("/hooks", (req, res) => {
   }
   const soyPage = Math.max(1, Number(req.query.soy_page) || Number(req.query.page) || 1);
   const tomPage = Math.max(1, Number(req.query.tom_page) || 1);
+  const fruitPage = Math.max(1, Number(req.query.fruit_page) || 1);
   const soyTier = String(req.query.soy_tier || "").trim().toUpperCase();
   const tomTier = String(req.query.tom_tier || "").trim().toUpperCase();
+  const fruitTier = String(req.query.fruit_tier || "").trim().toUpperCase();
+  const fruitSlugs = [...fruitDbs.keys()].sort();
+  const fruitSlug = String(req.query.fruit || fruitSlugs[0] || "").trim();
   const dbHooks = db
     .prepare(
       `SELECT protein_id, gene_name, tier, score, cross_crop_family, ortholog_ath, ortholog_ath_gene,
@@ -2013,6 +2093,55 @@ app.get("/hooks", (req, res) => {
     emptyHint: "Tomato condensatome SQLite not loaded — run scripts/score_second_crop_proteome.py --crop tomato.",
   });
 
+  let fruitJoin = null;
+  let fruitSpeciesEm = fruitSlug || "fruit crop";
+  let fruitProteome = "—";
+  let fruitLabel = fruitSlug || "Fruit crop";
+  const fruitDb = fruitSlug && fruitDbs.has(fruitSlug) ? fruitDbs.get(fruitSlug) : null;
+  if (fruitDb) {
+    try {
+      const rows = fruitDb.prepare("SELECT key, value FROM meta").all();
+      const m = Object.fromEntries(rows.map((x) => [x.key, x.value]));
+      fruitSpeciesEm = m.species || fruitSpeciesEm;
+      fruitProteome = m.proteome || fruitProteome;
+      fruitLabel = m.label || m.crop || fruitLabel;
+      if (m.grape_join) fruitJoin = JSON.parse(m.grape_join);
+    } catch {
+      /* ignore */
+    }
+  }
+  const fruitNav =
+    fruitSlugs.length > 0
+      ? `<div class="card"><p class="muted">Fruit-crop condensatomes (PlantLLPS v13 grape-trained; not species-retrained).
+        Deposits under <span class="mono">data/fruit_crops/</span>.
+        ${fruitIndex?.unavailable?.length ? `Unavailable (no UniProt proteome): ${(fruitIndex.unavailable || []).map((u) => esc(u.slug || u)).join(", ")}.` : ""}</p>
+        <p>Browse:
+          ${fruitSlugs
+            .map((s) => {
+              const active = s === fruitSlug ? "font-weight:600" : "";
+              return `<a style="${active}" href="/hooks?fruit=${encodeURIComponent(s)}">${esc(s)}</a>`;
+            })
+            .join(" · ")}
+        </p></div>`
+      : `<div class="card"><p class="muted">No fruit-crop SQLite yet — run
+        <span class="mono">python3 scripts/score_fruit_crop_proteomes.py --all</span>.</p></div>`;
+
+  // Preserve fruit= when paging/filtering fruit panel
+  const fruitPanelRaw = cropBrowsePanel({
+    cropDb: fruitDb || null,
+    join: fruitJoin,
+    cropLabel: fruitLabel,
+    proteome: fruitProteome,
+    speciesEm: fruitSpeciesEm,
+    tierParam: fruitTier,
+    pageParam: "fruit_page",
+    page: fruitPage,
+    emptyHint: "Select a fruit crop above, or score proteomes via scripts/score_fruit_crop_proteomes.py.",
+  });
+  const fruitPanel = fruitPanelRaw
+    .replaceAll("/hooks?", `/hooks?fruit=${encodeURIComponent(fruitSlug)}&`)
+    .replaceAll('href="/hooks"', `href="/hooks?fruit=${encodeURIComponent(fruitSlug)}"`);
+
   const po = conserved?.protein_overlap || {};
   const conservedCard = conserved
     ? `<div class="card"><h2>Conserved condensatome (grape ↔ soybean ↔ Ath)</h2>
@@ -2026,7 +2155,8 @@ app.get("/hooks", (req, res) => {
   const body = `
     <div class="card"><h2>Cross-crop condensatome hooks</h2>
     <p class="muted">Curated family anchors plus OrthoDB-joined Ath/rice/<strong>soybean</strong>/<strong>tomato</strong> columns on grape rows.
-    Crop atlases under <span class="mono">data/second_crop/</span>; conserved overlap under <span class="mono">data/cross_crop/</span>.</p></div>
+    Crop atlases under <span class="mono">data/second_crop/</span>; fruit trees under <span class="mono">data/fruit_crops/</span>;
+    conserved overlap under <span class="mono">data/cross_crop/</span>.</p></div>
     ${conservedCard}
     ${hookCards || `<p class="muted">No hooks in meta — load data/cross_crop_hooks.json via enrich_orthologs.py</p>`}
     <h2 style="font-family:var(--font-display)">Grape proteome rows with family tag</h2>
@@ -2034,7 +2164,10 @@ app.get("/hooks", (req, res) => {
     <h2 style="font-family:var(--font-display);margin-top:1.5rem">Second crop · soybean</h2>
     ${soyPanel}
     <h2 style="font-family:var(--font-display);margin-top:1.5rem">Third crop · tomato</h2>
-    ${tomPanel}`;
+    ${tomPanel}
+    <h2 style="font-family:var(--font-display);margin-top:1.5rem">Fruit-crop condensatomes</h2>
+    ${fruitNav}
+    ${fruitPanel}`;
   res.type("html").send(layout("Cross-crop", body));
 });
 

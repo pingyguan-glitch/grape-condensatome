@@ -15,11 +15,14 @@ data/second_crop/*.fasta
 data/second_crop/*.fasta.gz
 data/cross_crop/*.fasta
 data/cross_crop/*.fasta.gz
+data/fruit_crops/*.fasta
+data/fruit_crops/*.fasta.gz
 # Flat proteome TSV dumps (redundant with SQLite for the Node UI; ship via Zenodo
 # bundle — keeps Cursor publish-app under the 50 MiB pack limit)
 data/grape_condensatome.proteome.tsv
 data/second_crop/*.proteome.tsv.gz
 data/cross_crop/*.proteome.tsv.gz
+data/fruit_crops/*.proteome.tsv.gz
 *.egg-info/
 dist/
 build/
