@@ -9,4 +9,6 @@ Rebuild / join into SQLite:
 python3 scripts/enrich_domains_idr.py
 ```
 
-IDR intervals use AlphaFold pLDDT&lt;50 segments (when deposited) plus UniProt REGION “Disordered” (MobiDB-lite). metapredict contributes mean fraction only.
+IDR intervals use AlphaFold pLDDT&lt;50 segments (when deposited) plus UniProt REGION “Disordered” (MobiDB-lite).
+Per-residue metapredict / pLDDT trajectories live under `data/tracks/` (see that README);
+entry name cache via `scripts/deposit_interpro_entries.py`.

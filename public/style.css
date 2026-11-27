@@ -243,6 +243,56 @@ tr:hover td { background: #f7f3ea; }
 .track-seg.tone-idr { background: #b86b2a; }
 .track-seg.tone-shap { background: #3d4f6a; opacity: 0.85; }
 
+.spark-track { margin-top: 0.85rem; }
+.sparkline {
+  width: 100%;
+  height: 4.2rem;
+  display: block;
+  background: linear-gradient(180deg, #f7f2e8, #ebe4d8);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.spark-thr {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  opacity: 0.7;
+}
+
+.expr-bars { margin-top: 0.5rem; }
+.expr-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) 1fr minmax(3.5rem, 4.5rem);
+  gap: 0.45rem;
+  align-items: center;
+  margin: 0.28rem 0;
+  font-size: 0.88rem;
+}
+.expr-label {
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.expr-track {
+  height: 0.75rem;
+  background: #ebe4d8;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.expr-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #3d6b45, #2f5d3a);
+  border-radius: 3px;
+}
+.expr-val { text-align: right; font-size: 0.82rem; }
+@media (max-width: 700px) {
+  .expr-row { grid-template-columns: 1fr; gap: 0.15rem; }
+  .expr-val { text-align: left; }
+}
+
 .shap-panel { margin: 0.35rem 0 0.5rem; }
 .shap-row {
   display: grid;

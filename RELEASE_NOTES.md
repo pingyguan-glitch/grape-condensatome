@@ -1,5 +1,14 @@
 # Release notes
 
+## v1.10.0 (2026-11-27)
+
+NAR layer **A2**: AlphaFold pLDDT as orthogonal disorder rail vs metapredict (grape + fruit high-score candidates).
+
+- **Critical path:** per-residue **metapredict disorder** + **AFDB pLDDT** trajectories in `data/tracks/` (uint8 sidecar SQLite). Protein page shows **both rails** plus a cross-check (disorder≥0.5 vs pLDDT&lt;50 overlap).
+- **Coverage:** grape proteome-wide disorder; grape AFDB pLDDT for models present; fruit/crop **conservative high-score candidates** (`data/fruit_crops/cross_species/conservative_candidates.tsv.gz`) across the deposited panel (+ grape) — not full fruit proteomes, no new species.
+- **Also shipped (non-blocking):** InterPro entry-name cache script + grape Expression Atlas TPM bars when already joined. Do not block on full InterPro/expression atlas rebuilds.
+- **VERSION note:** rebased onto main **v1.9.0** (`74caaa0`, #24 LLPS-DB crosswalk + #25 RBP). This release is **1.10.0** (skips 1.8.x collision with crosswalk). Zenodo untouched.
+
 ## v1.9.0 (2026-11-27)
 
 NAR-priority RNA-binding annotation crosswalk (nucleic-acid narrative; no Zenodo; no new species).

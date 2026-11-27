@@ -1,0 +1,23 @@
+{
+  "atlas_db": "/agent/repos/grape-condensatome/data/grape_condensatome.sqlite",
+  "coverage": {
+    "n_proteins": 25972,
+    "n_with_both": 799,
+    "n_with_disorder": 25972,
+    "n_with_plddt": 799,
+    "schema_version": 1,
+    "updated_at_utc": "2026-11-27T07:27:03Z"
+  },
+  "disorder": {
+    "atlas_frac_updated": 25972,
+    "elapsed_sec": 214.5,
+    "n_fail": 46,
+    "n_ok": 24772,
+    "n_pending": 24818,
+    "n_requested": 26018,
+    "source": "metapredict"
+  },
+  "n_selected": 26018,
+  "species": "grape",
+  "tracks_db": "/agent/repos/grape-condensatome/data/tracks/grape_residue_tracks.sqlite"
+}

@@ -45,3 +45,9 @@ data/string/*.protein.aliases*.txt.gz
 data/string/*.protein.info*.txt.gz
 # LLPS external DB raw dumps (scripts/fetch_llps_external_ids.py); compact ID lists are committed
 data/llps_crosswalk/cache/
+
+# SQLite WAL sidecars
+*.sqlite-wal
+*.sqlite-shm
+data/tracks/candidate_sequences.fasta
+data/alphafold/candidates/
