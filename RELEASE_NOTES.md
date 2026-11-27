@@ -1,5 +1,15 @@
 # Release notes
 
+## v1.4.0 (2026-11-27)
+
+NAR+ explainability: Ser-rich / charge-block / IDR-domain attributions on protein pages.
+
+- `plantllps/explain.py` — exact linear SHAP for the logistic head (logit-space `φ_i = w_i·z_i`), companion term decomposition, grammar axes (Ser-rich, charge-block, IDR/disorder), Gly window occlusion joined to deposited IDR/domain intervals.
+- `scripts/deposit_explainability.py` — deposits gold ∪ Tier A sidecar `data/explainability/attributions.json.gz` (**1159** proteins) + pretty `F6HET4.json` example; SQLite meta pointer only (keeps DB ≤100 MiB).
+- Node UI: protein pages render grammar SHAP bars + top features + occlusion/IDR attributions when deposited; `/score` shows live feature SHAP via `lib/explain.js`.
+- Anchor F6HET4 (Tier B, curated gold): Ser-rich SHAP leads the MAP65 grammar story; occlusion windows tagged ser_rich/charge_block.
+- Honesty: logistic SHAP is exact for the linear head; window occlusion is SHAP-equivalent locally, not KernelSHAP/TreeSHAP.
+
 ## v1.3.0 (2026-11-27)
 
 NAR+ **fair comparison suite**: leakage-controlled PlantLLPS vs native PSAP / LLPhyScore / PLAAC-approx / ProX-style feature baseline on the same gold, family hold-out, and expanded cross-species panels.

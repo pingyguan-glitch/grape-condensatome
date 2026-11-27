@@ -211,6 +211,48 @@ tr:hover td { background: #f7f3ea; }
 }
 .track-seg.tone-domain { background: #2f5d3a; }
 .track-seg.tone-idr { background: #b86b2a; }
+.track-seg.tone-shap { background: #3d4f6a; opacity: 0.85; }
+
+.shap-panel { margin: 0.35rem 0 0.5rem; }
+.shap-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 14rem) 1fr minmax(7rem, 9rem);
+  gap: 0.55rem;
+  align-items: center;
+  margin: 0.35rem 0;
+  font-size: 0.9rem;
+}
+.shap-label { color: var(--ink); }
+.shap-track {
+  position: relative;
+  height: 0.85rem;
+  background: #ebe4d8;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.shap-zero {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--muted);
+  opacity: 0.55;
+}
+.shap-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+}
+.shap-fill.pos { background: var(--tier-a); }
+.shap-fill.neg { background: var(--danger); }
+.shap-val { font-size: 0.82rem; text-align: right; }
+@media (max-width: 700px) {
+  .shap-row { grid-template-columns: 1fr; gap: 0.2rem; }
+  .shap-val { text-align: left; }
+}
 
 .site-footer {
   margin-top: 2.5rem;

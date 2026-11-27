@@ -32,6 +32,7 @@ import {
   DEFAULT_DB,
 } from "./lib/db.js";
 import { loadModel, scoreSequence } from "./lib/model.js";
+import { explainFeatures } from "./lib/explain.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8765);
@@ -45,6 +46,9 @@ const FASTA_PATH =
 const SOY_DB_PATH =
   process.env.SOY_DB ||
   join(__dirname, "data", "second_crop", "soybean_condensatome.sqlite");
+const EXPLAIN_PATH =
+  process.env.GRAPE_EXPLAIN ||
+  join(__dirname, "data", "explainability", "attributions.json.gz");
 const APP_VERSION = (() => {
   try {
     return readFileSync(join(__dirname, "VERSION"), "utf8").trim() || "0.0.0";
@@ -70,9 +74,32 @@ if (existsSync(SOY_DB_PATH)) {
 }
 /** @type {Map<string, string>} */
 const seqById = new Map();
+/** @type {Map<string, object>} */
+let explainById = new Map();
 const app = express();
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(express.static(join(__dirname, "public")));
+
+async function loadExplainability(path = EXPLAIN_PATH) {
+  if (!existsSync(path)) {
+    explainById = new Map();
+    console.warn(`Explainability sidecar missing: ${path}`);
+    return explainById;
+  }
+  const gunzip = createGunzip();
+  const chunks = [];
+  await new Promise((resolve, reject) => {
+    createReadStream(path)
+      .pipe(gunzip)
+      .on("data", (c) => chunks.push(c))
+      .on("end", resolve)
+      .on("error", reject);
+  });
+  const obj = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  explainById = new Map(Object.entries(obj));
+  console.log(`Explainability: ${explainById.size} proteins from ${path}`);
+  return explainById;
+}
 
 async function loadFastaIndex(path) {
   if (!existsSync(path)) {
@@ -165,6 +192,114 @@ function trackHtml(length, segments, { title, tone }) {
   return `<div class="track">
     <div class="track-label">${esc(title)} <span class="muted">1–${esc(L)}</span></div>
     <div class="track-bar">${bars || `<span class="muted" style="font-size:0.8rem;padding:0.2rem">no segments</span>`}</div>
+  </div>`;
+}
+
+function shapBarHtml(label, value, { maxAbs = 0.2, companion = null } = {}) {
+  const v = Number(value) || 0;
+  const m = Math.max(maxAbs, Math.abs(v), 1e-6);
+  const pct = Math.min(50, (Math.abs(v) / m) * 50);
+  const side = v >= 0 ? "pos" : "neg";
+  const left = v >= 0 ? 50 : 50 - pct;
+  const comp =
+    companion != null && Number.isFinite(Number(companion))
+      ? `<span class="muted"> · companion ${Number(companion).toFixed(3)}</span>`
+      : "";
+  return `<div class="shap-row">
+    <div class="shap-label">${esc(label)}</div>
+    <div class="shap-track"><span class="shap-zero"></span>
+      <span class="shap-fill ${side}" style="left:${left}%;width:${pct}%"></span>
+    </div>
+    <div class="shap-val mono">${v >= 0 ? "+" : ""}${v.toFixed(4)}${comp}</div>
+  </div>`;
+}
+
+function explainabilityHtml(expl, { length = 0, live = false } = {}) {
+  if (!expl) {
+    return `<div class="card" style="margin-top:1rem">
+      <h3>Explainability (Ser-rich / charge-block / IDR)</h3>
+      <p class="muted">No deposited SHAP attribution for this protein.
+         Gold ∪ Tier A proteins are precomputed
+         (<span class="mono">data/explainability/</span>); live paste-score shows
+         feature SHAP without window occlusion.</p>
+    </div>`;
+  }
+  const axes = expl.grammar_axes || expl.grammar?.axes || {};
+  const axisOrder = ["ser_rich", "charge_block", "idr_disorder"];
+  const axisLabels = {
+    ser_rich: "Ser-rich / MAP65 grammar",
+    charge_block: "Charge blockiness",
+    idr_disorder: "IDR / disorder + LC",
+  };
+  const absVals = axisOrder.map((k) => {
+    const a = axes[k] || {};
+    const shap = a.logistic_shap_prob ?? a.hybrid ?? 0;
+    return Math.abs(Number(shap) || 0);
+  });
+  const maxAbs = Math.max(0.08, ...absVals);
+  const axisBars = axisOrder
+    .map((k) => {
+      const a = axes[k] || {};
+      const shap = Number(a.logistic_shap_prob ?? a.hybrid ?? 0) || 0;
+      return shapBarHtml(axisLabels[k] || k, shap, {
+        maxAbs,
+        companion: a.companion,
+      });
+    })
+    .join("");
+  const topFeats = (expl.top_features || [])
+    .slice(0, 8)
+    .map((f) => {
+      const shap = Number(f.shap_prob_local || 0);
+      return `<div><span class="k">${esc(f.feature)}</span>
+        <span class="v">${shap >= 0 ? "+" : ""}${shap.toFixed(4)}
+        <span class="muted">(x=${esc(
+          Number.isFinite(Number(f.value)) ? Number(f.value).toFixed(4) : f.value
+        )})</span></span></div>`;
+    })
+    .join("");
+  const L = Math.max(1, Number(length) || Number(expl.length) || 1);
+  const winSegs = (expl.grammar_windows || expl.occlusion?.windows || [])
+    .filter((w) => Math.abs(Number(w.delta_score) || 0) > 1e-4)
+    .map((w) => ({
+      start: w.start,
+      end: w.end,
+      label: `${w.label || "win"} Δ=${Number(w.delta_score).toFixed(4)}`,
+      source: w.label,
+    }));
+  const occTrack =
+    winSegs.length > 0
+      ? trackHtml(L, winSegs, { title: "Occlusion windows (Ser/charge tagged)", tone: "tone-shap" })
+      : live
+        ? `<p class="muted">Live score: feature SHAP only (no Gly-occlusion windows).</p>`
+        : `<p class="muted">No high-|Δ| occlusion windows deposited.</p>`;
+  const idrAttr = ((expl.segment_attributions || {}).idr || [])
+    .slice(0, 6)
+    .map(
+      (s) =>
+        `<div><span class="k">${esc(s.start)}–${esc(s.end)}</span>
+         <span class="v">Δ̄ ${esc(Number(s.mean_window_delta).toFixed(4))}
+         · ${esc(s.label || s.source || "idr")}</span></div>`
+    )
+    .join("");
+  const method =
+    expl.method_summary ||
+    "Logistic: exact linear SHAP (φ=w·z). Companion terms shown beside bars. Window occlusion = Gly leave-one-window-out.";
+  return `<div class="card" style="margin-top:1rem">
+    <h3>Explainability (Ser-rich / charge-block / IDR)</h3>
+    <p class="muted">${esc(method)}${
+      live ? " · <strong>live</strong> paste-score" : " · deposited gold ∪ Tier A sidecar"
+    }</p>
+    <h4 style="margin-top:0.75rem">Grammar SHAP axes</h4>
+    <div class="shap-panel">${axisBars}</div>
+    <h4 style="margin-top:1rem">Top feature SHAP (probability-local)</h4>
+    <div class="features">${topFeats || '<span class="muted">none</span>'}</div>
+    ${occTrack}
+    ${
+      idrAttr
+        ? `<h4 style="margin-top:1rem">IDR segment attributions</h4><div class="features">${idrAttr}</div>`
+        : ""
+    }
   </div>`;
 }
 
@@ -342,6 +477,13 @@ function secondCropMeta() {
 app.get("/api/health", (_req, res) => {
   const sn = stringNetworkMeta(db);
   const sm = stressModulesMeta(db);
+  let explainMeta = null;
+  try {
+    const raw = getMeta(db).explainability;
+    explainMeta = raw ? JSON.parse(raw) : null;
+  } catch {
+    explainMeta = null;
+  }
   res.json({
     ok: true,
     version: APP_VERSION,
@@ -366,6 +508,11 @@ app.get("/api/health", (_req, res) => {
           accessions: sm.accessions,
         }
       : null,
+    explainability: {
+      loaded: explainById.size,
+      meta: explainMeta,
+      sidecar: EXPLAIN_PATH,
+    },
   });
 });
 
@@ -878,6 +1025,7 @@ app.get("/protein/:id", (req, res) => {
     }
     ${stressExprHtml(p.expr_stress)}
     ${stringNeighborhoodHtml(p.protein_id)}
+    ${explainabilityHtml(explainById.get(p.protein_id), { length: p.length })}
     <div class="card" style="margin-top:1rem">
       <h3>Features</h3>
       <div class="features">${featHtml}</div>
@@ -1523,6 +1671,7 @@ app.post("/score", (req, res) => {
       );
   }
   const scored = scoreSequence(seq, model);
+  const liveExpl = explainFeatures(model, scored);
   const featHtml = Object.keys(scored)
     .filter(
       (k) =>
@@ -1543,7 +1692,16 @@ app.post("/score", (req, res) => {
          · companion ${fmtScore(scored.score_companion)}
          · logistic ${fmtScore(scored.score_logistic)}</p>
       <div class="features">${featHtml}</div>
-    </div>`;
+    </div>
+    ${explainabilityHtml(
+      {
+        grammar_axes: liveExpl.grammar.axes,
+        top_features: liveExpl.top_features,
+        method_summary:
+          "Logistic: exact linear SHAP (φ=w·z). Companion terms shown beside bars.",
+      },
+      { length: seq.length, live: true }
+    )}`;
   res.type("html").send(layout("Score FASTA", scoreForm(result)));
 });
 
@@ -1558,6 +1716,9 @@ Promise.all([
     console.error("Stress sidecar failed:", err);
   }),
   Promise.resolve().then(() => loadStressModulesUi()),
+  loadExplainability().catch((err) => {
+    console.error("Explainability sidecar failed:", err);
+  }),
 ]).finally(() => {
   app.listen(PORT, HOST, () => {
     console.log(
@@ -1567,5 +1728,6 @@ Promise.all([
     console.log(`SQLite: ${DB_PATH}`);
     console.log(`Model: ${MODEL_PATH}`);
     console.log(`FASTA sequences indexed: ${seqById.size}`);
+    console.log(`Explainability attributions: ${explainById.size}`);
   });
 });
