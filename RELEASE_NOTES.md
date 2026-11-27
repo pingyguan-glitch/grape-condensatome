@@ -1,15 +1,15 @@
 # Release notes
 
-## v0.7.0 (2026-11-27)
+## v1.1.0 (2026-11-27)
 
-P1 atlas layers: full scored-proteome AlphaFold low-pLDDT segments + multi-stress RNA-seq.
+P1 atlas layers on v1.0.0: full scored-proteome AlphaFold low-pLDDT segments + multi-stress RNA-seq.
 
 ### AlphaFold low-pLDDT segments (scored proteome)
 
 - `scripts/enrich_alphafold_plddt.py` — `--segments-tier ALL` (default) + `--segments-only` resume; browser-like User-Agent for AFDB file CDN (403 otherwise); cache under `data/alphafold/`.
-- Coverage on scored proteome (**25 972**): **23 421** with mean pLDDT; **23 421 / 23 421** AFDB models with `af_disorder_segments_json` (100% of models; **22 449** nonempty low-pLDDT segments). Remaining **2 551** proteins have no AFDB model.
+- Coverage on scored proteome (**25 972**): **23 421** with mean pLDDT; **23 421 / 23 421** AFDB models with segment residue counts (**22 449** nonempty low-pLDDT). Remaining **2 551** proteins have no AFDB model.
 - Protein page shows segments alongside domain / IDR tracks; IDR refresh → **23 590** proteins with IDR intervals (AF∪MobiDB; was 9 401 when segments were gold+Tier A only).
-- Coverage written to `meta.alphafold_plddt` + `data/alphafold/coverage.json`.
+- Coverage written to `meta.alphafold_plddt`. AF interval geometry ships via the IDR track (`source=af_plddt_lt50`) plus `af_n_disorder_residues` so SQLite stays under GitHub's 100 MiB limit.
 
 ### Multi-stress transcriptome
 
@@ -18,10 +18,48 @@ P1 atlas layers: full scored-proteome AlphaFold low-pLDDT segments + multi-stres
   - **E-GEOD-67932** — Botrytis noble-rot stages vs control (berries)
 - Both match **25 810 / 25 972** (99.4%) on `VIT_*` gene_name (same key as baseline E-MTAB-8758).
 - UI `/expression` + protein-page contrast cards (log2FC / p; significant when p&lt;0.05 and |log2FC|≥1).
-- DE blobs ship as `data/expression_atlas/stress_by_protein.json.gz` (Node loads at startup) so `grape_condensatome.sqlite` stays under GitHub's 100 MiB limit; AF segment intervals live in the IDR track (`source=af_plddt_lt50`) with `af_n_disorder_residues` retained.
+- DE blobs ship as `data/expression_atlas/stress_by_protein.json.gz` (Node loads at startup).
 - Honesty: abiotic drought/salt Atlas grape experiments (E-GEOD-31594 / E-GEOD-31677) are microarray — not claimed as RNA-seq.
 
-Out of scope this release: STRING, user score queue, splice isoforms, paper draft.
+## v1.0.0 (2026-11-27)
+
+Combined Wave 2 landing on `main`: curated LLPS gold / MAP hold-out (**v0.8.0**), STRING neighborhoods (**v0.9.0**), and soybean second-crop condensatome (**v0.9.1** content). Single coherent atlas release — not a claim of production-complete PlantLLPS.
+
+## v0.9.1 (2026-11-27)
+
+Second-crop condensatome: **soybean** (*Glycine max*, UniProt **UP000008827**).
+
+Originally a parallel additive layer; now merged into **v1.0.0** with gold/MAP + STRING.
+
+- `scripts/score_second_crop_proteome.py` — download + PlantLLPS v13 score (composition-proxy); writes `data/second_crop/soybean_condensatome.{proteome.tsv.gz,sqlite,summary.json}`. Tomato (`--crop tomato`, UP000004994) supported by the same script.
+- **Full proteome scored:** **71 064** proteins (min length 80); tiers A=3 137 / B=7 983 / C=26 235 / D=33 709; ~3.5 min wall on a 4-core CPU.
+- `scripts/enrich_second_crop_orthologs.py` — OrthoDB join soybean↔grape; grape columns `ortholog_gma*` + crop DB reverse grape pointers.
+- Join coverage: **16 388 / 25 972** grape proteins with a soybean OrthoDB hit (**16 304** with crop scores); curated MAP65-1 soybean IDs overlay F6HET4 → `A0A0R0GGZ9` (Tier B, score ≈ 0.805).
+- UI `/hooks` expanded: soybean condensatome table (tier filter + pager) + soybean columns on family hooks / protein pages; `/api/health` reports `second_crop`.
+- Honesty: grape-trained weights, not soybean-retrained; OrthoDB groups can be broad; FASTA cache gitignored.
+
+## v0.9.0 (2026-11-27)
+
+Additive **STRING neighborhood + condensatome enrichment** on top of Wave 2 **v0.8.0** (gold/MAP/hold-out).
+
+- `scripts/enrich_string_neighborhood.py` — native *Vitis* STRING (taxid 29760) v12 downloads;
+  UniProt mapping **25 867 / 25 972** (99.6%); 1-hop neighborhoods at combined_score ≥ 400.
+- SQLite: `string_neighborhood` for **Tier A seeds** (~833 deposited seed rows) + `string_id` on mapped proteins
+  (full-proteome neighbor JSON would exceed GitHub's 100 MB SQLite limit); combined DB also keeps curated LLPS gold columns from v0.8.0.
+- UI: protein-page neighborhood snippet + `/network` enrichment table; `/api/health` reports STRING meta.
+- Deposits: `data/string/enrichment_summary.json`, `neighborhood_stats.tsv.gz` (19 523),
+  `top_neighbors.tsv.gz`, `seed_edges.tsv.gz` (44 932), `README.md`.
+- Honest limits: combined score ≠ LLPS evidence (includes textmining); no Ath PPI transfer;
+  seeds = score Tier A (gold overlay is separate).
+
+## v0.8.0 (2026-11-27)
+
+Wave 2 resource-quality: curated LLPS gold, MAP-screen deposit + Spearman ρ, family / transfer AUCs.
+
+- **Curated LLPS gold** — `data/curated/llps_experimental_gold.tsv` (protein ID, species, condensate type, assay/evidence, citation, grape ortholog); `scripts/enrich_curated_llps_gold.py` joins SQLite `llps_gold` / `llps_gold_json`; UI `/gold` + protein-page badge + download `evidence=llps`.
+- **MAP screen deposit** — reconstructed GO:0008017 ∪ KW-Microtubule table under `data/map_screen/` with provenance README; recomputed Spearman ρ vs PlantLLPS / native PSAP / LLPhyScore (`map_screen_spearman.json`). Companion-cited ρ=0.368 retained as manuscript number (original 208-ID PSAP table still not recovered).
+- **Family hold-out / transfer** — `scripts/eval_family_holdout.py` → `data/benchmarks/family_holdout_metrics.json` + README; mean hybrid family-hold-out AUC ≈ **0.833** (13 families); Ath→rice hybrid AUC = **1.00** on tiny n=6 (honesty: small rice slice). Contrasts in-sample gold hybrid AUC ≈ 0.990.
+- Version **0.8.0** (skips 0.7.x to avoid collision with in-flight P1 AF-segments / stress RNA-seq work).
 
 ## v0.6.0 (2026-11-27)
 

@@ -2,7 +2,9 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 0.7.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+**Version:** 1.1.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+
+> **v1.0.0** combines Wave 2 curated gold/MAP/hold-out, STRING neighborhoods, and the soybean second-crop condensatome.
 
 Author: Pingyin Guan (College of Horticulture, China Agricultural University; ORCID [0000-0003-4890-3412](https://orcid.org/0000-0003-4890-3412)).
 
@@ -16,7 +18,9 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Proteome SQLite | `data/grape_condensatome.sqlite` | 25 972 scored rows + UniProt + Expression Atlas |
 | Proteome TSV | `data/grape_condensatome.proteome.tsv` | flat table |
 | Node web UI | `server.js` + `lib/` + `public/` | Express + `node:sqlite` (Node ≥22) |
-| Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + metapredict subset |
+| Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + family hold-out / transfer |
+| Curated LLPS gold | `data/curated/` | experimentally anchored overlay + SQLite/UI badge |
+| MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
 | External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
 | Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | publish-app + Railway/Render/Fly; not GitHub Pages |
 
@@ -25,13 +29,15 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - Default disorder is a **composition proxy**. **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed; v13 logistic weights still expect the proxy unless you retrain).
 - **AlphaFold pLDDT** summaries + **scored-proteome low-pLDDT segments** via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache; browser-like User-Agent).
 - **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
+- **Soybean second-crop condensatome** (UP000008827) via `scripts/score_second_crop_proteome.py` + `scripts/enrich_second_crop_orthologs.py` → `data/second_crop/` + grape `ortholog_gma*` columns; UI `/hooks`.
 - Side-by-side **PSAP / LLPhyScore / PLAAC-approx** via `scripts/enrich_comparator_scores.py`. Full-proteome native PSAP / LLPhyScore via `scripts/score_psap_proteome.py` and `scripts/score_llphyscore_proteome.py` (external envs; batched + checkpointed).
 - **Pfam / InterPro domains** + **IDR segments** (AF pLDDT&lt;50 ∪ UniProt MobiDB-lite disordered) via `scripts/enrich_domains_idr.py`; protein-page track + Ensembl Plants link-outs.
 - **Bulk download** UI `/download` and `GET /api/download?tier=A&format=tsv|fasta` (optional `family` / `keyword` / `q`).
+- **STRING** Vitis PPI neighborhoods + Tier A∪B enrichment via `scripts/enrich_string_neighborhood.py` (UI `/network`); combined scores are **not** LLPS evidence.
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
-- Gold-standard PlantLLPS AUCs are **partially in-sample** (IDs overlap the training corpus). LLPhyScore / PSAP are out-of-the-box.
+- Gold-standard PlantLLPS AUCs are **partially in-sample** (IDs overlap the training corpus). Prefer **family hold-out / Ath↔rice transfer** metrics in `data/benchmarks/family_holdout_metrics.json`. LLPhyScore / PSAP remain out-of-the-box baselines on the 13+15 gold set.
 - **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
-- The companion **208-protein MAP screen table** (with PSAP columns) is not in this repo; MAP ρ cannot be recomputed until that table is deposited (companion ρ = 0.368).
+- Companion-cited MAP-screen ρ = **0.368** used the unpublished Supplemental Data S1 PSAP table. This repo deposits an **annotation reconstruction** (`data/map_screen/`) and recomputes ρ vs **native proteome PSAP** (annotation set ≈ 0.20) — not a byte-for-byte replication of 0.368.
 
 ## Install
 
@@ -51,8 +57,17 @@ Optional extras / external tools: [`requirements.txt`](./requirements.txt), [`do
 npm install
 npm start
 # → http://127.0.0.1:8765/  (HOST/PORT env; default 0.0.0.0:8765)
-# Routes: /compare, /hooks, /download, /protein/:id
-# API:    GET /api/download?tier=A&format=tsv|fasta
+# Routes: /compare, /gold, /map, /hooks (Ath/rice + soybean), /network (STRING), /download, /protein/:id
+# API:    GET /api/download?tier=A&evidence=llps&format=tsv|fasta
+```
+
+## Second-crop condensatome (soybean)
+
+```bash
+python3 scripts/score_second_crop_proteome.py --crop soybean
+python3 scripts/enrich_second_crop_orthologs.py --crop soybean
+# deposits: data/second_crop/soybean_condensatome.*
+# optional: --crop tomato (UP000004994)
 ```
 
 ## Train
@@ -78,6 +93,7 @@ python3 scripts/enrich_uniprot_annotations.py --db data/grape_condensatome.sqlit
 python3 scripts/enrich_expression_atlas.py --db data/grape_condensatome.sqlite
 python3 scripts/enrich_stress_rnaseq.py --db data/grape_condensatome.sqlite
 python3 scripts/enrich_alphafold_plddt.py --segments-only --segments-tier ALL --workers 24
+python3 scripts/enrich_string_neighborhood.py   # Vitis STRING PPI + enrichment
 ```
 
 Optional metapredict (subset recommended on CPU):
@@ -125,7 +141,8 @@ python3 scripts/enrich_comparator_scores.py
 
 **Baseline TPM:** Experiment **E-MTAB-8758** (Pinot Noir berry) joined on `gene_name` = Atlas `GeneID` (`VIT_*`): **25 810 / 25 972** (99.4%).
 
-**Stress RNA-seq differentials (v0.7):** **E-MTAB-4324** (downy mildew / Trichoderma) and **E-GEOD-67932** (Botrytis noble rot) — both **25 810 / 25 972** (99.4%). UI `/expression` + protein-page contrasts (log2FC / p; sig when p&lt;0.05 and |log2FC|≥1). Abiotic drought/salt Atlas grape entries remain microarray and are not claimed as RNA-seq.
+**Stress RNA-seq differentials (v1.1):** **E-MTAB-4324** (downy mildew / Trichoderma) and **E-GEOD-67932** (Botrytis noble rot) — both **25 810 / 25 972** (99.4%). UI `/expression` + protein-page contrasts (log2FC / p; sig when p&lt;0.05 and |log2FC|≥1). Abiotic drought/salt Atlas grape entries remain microarray and are not claimed as RNA-seq.
+
 
 ## Version tag notes
 
@@ -133,13 +150,12 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 **`v0.3.1`** = metapredict wiring, native PSAP gold AUC, Expression Atlas joins, hosting docs.  
 **`v0.4.0`** = AlphaFold pLDDT joins, batched proteome metapredict, Ath/rice OrthoDB + cross-crop hooks, side-by-side PSAP/LLPhyScore/PLAAC-approx UI.  
 **`v0.5.0`** = full-proteome **native** PSAP + LLPhyScore (batched/checkpointed) joined into SQLite + `/compare`.  
-**`v0.6.0`** = Pfam/InterPro domains + IDR tracks, bulk download API, Ensembl Plants link-outs.  
-**`v0.7.0`** = scored-proteome AF low-pLDDT segments + multi-stress RNA-seq differentials.
+**`v0.6.0`** = Pfam/InterPro domains + IDR tracks, bulk download API, Ensembl Plants link-outs.
 
 ## Still open (not claimed done)
 
 - MAP-screen table deposit (ρ vs PSAP)  
 - Exact RBGD4 AGI; family-held-out PlantLLPS transfer AUC  
 - Confirmed public URL after publish-app / Railway / Render / Fly deploy  
-- Splice isoforms; STRING / coexpression layers; user score queue  
+- Splice isoforms; STRING / coexpression layers  
 

@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "note": "Curated cross-crop condensatome anchors (companion MAP/LLPS + literature). Used to seed UI links even when OrthoDB groups are broad/missing.",
+  "version": 2,
+  "note": "Curated cross-crop condensatome anchors (companion MAP/LLPS + literature). Used to seed UI links even when OrthoDB groups are broad/missing. v2 adds soybean MAP65-1a UniProt IDs for the second-crop condensatome (UP000008827).",
   "hooks": [
     {
       "family": "MAP65-1",
@@ -8,17 +8,21 @@
       "arabidopsis": ["Q9FLP0"],
       "rice": ["Q7X8B4", "Q0D4Q4"],
       "other_crops": {
-        "soybean": [],
+        "soybean": ["A0A0R0GGZ9", "A0A0R4J2T3", "A0A0R0G8J2"],
         "maize": [],
         "tomato": []
       },
-      "note": "Proven LLPS driver (Sahu et al. 2023); Ser-rich C-terminal grammar"
+      "note": "Proven LLPS driver (Sahu et al. 2023); Ser-rich C-terminal grammar. Soybean MAP65-1a IDs from UniProt name search on UP000008827 (OrthoDB often missing on F6HET4 itself)."
     },
     {
       "family": "TPX2-like",
       "grape": [],
       "arabidopsis": ["Q9C5Y0"],
       "rice": [],
+      "other_crops": {
+        "soybean": [],
+        "tomato": []
+      },
       "note": "Animal paradigm extension; often Tier A in grape MAP screen"
     },
     {
@@ -37,10 +41,14 @@
     },
     {
       "family": "WVD2/WDL",
-      "grape": ["A0ACT1LGI9"],
-      "arabidopsis": ["Q9LZ18"],
+      "grape": ["F6HG33", "F6HN32"],
+      "arabidopsis": ["Q84ZT9", "Q9LZ18"],
       "rice": [],
-      "note": "Plant-specific disordered MAP family; top of extended grape screen"
+      "other_crops": {
+        "soybean": [],
+        "tomato": []
+      },
+      "note": "Plant-specific disordered MAP family; companion top A0ACT1LGI9 not in current UP000009183 — atlas links deposited WVD2-like accessions"
     }
   ]
 }

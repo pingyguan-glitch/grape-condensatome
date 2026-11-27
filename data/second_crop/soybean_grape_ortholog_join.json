@@ -1,0 +1,17 @@
+{
+  "crop": "soybean",
+  "species": "Glycine max",
+  "proteome": "UP000008827",
+  "n_grape": 25972,
+  "n_matched": 16388,
+  "n_matched_with_crop_score": 16304,
+  "n_hook_overlay": 1,
+  "n_crop_scored": 71064,
+  "crop_db": "soybean_condensatome.sqlite",
+  "columns": [
+    "ortholog_gma",
+    "ortholog_gma_gene",
+    "ortholog_gma_score",
+    "ortholog_gma_tier"
+  ]
+}

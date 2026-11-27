@@ -1,6 +1,6 @@
 {
   "name": "grape-condensatome",
-  "version": "0.7.0",
+  "version": "1.1.0",
   "description": "PlantLLPS + GrapeCondensatome — plant LLPS scorer and grapevine proteome atlas",
   "private": true,
   "type": "module",
