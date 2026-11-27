@@ -8,6 +8,7 @@ coexpression modules among high-tier (PlantLLPS Tier A∪B) proteins.
 ```bash
 python3 scripts/enrich_stress_rnaseq.py          # prerequisite sidecar
 python3 scripts/enrich_stress_condensatome_modules.py
+python3 scripts/analyze_stress_network_isoforms.py   # v1.5 deep dive (+ hubs/isoforms)
 ```
 
 ## Deposits
@@ -21,6 +22,7 @@ python3 scripts/enrich_stress_condensatome_modules.py
 | `gene_sets.gmt.gz` | GMT deposit (gene names; UniProt fallback) |
 | `ui_tables.json` | Compact payload for Node `/modules` |
 | `summary.json` | Run summary + honesty note |
+| `deepdive/` | **v1.5** GO/keyword enrichment + heatmap matrix for FDR Botrytis-down set |
 
 ## Parameters
 

@@ -478,12 +478,22 @@ app.get("/api/health", (_req, res) => {
   const sn = stringNetworkMeta(db);
   const sm = stressModulesMeta(db);
   let explainMeta = null;
+  let atlasAnalyses = null;
   try {
     const raw = getMeta(db).explainability;
     explainMeta = raw ? JSON.parse(raw) : null;
   } catch {
     explainMeta = null;
   }
+  try {
+    const raw = getMeta(db).atlas_analyses_stress_network_isoforms;
+    atlasAnalyses = raw ? JSON.parse(raw) : null;
+  } catch {
+    atlasAnalyses = null;
+  }
+  const deep = atlasAnalyses?.analyses?.["2_stress_module_deepdive"];
+  const hubs = atlasAnalyses?.analyses?.["6_string_stress_seed_hubs"];
+  const iso = atlasAnalyses?.analyses?.["7_isoform_multi_protein_genes"];
   res.json({
     ok: true,
     version: APP_VERSION,
@@ -506,6 +516,14 @@ app.get("/api/health", (_req, res) => {
           n_enrichment_fdr_lt_0_05: sm["n_enrichment_fdr_lt_0.05"],
           n_gene_sets: sm.n_gene_sets,
           accessions: sm.accessions,
+        }
+      : null,
+    atlas_analyses: atlasAnalyses
+      ? {
+          version: atlasAnalyses.version,
+          deepdive_primary_fdr_terms: deep?.n_primary_term_fdr_lt_0_05 ?? deep?.["n_primary_term_fdr_lt_0.05"],
+          hubs_top_n: hubs?.top_n_deposited,
+          isoform_multi_vit: iso?.n_multi_accession_vit,
         }
       : null,
     explainability: {
@@ -771,8 +789,14 @@ app.get("/modules", (req, res) => {
         <span class="mono">data/stress_modules/de_enrichment.tsv</span> ·
         <span class="mono">coexpression_modules.tsv</span> ·
         <span class="mono">gene_sets.gmt.gz</span> ·
-        <span class="mono">module_members.tsv.gz</span>
+        <span class="mono">module_members.tsv.gz</span> ·
+        <span class="mono">deepdive/</span> (v1.5 GO/keyword + heatmap) ·
+        <span class="mono">data/string/stress_seed_hubs.tsv</span> ·
+        <span class="mono">data/isoforms/</span>
       </p>
+      <p class="muted">Deep-dive / hubs / isoform deltas:
+         <span class="mono">python3 scripts/analyze_stress_network_isoforms.py</span>
+         (primary = FDR Botrytis stage-3 down ∩ Tier A∪B; other contrasts exploratory).</p>
       <p>
         Table:
         <a href="/modules?tab=enrichment">DE enrichment</a> ·

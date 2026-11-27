@@ -1,0 +1,30 @@
+{
+  "layer": "isoform_multi_protein_genes",
+  "version": "1.5.0",
+  "n_proteins_with_vit": 25894,
+  "n_vit_loci": 25939,
+  "n_multi_accession_vit": 1,
+  "min_delta": 0.05,
+  "n_high_delta_deposited": 1,
+  "max_observed_delta": 0.069686,
+  "paths": {
+    "deltas": "data/isoforms/multi_accession_vit_score_deltas.tsv"
+  },
+  "top_deltas": [
+    {
+      "vit_gene": "VIT_01s0010g03900",
+      "n_accessions": 2,
+      "score_max": 0.694678,
+      "score_min": 0.624992,
+      "score_delta": 0.069686,
+      "score_mean": 0.659835,
+      "tiers": "C",
+      "max_protein_id": "A0A8S5GTV1",
+      "max_gene_name": "VIT_01s0010g03900",
+      "min_protein_id": "Q8LLR0",
+      "min_gene_name": "MADS4",
+      "accessions_json": "[{\"protein_id\":\"A0A8S5GTV1\",\"score\":0.6946784393977165,\"tier\":\"C\",\"gene_name\":\"VIT_01s0010g03900\",\"protein_name\":\"Uncharacterized protein\"},{\"protein_id\":\"Q8LLR0\",\"score\":0.6249924170932808,\"tier\":\"C\",\"gene_name\":\"MADS4\",\"protein_name\":\"Agamous-like MADS-box protein MADS4 (MADS-box protein 4) (VvMADS4) (SEPALLATA homolog 3) (VvSEP3) (VviSEP3)\"}]"
+    }
+  ],
+  "honesty": "Grouping key = VIT_* locus IDs parsed from UniProt gene_name / gene_names. UP000009183 is nearly one UniProt accession per VIT locus, so multi-accession isoform sets are rare. Score deltas are PlantLLPS hybrid score spreads across accessions of the same VIT \u2014 not experimentally confirmed splice-isoform LLPS differences. Shared gene symbols that map to distinct VIT IDs (paralogs) are intentionally excluded from this deposit."
+}
