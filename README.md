@@ -2,13 +2,13 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.8.0-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.9.0-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.8.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.9.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
 
 > Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
@@ -43,6 +43,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Fruit-crop condensatomes (v1.6.0) | `data/fruit_crops/` | Multi-species fruit-tree PlantLLPS deposits + manifest; UI `/hooks` |
 | Fruit cross-species high-score (v1.7.0) | `data/fruit_crops/cross_species/` | Conservative vs species-specific Tier A∪B clusters; UI `/hooks#fruit-cross-species` |
 | LLPS DB crosswalk (v1.8.0) | `data/llps_crosswalk/` | PhaSePro / LLPSDB / DrLLPS / CD-CODE ID joins; unique vs shared; UI `/crosswalk` · [`docs/LLPS_CROSSWALK.md`](./docs/LLPS_CROSSWALK.md) |
+| RNA-binding crosswalk (v1.9.0) | `data/rbp/` | RBP2GO Ath × OrthoDB + ATtRACT + UniProt GO/KW + RG/RGG; UI `/rbp` |
 | NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.x atlas + cross-crop/tomato deposits; Zenodo DOI pending |
 | Supplemental figures S1–S5 (v1.5.3) | [`docs/figures/supp/`](./docs/figures/supp/) | PNG/PDF + [`LEGENDS.md`](./docs/figures/supp/LEGENDS.md); regenerate via `scripts/generate_supp_figures.py` (`requirements-figures.txt`) |
 
@@ -65,6 +66,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - **Stress condensatome modules** via `scripts/enrich_stress_condensatome_modules.py` (UI `/modules`): DE × Tier A∪B enrichment for E-MTAB-4324 / E-GEOD-67932 + response-pattern modules + deposited gene sets (`data/stress_modules/`).
 - **Atlas analyses 2/6/7 (v1.5.0)** via `scripts/analyze_stress_network_isoforms.py`: Botrytis-down GO/keyword deep dive + heatmap matrix; STRING/stress seed hubs TSV; VIT multi-accession score deltas (`data/isoforms/` — nearly 1:1 in UP000009183).
 - **Atlas analyses family/comparator/structure (v1.5.1)** (UI `/analyses`): Pfam/InterPro Tier A∪B enrichment (`scripts/enrich_family_enrichment.py`); comparator disagreement (`scripts/enrich_comparator_disagreement.py`); structure–score joint (`scripts/enrich_structure_score_joint.py`). Family/structure threshold tests are FDR-controlled; disagreement flags are exploratory.
+- **RNA-binding crosswalk (v1.9.0)** via `scripts/enrich_rbp_crosswalk.py` (UI `/rbp`): RBP2GO Ath OrthoDB joins + ATtRACT Ath motifs (sparse; no Vitis) + UniProt GO/KW + RG/RGG grammar. Ortholog/motif flags are triage annotations, not grape CLIP evidence.
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
 - Gold-standard PlantLLPS AUCs from the production model are **partially in-sample** (IDs overlap the training corpus). Prefer the **leakage-controlled fair suite** (`scripts/eval_fair_benchmark.py` → `data/benchmarks/fair_comparison_metrics.json`, leaderboard [`docs/BENCHMARK_LEADERBOARD.md`](./docs/BENCHMARK_LEADERBOARD.md)): leave-gold-out PlantLLPS hybrid ≈ **0.959**, family-hold-out mean ≈ **0.833**, vs OOB LLPhyScore ≈ **0.769** / PSAP ≈ **0.718** on gold. ProX/PU-style is a feature-family logistic baseline (not the published Plant PS proteins model).
 - **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
@@ -90,8 +92,16 @@ npm start
 # → http://127.0.0.1:8765/  (HOST/PORT env; default 0.0.0.0:8765)
 # Routes: /compare, /gold, /map, /hooks (Ath/rice + soybean/tomato/fruit crops), /network (STRING),
 #         /expression, /modules (stress DE enrichment), /analyses (atlas analyses),
-#         /download, /protein/:id
-# API:    GET /api/download?tier=A&evidence=llps&format=tsv|fasta
+#         /rbp (RNA-binding crosswalk), /download, /protein/:id
+# API:    GET /api/download?tier=A&evidence=llps|rbp|rg&format=tsv|fasta
+```
+
+## RNA-binding crosswalk (NAR nucleic-acid layer)
+
+```bash
+python3 scripts/import_rbp_sources.py --rbp2go-csv RBP_AT.csv --fetch-attract
+python3 scripts/enrich_rbp_crosswalk.py
+# deposits: data/rbp/; UI /rbp ; methods data/rbp/METHOD.md
 ```
 
 ## Atlas analyses (NAR+)

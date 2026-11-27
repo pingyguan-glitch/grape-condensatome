@@ -30,6 +30,8 @@ build/
 data/alphafold/*.json
 data/alphafold/train_cache/
 data/orthologs/*.tsv.gz
+# RBP2GO / ATtRACT raw caches (slim deposits live in data/rbp/*.tsv.gz)
+data/rbp/cache/
 data/benchmarks/metapredict_proteome.checkpoint.json
 data/benchmarks/psap_proteome.checkpoint.json
 data/benchmarks/llphyscore_proteome.checkpoint.json

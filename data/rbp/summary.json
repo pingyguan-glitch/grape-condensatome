@@ -1,0 +1,110 @@
+{
+  "version": "1.9.0",
+  "layer": "rbp_rna_binding_crosswalk",
+  "n_atlas_proteins": 25972,
+  "n_with_rbp_annotation": 1943,
+  "hit_rate_proteome": 0.074811,
+  "by_source": {
+    "rbp2go_ath": 598,
+    "rg_motif": 395,
+    "uniprot_kw_rna_binding": 613,
+    "uniprot_go3723": 817
+  },
+  "by_tier": {
+    "D": 842,
+    "C": 753,
+    "B": 208,
+    "A": 140
+  },
+  "n_tier_ab_with_rbp": 348,
+  "n_rg_motif_call": 395,
+  "n_rbp2go_ath_entries": 2352,
+  "n_rbp2go_ath_with_grape_ortholog": 246,
+  "n_grape_via_rbp2go": 598,
+  "n_grape_via_attract": 0,
+  "n_attract_ath_uniprot_resolved": 5,
+  "n_attract_ath_uniprot_with_grape_ortholog": 0,
+  "n_rg_and_rbp2go": 31,
+  "rg_thresholds": {
+    "rgg_min": 2,
+    "rg_min": 8
+  },
+  "species_coverage": {
+    "rbp2go_species": [
+      "Arabidopsis thaliana"
+    ],
+    "rbp2go_includes_vitis": false,
+    "attract_n_organisms": 38,
+    "attract_ath_genes": 3,
+    "attract_ath_rows": 26,
+    "attract_includes_vitis": false,
+    "grape_native_uniprot_go3723": 817,
+    "grape_native_uniprot_kw": 613
+  },
+  "attract_summary": {
+    "n_rows_total": 4882,
+    "n_organisms": 38,
+    "top_organisms": [
+      [
+        "Homo_sapiens",
+        3256
+      ],
+      [
+        "Drosophila_melanogaster",
+        520
+      ],
+      [
+        "Saccharomyces_cerevisiae",
+        370
+      ],
+      [
+        "Caenorhabditis_elegans",
+        157
+      ],
+      [
+        "Mus_musculus",
+        150
+      ],
+      [
+        "Xenopus_tropicalis",
+        96
+      ],
+      [
+        "Plasmodium_falciparum",
+        40
+      ],
+      [
+        "Gallus_gallus",
+        36
+      ],
+      [
+        "Trypanosoma_brucei",
+        31
+      ],
+      [
+        "Arabidopsis_thaliana",
+        26
+      ],
+      [
+        "Rattus_norvegicus",
+        23
+      ],
+      [
+        "Trichomonas_vaginalis",
+        23
+      ]
+    ],
+    "n_ath_rows": 26,
+    "n_ath_genes": 3,
+    "plant_gap": "ATtRACT is animal-dominated; Arabidopsis contributes few motif rows and Vitis is absent. Motif notes on grape proteins are Ath-ortholog transfers, not grape CLIP evidence."
+  },
+  "paths": {
+    "rbp2go_tsv": "data/rbp/rbp2go_arabidopsis.tsv.gz",
+    "attract_tsv": "data/rbp/attract_arabidopsis_motifs.tsv.gz",
+    "grape_tsv": "data/rbp/grape_rbp_annotations.tsv.gz",
+    "sidecar": "data/rbp/annotations_by_protein.json.gz",
+    "ui_tables": "data/rbp/ui_tables.json",
+    "method": "data/rbp/METHOD.md"
+  },
+  "honesty": "RBP2GO 2.0 has no Vitis table \u2014 grape joins are Ath OrthoDB transfers. ATtRACT Ath motif coverage is sparse and animal-dominated. RG/RGG calls are sequence grammar thresholds, not experimental RNA binding. UniProt GO/KW are native grape annotations. Sidecar-only (no fat SQLite columns)."
+}
