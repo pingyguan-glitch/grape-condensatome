@@ -1,0 +1,28 @@
+{
+  "crop": "soybean",
+  "species": "Glycine max",
+  "proteome": "UP000008827",
+  "taxon": 3847,
+  "n_fasta_parsed": 71064,
+  "n_scored": 71064,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 3137,
+    "B": 7983,
+    "C": 26235,
+    "D": 33709
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8473205369286013,
+    "score_C": 0.39502608964920854,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 212.0,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": "soybean_condensatome.proteome.tsv.gz",
+  "sqlite": "soybean_condensatome.sqlite",
+  "honesty": "Second-crop condensatome for Glycine max (UP000008827). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.449776
+}

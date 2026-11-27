@@ -1,5 +1,18 @@
 # Release notes
 
+## v0.9.1 (2026-11-27)
+
+Second-crop condensatome: **soybean** (*Glycine max*, UniProt **UP000008827**).
+
+Parallel additive layer on `main` **v0.6.0** — versioned **0.9.1** so it does not fight open **v0.8.0** (PR #7 gold/MAP/hold-out) or **v0.9.0** (PR #8 STRING). Not stacked on either PR.
+
+- `scripts/score_second_crop_proteome.py` — download + PlantLLPS v13 score (composition-proxy); writes `data/second_crop/soybean_condensatome.{proteome.tsv.gz,sqlite,summary.json}`. Tomato (`--crop tomato`, UP000004994) supported by the same script.
+- **Full proteome scored:** **71 064** proteins (min length 80); tiers A=3 137 / B=7 983 / C=26 235 / D=33 709; ~3.5 min wall on a 4-core CPU.
+- `scripts/enrich_second_crop_orthologs.py` — OrthoDB join soybean↔grape; grape columns `ortholog_gma*` + crop DB reverse grape pointers.
+- Join coverage: **16 388 / 25 972** grape proteins with a soybean OrthoDB hit (**16 304** with crop scores); curated MAP65-1 soybean IDs overlay F6HET4 → `A0A0R0GGZ9` (Tier B, score ≈ 0.805).
+- UI `/hooks` expanded: soybean condensatome table (tier filter + pager) + soybean columns on family hooks / protein pages; `/api/health` reports `second_crop`.
+- Honesty: grape-trained weights, not soybean-retrained; OrthoDB groups can be broad; FASTA cache gitignored.
+
 ## v0.6.0 (2026-11-27)
 
 P0 atlas layers: domains / IDR tracks, bulk download, genome link-outs.

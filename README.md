@@ -2,7 +2,9 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 0.6.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+**Version:** 0.9.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+
+> **v0.9.1** adds a **soybean** second-crop condensatome (`data/second_crop/`, UI `/hooks`) as a parallel additive layer on `main` v0.6.0 — it does not stack on open v0.8.0 / v0.9.0 PRs.
 
 Author: Pingyin Guan (College of Horticulture, China Agricultural University; ORCID [0000-0003-4890-3412](https://orcid.org/0000-0003-4890-3412)).
 
@@ -25,6 +27,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - Default disorder is a **composition proxy**. **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed; v13 logistic weights still expect the proxy unless you retrain).
 - **AlphaFold pLDDT** summaries (+ Tier A / gold low-pLDDT segments) via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache).
 - **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
+- **Soybean second-crop condensatome** (UP000008827) via `scripts/score_second_crop_proteome.py` + `scripts/enrich_second_crop_orthologs.py` → `data/second_crop/` + grape `ortholog_gma*` columns; UI `/hooks`.
 - Side-by-side **PSAP / LLPhyScore / PLAAC-approx** via `scripts/enrich_comparator_scores.py`. Full-proteome native PSAP / LLPhyScore via `scripts/score_psap_proteome.py` and `scripts/score_llphyscore_proteome.py` (external envs; batched + checkpointed).
 - **Pfam / InterPro domains** + **IDR segments** (AF pLDDT&lt;50 ∪ UniProt MobiDB-lite disordered) via `scripts/enrich_domains_idr.py`; protein-page track + Ensembl Plants link-outs.
 - **Bulk download** UI `/download` and `GET /api/download?tier=A&format=tsv|fasta` (optional `family` / `keyword` / `q`).
@@ -51,8 +54,17 @@ Optional extras / external tools: [`requirements.txt`](./requirements.txt), [`do
 npm install
 npm start
 # → http://127.0.0.1:8765/  (HOST/PORT env; default 0.0.0.0:8765)
-# Routes: /compare, /hooks, /download, /protein/:id
+# Routes: /compare, /hooks (Ath/rice + soybean), /download, /protein/:id
 # API:    GET /api/download?tier=A&format=tsv|fasta
+```
+
+## Second-crop condensatome (soybean)
+
+```bash
+python3 scripts/score_second_crop_proteome.py --crop soybean
+python3 scripts/enrich_second_crop_orthologs.py --crop soybean
+# deposits: data/second_crop/soybean_condensatome.*
+# optional: --crop tomato (UP000004994)
 ```
 
 ## Train
