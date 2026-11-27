@@ -1,0 +1,28 @@
+{
+  "crop": "arabidopsis",
+  "species": "Arabidopsis thaliana",
+  "proteome": "UP000006548",
+  "taxon": 3702,
+  "n_fasta_parsed": 37706,
+  "n_scored": 37706,
+  "limit": null,
+  "min_length": 80,
+  "tiers": {
+    "A": 1720,
+    "B": 4393,
+    "C": 13882,
+    "D": 17711
+  },
+  "tier_cutoffs": {
+    "score_A": 0.8604987739307796,
+    "score_C": 0.4190914446764142,
+    "disorder_A": 0.45
+  },
+  "wall_seconds": 167.6,
+  "model": "model_formal.json",
+  "disorder": "composition_proxy",
+  "tsv": "arabidopsis_condensatome.proteome.tsv.gz",
+  "sqlite": "arabidopsis_condensatome.sqlite",
+  "honesty": "Second-crop condensatome for Arabidopsis thaliana (UP000006548). Scores use the grape-trained PlantLLPS v13 hybrid with composition-proxy disorder (not metapredict). Tier cutoffs recalibrated on this proteome's score distribution. Not a species-specific retrained model.",
+  "mean_score": 0.472083
+}

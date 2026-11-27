@@ -1,5 +1,16 @@
 # Release notes
 
+## v1.5.2 (2026-11-27)
+
+Cross-crop conserved condensatome + tomato third-crop atlas.
+
+- `scripts/analyze_cross_crop_conserved.py` — grape ↔ soybean ↔ Ath Tier A∪B / OrthoDB overlap; deposits `data/cross_crop/conserved_tier_ab_overlap.tsv.gz`, `conserved_orthodb_clusters.tsv.gz`, `conserved_summary.json`.
+- Ath PlantLLPS deposit (`--crop arabidopsis --out-dir data/cross_crop`) for Ath Tier labels in the overlap.
+- Tomato third crop: `scripts/score_second_crop_proteome.py --crop tomato` + `enrich_second_crop_orthologs.py` → `data/second_crop/tomato_condensatome.*`; grape `ortholog_sly*` columns; curated MAP65-1a hook `A0A3Q7HI29` (`cross_crop_hooks.json` v3).
+- UI `/hooks` tomato panel + protein-page tomato ortholog; `/api/health.second_crop` reports tomato + conserved summary.
+- Stub helper `scripts/write_tomato_schema_stub.py` if proteome download is blocked (not needed this release — UniProt succeeded).
+- Headline: grape Tier A∪B **3870**; grape∩soy Tier A/B **968**; triple Tier A/B **271**; grape-specific Tier A/B **1645**; tomato scored **31 194** (A/B/C/D = 1387/3424/11566/14817); tomato OrthoDB matches **14 547 / 25 972**.
+
 ## v1.5.1 (2026-11-27)
 
 NAR+ atlas analyses: Tier A∪B domain enrichment, comparator disagreement, structure–score joint.

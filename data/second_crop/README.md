@@ -1,32 +1,42 @@
-# Second-crop condensatome (soybean)
+# Second-/third-crop condensatome (soybean + tomato)
 
-Additive layer (**v0.9.1**) on top of the grapevine atlas. Does **not** stack on open
-Wave 2 gold (**v0.8.0** / PR #7) or STRING (**v0.9.0** / PR #8).
+Additive crop atlases on top of the grapevine condensatome. Scores use
+grape-trained PlantLLPS **v13** with composition-proxy disorder; tiers are
+recalibrated per proteome. **Not** crop-retrained models.
 
 | File | Role |
 |------|------|
-| `soybean_condensatome.proteome.tsv.gz` | Full PlantLLPS scores (gitignored; rebuild via score script / Zenodo) |
-| `soybean_condensatome.sqlite` | Slim browse DB (scores + grape ortholog pointers) |
-| `soybean_condensatome.summary.json` | Tier counts / honesty / wall-time |
-| `soybean_grape_ortholog_join.json` | OrthoDB join coverage vs grape atlas |
+| `soybean_condensatome.sqlite` | *Glycine max* UP000008827 slim browse DB |
+| `soybean_condensatome.summary.json` | Soy tier counts / honesty |
+| `soybean_grape_ortholog_join.json` | OrthoDB join coverage vs grape |
+| `tomato_condensatome.sqlite` | *Solanum lycopersicum* UP000004994 slim browse DB |
+| `tomato_condensatome.summary.json` | Tomato tier counts / honesty |
+| `tomato_grape_ortholog_join.json` | OrthoDB join coverage vs grape |
+| `*_condensatome.proteome.tsv.gz` | Full score tables (gitignored; rebuild / Zenodo) |
 
-**Proteome:** UniProt **UP000008827** (*Glycine max*), NCBI taxid **3847**.  
-**Model:** grape-trained PlantLLPS **v13** (`data/model_formal.json`); tiers recalibrated on this proteome. **Not** a soybean-retrained model.
+Grape atlas stores thin `ortholog_gma*` / `ortholog_sly*` columns only (keeps
+`grape_condensatome.sqlite` under GitHub’s ~100 MiB limit).
 
 ## Reproduce
 
 ```bash
 python3 scripts/score_second_crop_proteome.py --crop soybean
 python3 scripts/enrich_second_crop_orthologs.py --crop soybean
-# optional tomato path (same scripts):
-# python3 scripts/score_second_crop_proteome.py --crop tomato
-# python3 scripts/enrich_second_crop_orthologs.py --crop tomato
+
+python3 scripts/score_second_crop_proteome.py --crop tomato
+python3 scripts/enrich_second_crop_orthologs.py --crop tomato
 ```
 
-FASTA downloads land here as `UP000008827.fasta.gz` (gitignored; re-fetched by the score script).
+If UniProt proteome download fails after retries, document the blocker and optionally:
+
+```bash
+python3 scripts/write_tomato_schema_stub.py --blocker "…"
+```
+
+FASTA caches (`UP00000*.fasta.gz`) are gitignored and re-fetched by the score script.
 
 ## Honesty
 
-- Full proteome scored in this deposit (see `summary.json` for `n_scored`).
-- OrthoDB eukaryote-level groups can be broad; curated `data/cross_crop_hooks.json` seeds MAP65-1 soybean IDs when grape lacks an OrthoDB xref (e.g. F6HET4).
-- Grape SQLite only stores thin `ortholog_gma*` columns + join meta (keeps the atlas under GitHub’s ~100 MB file limit). Full crop scores live in this folder.
+- OrthoDB eukaryote-level groups can be broad; `data/cross_crop_hooks.json` seeds
+  MAP65-1 soybean / tomato IDs when grape F6HET4 lacks an OrthoDB xref.
+- Conserved grape↔soy↔Ath Tier A/B tables live under `data/cross_crop/`.

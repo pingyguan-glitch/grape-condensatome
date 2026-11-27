@@ -13,10 +13,13 @@ data/UP000009183.fasta
 # second-crop FASTA caches (re-download via score_second_crop_proteome.py)
 data/second_crop/*.fasta
 data/second_crop/*.fasta.gz
+data/cross_crop/*.fasta
+data/cross_crop/*.fasta.gz
 # Flat proteome TSV dumps (redundant with SQLite for the Node UI; ship via Zenodo
 # bundle — keeps Cursor publish-app under the 50 MiB pack limit)
 data/grape_condensatome.proteome.tsv
 data/second_crop/*.proteome.tsv.gz
+data/cross_crop/*.proteome.tsv.gz
 *.egg-info/
 dist/
 build/

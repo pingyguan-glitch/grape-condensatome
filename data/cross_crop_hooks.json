@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "note": "Curated cross-crop condensatome anchors (companion MAP/LLPS + literature). Used to seed UI links even when OrthoDB groups are broad/missing. v2 adds soybean MAP65-1a UniProt IDs for the second-crop condensatome (UP000008827).",
+  "version": 3,
+  "note": "Curated cross-crop condensatome anchors (companion MAP/LLPS + literature). Used to seed UI links even when OrthoDB groups are broad/missing. v2 adds soybean MAP65-1a; v3 adds tomato MAP65-1a (UP000004994).",
   "hooks": [
     {
       "family": "MAP65-1",
@@ -10,9 +10,9 @@
       "other_crops": {
         "soybean": ["A0A0R0GGZ9", "A0A0R4J2T3", "A0A0R0G8J2"],
         "maize": [],
-        "tomato": []
+        "tomato": ["A0A3Q7HI29"]
       },
-      "note": "Proven LLPS driver (Sahu et al. 2023); Ser-rich C-terminal grammar. Soybean MAP65-1a IDs from UniProt name search on UP000008827 (OrthoDB often missing on F6HET4 itself)."
+      "note": "Proven LLPS driver (Sahu et al. 2023); Ser-rich C-terminal grammar. Soybean MAP65-1a IDs from UniProt name search on UP000008827; tomato MAP65-1a A0A3Q7HI29 from UniProt name search on UP000004994 (OrthoDB often missing on F6HET4 itself)."
     },
     {
       "family": "TPX2-like",

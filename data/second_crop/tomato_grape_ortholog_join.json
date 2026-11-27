@@ -1,0 +1,17 @@
+{
+  "crop": "tomato",
+  "species": "Solanum lycopersicum",
+  "proteome": "UP000004994",
+  "n_grape": 25972,
+  "n_matched": 14547,
+  "n_matched_with_crop_score": 14524,
+  "n_hook_overlay": 1,
+  "n_crop_scored": 31194,
+  "crop_db": "tomato_condensatome.sqlite",
+  "columns": [
+    "ortholog_sly",
+    "ortholog_sly_gene",
+    "ortholog_sly_score",
+    "ortholog_sly_tier"
+  ]
+}
