@@ -1,5 +1,16 @@
 # Release notes
 
+## v1.8.0 (2026-11-27)
+
+Orthogonal LLPS database cross-annotation (NAR content layer A1).
+
+- `scripts/fetch_llps_external_ids.py` — fetch/cache PhaSePro JSON, LLPSDB unambiguous PS zip, DrLLPS `LLPS.txt` + *Vitis* gene FASTA, CD-CODE Edmond dump; write compact UniProt/gene ID tables under `data/llps_crosswalk/ids/` with `sources.json` (URLs, citations, license notes).
+- `scripts/enrich_llps_crosswalk.py` — cross PlantLLPS gold panel (train ∪ curated ∪ reconstructed; **n=164**) + Tier A/B/C candidates; deposits `gold_crosswalk.tsv|json`, `candidates_crosswalk.tsv.gz`, `summary.json`; SQLite columns `ext_llps_dbs` / `ext_llps_unique` / `ext_llps_json`.
+- UI `/crosswalk` + protein-page external DB badges; download/API filter `evidence=unique|shared|phasepro|llpsdb|drllps|cdcode`; `/api/crosswalk`; `/api/health.llps_crosswalk`.
+- Methods note [`docs/LLPS_CROSSWALK.md`](./docs/LLPS_CROSSWALK.md) for reviewer Q “how do you differ from existing LLPS DBs”.
+- Headline: Tier A∪B **3870** → unique **3396** / shared **474**; gold **164** → unique **100** / shared **64**. Shared dominated by DrLLPS *Vitis* ortholog expansion.
+- Honesty: unique = catalog-relative under deposited match rules; CD-CODE IDs are CC BY-NC accession extracts; no Zenodo; no new species.
+
 ## v1.7.0 (2026-11-27)
 
 Fruit-crop cross-species high-score comparison layer (no re-scoring; no Zenodo touch).

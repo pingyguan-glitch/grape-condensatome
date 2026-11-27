@@ -281,3 +281,21 @@ Notes:
   the Node UI loads those sidecars at startup.
 - Enrichment fold = (neighbor Tier A∪B fraction) / (proteome A∪B rate); hypergeometric
   p-value is descriptive adjacency bias, not condensate membership.
+
+## Orthogonal LLPS DB crosswalk (PhaSePro / LLPSDB / DrLLPS / CD-CODE)
+
+```bash
+python3 scripts/fetch_llps_external_ids.py
+# → data/llps_crosswalk/ids/*.txt + sources.json (raw dumps in gitignored cache/)
+
+python3 scripts/enrich_llps_crosswalk.py
+# → gold_crosswalk.tsv|json, candidates_crosswalk.tsv.gz, summary.json
+# → SQLite ext_llps_dbs / ext_llps_unique / ext_llps_json; UI /crosswalk
+```
+
+Notes:
+
+- Prefer redistributable dumps / UniProt-mapped tables (see `ids/sources.json` licenses).
+- CD-CODE Edmond dump is **CC BY-NC**; we commit accession lists only.
+- DrLLPS *Vitis* matches are ortholog expansions, not plant droplet assays.
+- Methods note for reviewers: [`docs/LLPS_CROSSWALK.md`](./LLPS_CROSSWALK.md).

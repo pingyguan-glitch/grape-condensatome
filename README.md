@@ -2,13 +2,13 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.7.0-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.8.0-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.7.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.8.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
 
 > Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
@@ -42,6 +42,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Tomato third crop (v1.5.2) | `data/second_crop/tomato_*` | UP000004994 scores + grape `ortholog_sly*`; UI `/hooks` |
 | Fruit-crop condensatomes (v1.6.0) | `data/fruit_crops/` | Multi-species fruit-tree PlantLLPS deposits + manifest; UI `/hooks` |
 | Fruit cross-species high-score (v1.7.0) | `data/fruit_crops/cross_species/` | Conservative vs species-specific Tier A∪B clusters; UI `/hooks#fruit-cross-species` |
+| LLPS DB crosswalk (v1.8.0) | `data/llps_crosswalk/` | PhaSePro / LLPSDB / DrLLPS / CD-CODE ID joins; unique vs shared; UI `/crosswalk` · [`docs/LLPS_CROSSWALK.md`](./docs/LLPS_CROSSWALK.md) |
 | NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.x atlas + cross-crop/tomato deposits; Zenodo DOI pending |
 | Supplemental figures S1–S5 (v1.5.3) | [`docs/figures/supp/`](./docs/figures/supp/) | PNG/PDF + [`LEGENDS.md`](./docs/figures/supp/LEGENDS.md); regenerate via `scripts/generate_supp_figures.py` (`requirements-figures.txt`) |
 
@@ -55,6 +56,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - **Soybean / tomato crop condensatomes** (UP000008827 / UP000004994) via `scripts/score_second_crop_proteome.py` + `scripts/enrich_second_crop_orthologs.py` → `data/second_crop/` + grape `ortholog_gma*` / `ortholog_sly*`; UI `/hooks`.
 - **Fruit-crop condensatomes** (apple, pear, peach, cherry, citrus, banana, …) via `scripts/score_fruit_crop_proteomes.py` + optional `scripts/enrich_fruit_crop_orthologs.py` → `data/fruit_crops/`; UI `/hooks` (grape-trained v13 — not species-retrained).
 - **Fruit cross-species high-score comparison** via `scripts/analyze_fruit_cross_species.py` → `data/fruit_crops/cross_species/` (conservative ≥5-species Tier A∪B clusters + species-specific peaks; OrthoDB / grape-join / gene-proxy); UI `/hooks#fruit-cross-species`.
+- **Orthogonal LLPS DB crosswalk** via `scripts/fetch_llps_external_ids.py` + `scripts/enrich_llps_crosswalk.py` → `data/llps_crosswalk/` (PhaSePro / LLPSDB / DrLLPS / CD-CODE; unique-to-us filter `evidence=unique`; UI `/crosswalk`).
 - **Conserved cross-crop Tier A∪B** (grape↔soy↔Ath OrthoDB) via `scripts/analyze_cross_crop_conserved.py` → `data/cross_crop/`.
 - Side-by-side **PSAP / LLPhyScore / PLAAC-approx** via `scripts/enrich_comparator_scores.py`. Full-proteome native PSAP / LLPhyScore via `scripts/score_psap_proteome.py` and `scripts/score_llphyscore_proteome.py` (external envs; batched + checkpointed).
 - **Pfam / InterPro domains** + **IDR segments** (AF pLDDT&lt;50 ∪ UniProt MobiDB-lite disordered) via `scripts/enrich_domains_idr.py`; protein-page track + Ensembl Plants link-outs.

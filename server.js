@@ -36,6 +36,8 @@ import {
   comparatorDisagreementMeta,
   structureScoreMeta,
   listLlpsGold,
+  llpsCrosswalkMeta,
+  listUniqueCandidates,
   DEFAULT_DB,
 } from "./lib/db.js";
 import { loadModel, scoreSequence } from "./lib/model.js";
@@ -444,6 +446,7 @@ function layout(title, body, query = "") {
       <a href="/tiers/D">Tier D</a>
       <a href="/compare">Compare</a>
       <a href="/gold">LLPS gold</a>
+      <a href="/crosswalk">DB crosswalk</a>
       <a href="/map">MAP screen</a>
       <a href="/hooks">Cross-crop</a>
       <a href="/network">STRING</a>
@@ -499,8 +502,9 @@ function proteinTable(rows, empty = "No proteins found.") {
         Number(r.llps_gold) > 0
           ? `<span class="badge gold" title="Curated LLPS evidence join">LLPS</span>`
           : "";
+      const xwalk = extLlpsBadgesHtml(r, { compact: true });
       return `<tr>
-        <td class="mono"><a href="/protein/${pid}">${pid}</a> ${gold}</td>
+        <td class="mono"><a href="/protein/${pid}">${pid}</a> ${gold}${xwalk}</td>
         <td class="mono">${gene}</td>
         <td><span class="tier ${tier}">${tier}</span></td>
         <td>${fmtScore(r.score)}</td>
@@ -722,6 +726,32 @@ app.get("/api/health", (_req, res) => {
       meta: explainMeta,
       sidecar: EXPLAIN_PATH,
     },
+    llps_crosswalk: llpsCrosswalkMeta(db),
+  });
+});
+
+app.get("/api/crosswalk", (req, res) => {
+  const meta = llpsCrosswalkMeta(db);
+  const tiers = String(req.query.tiers || "A,B,C");
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const { rows, total } = listUniqueCandidates(db, {
+    tiers,
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+  });
+  res.json({
+    meta,
+    tiers,
+    page,
+    total,
+    results: rows.map((r) => ({
+      protein_id: r.protein_id,
+      gene_name: r.gene_name || "",
+      tier: r.tier,
+      score: r.score,
+      ext_llps_unique: r.ext_llps_unique,
+      ext_llps_dbs: r.ext_llps_dbs,
+    })),
   });
 });
 
@@ -1322,7 +1352,7 @@ app.get("/protein/:id", (req, res) => {
             Number(p.llps_gold) > 0
               ? `<span class="badge gold">LLPS evidence</span>`
               : ""
-          }</h2>
+          }${extLlpsBadgesHtml(p)}</h2>
         <p><strong>${esc(p.gene_name || "—")}</strong>
            · <span class="tier ${esc(p.tier)}">${esc(p.tier)}</span>
            · length ${esc(p.length)}</p>
@@ -1379,6 +1409,28 @@ app.get("/protein/:id", (req, res) => {
               .join("")}</div></div>`
         : ""
     }
+    <div class="card" style="margin-top:1rem">
+      <h3>External LLPS DB crosswalk</h3>
+      <p class="muted">Orthogonal annotation vs PhaSePro / LLPSDB / DrLLPS / CD-CODE
+        (<a href="/crosswalk">methods + counts</a>).
+        Unique = absent under deposited match rules (direct UniProt, Ath ortholog, or DrLLPS Vitis gene).</p>
+      <p>Status: ${
+        Number(p.ext_llps_unique) === 1
+          ? `<span class="badge unique">unique to GrapeCondensatome</span>`
+          : `<span class="badge shared">already catalogued</span>`
+      }
+        ${extLlpsBadgesHtml({ ...p, ext_llps_unique: 0 })}</p>
+      <div class="features">${
+        p.ext_llps && p.ext_llps.dbs && Object.keys(p.ext_llps.dbs).length
+          ? Object.entries(p.ext_llps.dbs)
+              .map(
+                ([db, how]) =>
+                  `<div><span class="k">${esc(db)}</span><span class="v">${esc(how)}</span></div>`
+              )
+              .join("")
+          : `<div><span class="k">matches</span><span class="v">none</span></div>`
+      }</div>
+    </div>
     <div class="card" style="margin-top:1rem">
       <h3>Orthologs / cross-crop</h3>
       <p>Family: <strong>${esc(p.cross_crop_family || "—")}</strong>
@@ -1668,6 +1720,73 @@ app.get("/gold", (req, res) => {
   res.type("html").send(layout("LLPS gold", body));
 });
 
+app.get("/crosswalk", (req, res) => {
+  const page = Math.max(1, Number(req.query.page || 1));
+  const tiers = String(req.query.tiers || "A,B,C");
+  const meta = llpsCrosswalkMeta(db) || {};
+  const { rows, total } = listUniqueCandidates(db, {
+    tiers,
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+  });
+  const gold = meta.gold_panel || {};
+  const ab = meta.proteome?.tier_AB || {};
+  const abc = meta.proteome?.tier_ABC || {};
+  const ext = meta.external_id_counts || {};
+  const tierRows = ["A", "B", "C", "D"]
+    .map((t) => {
+      const s = meta.proteome?.tiers?.[t] || {};
+      return `<tr>
+        <td><span class="tier ${t}">${t}</span></td>
+        <td>${esc(s.n ?? "—")}</td>
+        <td>${esc(s.unique ?? "—")}</td>
+        <td>${esc(s.shared ?? "—")}</td>
+      </tr>`;
+    })
+    .join("");
+  const qsBase = new URLSearchParams({ tiers });
+  const body = `
+    <div class="card">
+      <h2>Orthogonal LLPS database crosswalk</h2>
+      <p>Answers “how do you differ from existing LLPS DBs?” with UniProt/gene joins against
+        <strong>PhaSePro</strong>, <strong>LLPSDB</strong>, <strong>DrLLPS</strong>, and <strong>CD-CODE</strong>.
+        Methods: <span class="mono">docs/LLPS_CROSSWALK.md</span>
+        · deposits <span class="mono">data/llps_crosswalk/</span>.</p>
+      <p class="muted">${esc(meta.honesty || "")}</p>
+      <div class="features" style="margin-top:0.75rem">
+        <div><span class="k">External ID freeze</span>
+          <span class="v">PhaSePro ${esc(ext.phasepro ?? "—")} · LLPSDB ${esc(ext.llpsdb ?? "—")}
+          · DrLLPS exp ${esc(ext.drllps_experimental ?? "—")} · CD-CODE ${esc(ext.cdcode ?? "—")}
+          · DrLLPS Vitis genes ${esc(ext.drllps_vitis_genes ?? "—")}</span></div>
+        <div><span class="k">PlantLLPS gold panel</span>
+          <span class="v">n=${esc(gold.n ?? "—")} · unique ${esc(gold.unique ?? "—")} · shared ${esc(gold.shared ?? "—")}</span></div>
+        <div><span class="k">Tier A∪B candidates</span>
+          <span class="v">n=${esc(ab.n ?? "—")} · <span class="badge unique">unique</span> ${esc(ab.unique ?? "—")}
+          · shared ${esc(ab.shared ?? "—")}</span></div>
+        <div><span class="k">Tier A∪B∪C</span>
+          <span class="v">n=${esc(abc.n ?? "—")} · unique ${esc(abc.unique ?? "—")} · shared ${esc(abc.shared ?? "—")}</span></div>
+      </div>
+      <table class="data" style="margin-top:1rem">
+        <thead><tr><th>Tier</th><th>n</th><th>Unique</th><th>Shared</th></tr></thead>
+        <tbody>${tierRows}</tbody>
+      </table>
+      <p style="margin-top:0.75rem">Download unique Tier B:
+        <a href="/download?tier=B&amp;evidence=unique">/download?tier=B&amp;evidence=unique</a>
+        · API <span class="mono">GET /api/crosswalk</span></p>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <h3>Unique-to-us candidates (Tier ${esc(tiers)})</h3>
+      <form method="get" action="/crosswalk" class="inline">
+        <label>Tiers <input name="tiers" value="${esc(tiers)}" placeholder="A,B,C"/></label>
+        <button type="submit">Filter</button>
+      </form>
+      <p class="muted">${esc(total)} proteins · page ${esc(page)}</p>
+    </div>
+    ${proteinTable(rows, "No unique candidates for these tiers.")}
+    ${pagerHtml("/crosswalk", page, Math.max(1, Math.ceil(total / PAGE_SIZE)), Object.fromEntries(qsBase))}`;
+  res.type("html").send(layout("DB crosswalk", body));
+});
+
 app.get("/map", (_req, res) => {
   const sidePath = join(__dirname, "data", "map_screen", "map_screen_spearman.json");
   let report = null;
@@ -1835,6 +1954,8 @@ const DOWNLOAD_TSV_COLS = [
   "cross_crop_family",
   "keywords",
   "llps_gold",
+  "ext_llps_dbs",
+  "ext_llps_unique",
 ];
 
 function downloadFilters(query) {
@@ -1846,6 +1967,42 @@ function downloadFilters(query) {
     evidence: String(query.evidence || "").trim(),
     limit: Number(query.limit || 0) || 0,
   };
+}
+
+const EXT_LLPS_BADGE = {
+  phasepro: { label: "PhaSePro", title: "Present in PhaSePro (curated LLPS drivers)" },
+  llpsdb: { label: "LLPSDB", title: "Present in LLPSDB v2 unambiguous PS proteins" },
+  drllps: {
+    label: "DrLLPS",
+    title: "Present in DrLLPS (experimental UniProt or Vitis ortholog-expansion gene)",
+  },
+  cdcode: { label: "CD-CODE", title: "Present in CD-CODE protein dump (CC BY-NC)" },
+};
+
+function extLlpsBadgesHtml(p, { compact = false } = {}) {
+  const dbs = Array.isArray(p.ext_llps_dbs)
+    ? p.ext_llps_dbs
+    : String(p.ext_llps_dbs || "")
+        .split(";")
+        .map((s) => s.trim())
+        .filter(Boolean);
+  const parts = [];
+  if (Number(p.ext_llps_unique) === 1) {
+    parts.push(
+      `<span class="badge unique" title="Not found in PhaSePro / LLPSDB / DrLLPS / CD-CODE under deposited match rules">unique</span>`
+    );
+  }
+  for (const db of dbs) {
+    const meta = EXT_LLPS_BADGE[db];
+    if (!meta) continue;
+    const cls = `badge ext ${esc(db)}`;
+    parts.push(
+      `<span class="${cls}" title="${esc(meta.title)}">${esc(
+        compact ? meta.label.replace("PhaSePro", "PhaSe").slice(0, 8) : meta.label
+      )}</span>`
+    );
+  }
+  return parts.length ? ` ${parts.join("")}` : "";
 }
 
 function rowsToTsv(rows) {
@@ -1922,9 +2079,10 @@ app.get("/download", (req, res) => {
   const body = `
     <div class="card">
       <h2>Bulk download</h2>
-      <p class="muted">Filter the scored proteome by tier, cross-crop family, keyword, curated LLPS evidence, or free-text,
+      <p class="muted">Filter the scored proteome by tier, cross-crop family, keyword, curated LLPS evidence,
+      unique-to-us / external-DB overlap, or free-text,
       then download TSV (score columns) or FASTA (sequences from UP000009183).
-      API: <span class="mono">GET /api/download?tier=A&amp;evidence=llps&amp;format=tsv|fasta</span></p>
+      API: <span class="mono">GET /api/download?tier=B&amp;evidence=unique&amp;format=tsv|fasta</span></p>
       <form method="get" action="/download" class="inline">
         <label>Tier
           <select name="tier">
@@ -1941,6 +2099,12 @@ app.get("/download", (req, res) => {
           <select name="evidence">
             <option value="">Any</option>
             <option value="llps" ${filters.evidence === "llps" ? "selected" : ""}>LLPS gold join</option>
+            <option value="unique" ${filters.evidence === "unique" ? "selected" : ""}>Unique to GrapeCondensatome</option>
+            <option value="shared" ${filters.evidence === "shared" ? "selected" : ""}>In external LLPS DB</option>
+            <option value="phasepro" ${filters.evidence === "phasepro" ? "selected" : ""}>PhaSePro</option>
+            <option value="llpsdb" ${filters.evidence === "llpsdb" ? "selected" : ""}>LLPSDB</option>
+            <option value="drllps" ${filters.evidence === "drllps" ? "selected" : ""}>DrLLPS</option>
+            <option value="cdcode" ${filters.evidence === "cdcode" ? "selected" : ""}>CD-CODE</option>
           </select>
         </label>
         <label>Family <input name="family" value="${esc(filters.family)}" placeholder="MAP65"/></label>
