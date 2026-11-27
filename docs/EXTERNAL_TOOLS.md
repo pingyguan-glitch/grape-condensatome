@@ -62,6 +62,23 @@ Honest limit: OrthoDB eukaryote-level groups can be broad (e.g. large enzyme
 families). Curated hooks seed high-value families even when xref coverage is thin
 (F6HET4 itself often lacks an OrthoDB xref in UniProt).
 
+## Second-crop condensatome (soybean / tomato)
+
+```bash
+# Soybean Glycine max UP000008827 (default; full proteome ~71k sequences, ~3–5 min)
+python3 scripts/score_second_crop_proteome.py --crop soybean
+python3 scripts/enrich_second_crop_orthologs.py --crop soybean
+
+# Optional tomato Solanum lycopersicum UP000004994
+python3 scripts/score_second_crop_proteome.py --crop tomato
+python3 scripts/enrich_second_crop_orthologs.py --crop tomato
+```
+
+Deposits under `data/second_crop/` (TSV.gz + slim SQLite). Grape atlas gains thin
+`ortholog_gma*` (or `ortholog_sly*`) columns only — keeps `grape_condensatome.sqlite`
+under GitHub’s ~100 MB limit. UI: `/hooks` soybean panel. Uses grape-trained PlantLLPS
+v13 with composition-proxy disorder; tiers recalibrated per crop proteome.
+
 ## Side-by-side comparators (PSAP / LLPhyScore / PLAAC)
 
 ```bash

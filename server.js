@@ -10,6 +10,7 @@ import { createReadStream, existsSync, readFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DatabaseSync } from "node:sqlite";
 import {
   openDb,
   getMeta,
@@ -37,6 +38,9 @@ const MODEL_PATH =
   process.env.GRAPE_MODEL || join(__dirname, "data", "model_formal.json");
 const FASTA_PATH =
   process.env.GRAPE_FASTA || join(__dirname, "data", "UP000009183.fasta.gz");
+const SOY_DB_PATH =
+  process.env.SOY_DB ||
+  join(__dirname, "data", "second_crop", "soybean_condensatome.sqlite");
 const APP_VERSION = (() => {
   try {
     return readFileSync(join(__dirname, "VERSION"), "utf8").trim() || "0.0.0";
@@ -52,6 +56,14 @@ if (!existsSync(DB_PATH)) {
 
 const db = openDb(DB_PATH);
 const model = loadModel(MODEL_PATH);
+/** @type {DatabaseSync | null} */
+let soyDb = null;
+if (existsSync(SOY_DB_PATH)) {
+  soyDb = new DatabaseSync(SOY_DB_PATH, { readOnly: true });
+  console.log(`Second-crop SQLite: ${SOY_DB_PATH}`);
+} else {
+  console.warn(`Soybean condensatome DB not found (${SOY_DB_PATH}); /hooks crop panel limited.`);
+}
 /** @type {Map<string, string>} */
 const seqById = new Map();
 const app = express();
@@ -186,8 +198,9 @@ function layout(title, body, query = "") {
   <div class="banner">
     PlantLLPS hybrid model (v13). Disorder: composition proxy by default; metapredict + AlphaFold pLDDT
     joined where computed. Curated LLPS gold badges + reconstructed MAP-screen ρ on /gold and /map.
-    Orthologs (Ath/rice via OrthoDB), STRING Vitis neighborhoods (/network),
-    and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC). Treat ranks as hypotheses.
+    Orthologs (Ath/rice + soybean via OrthoDB), STRING Vitis neighborhoods (/network),
+    and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
+    Second-crop soybean condensatome on /hooks. Treat ranks as hypotheses.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -216,6 +229,10 @@ function proteinTable(rows, empty = "No proteins found.") {
           ? Number(r.expr_mean_tpm).toFixed(2)
           : "—";
       const ath = esc(r.ortholog_ath_gene || r.ortholog_ath || "—");
+      const gma = esc(r.ortholog_gma_gene || r.ortholog_gma || "—");
+      const gmaTier = r.ortholog_gma_tier
+        ? `<span class="tier ${esc(r.ortholog_gma_tier)}">${esc(r.ortholog_gma_tier)}</span>`
+        : "—";
       const gold =
         Number(r.llps_gold) > 0
           ? `<span class="badge gold" title="Curated LLPS evidence join">LLPS</span>`
@@ -232,6 +249,7 @@ function proteinTable(rows, empty = "No proteins found.") {
         <td>${fmtScore(r.af_frac_very_low)}</td>
         <td>${fmtScore(r.plaac_nllr_approx)}</td>
         <td class="mono">${ath}</td>
+        <td class="mono">${gma} ${gmaTier}</td>
         <td>${esc(tpm)}</td>
         <td class="muted">${pname}</td>
       </tr>`;
@@ -242,7 +260,7 @@ function proteinTable(rows, empty = "No proteins found.") {
       <thead><tr>
         <th>Protein</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th><th>Percentile</th>
         <th>MAP65-like</th><th>Disorder proxy</th><th>metapredict</th><th>AF pLDDT&lt;50</th>
-        <th>PLAAC≈</th><th>Ath ortholog</th><th>Mean TPM</th><th>Protein name</th>
+        <th>PLAAC≈</th><th>Ath ortholog</th><th>Soybean ortholog</th><th>Mean TPM</th><th>Protein name</th>
       </tr></thead>
       <tbody>${cells}</tbody>
     </table>
@@ -261,6 +279,30 @@ function pager(base, page, total) {
   </div>`;
 }
 
+function secondCropMeta() {
+  const meta = getMeta(db);
+  let join = null;
+  try {
+    join = meta.second_crop_soybean ? JSON.parse(meta.second_crop_soybean) : null;
+  } catch {
+    join = null;
+  }
+  let soy = null;
+  if (soyDb) {
+    try {
+      const n = soyDb.prepare("SELECT COUNT(*) AS n FROM proteins").get().n;
+      const tiers = {};
+      for (const r of soyDb.prepare("SELECT tier, COUNT(*) AS c FROM proteins GROUP BY tier").all()) {
+        tiers[r.tier] = r.c;
+      }
+      soy = { path: SOY_DB_PATH, n_proteins: n, tiers };
+    } catch {
+      soy = { path: SOY_DB_PATH, error: "unreadable" };
+    }
+  }
+  return { join, soy };
+}
+
 app.get("/api/health", (_req, res) => {
   const sn = stringNetworkMeta(db);
   res.json({
@@ -268,6 +310,7 @@ app.get("/api/health", (_req, res) => {
     version: APP_VERSION,
     db: DB_PATH,
     n: summarize(db).n_proteins,
+    second_crop: secondCropMeta(),
     string: sn.version
       ? {
           version: sn.version,
@@ -508,6 +551,23 @@ app.get("/protein/:id", (req, res) => {
          ${
            p.ortholog_osa
              ? `· <a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.ortholog_osa)}/entry" target="_blank" rel="noopener">UniProt</a>`
+             : ""
+         }</p>
+      <p>Soybean (<em>Glycine max</em>): <span class="mono">${esc(p.ortholog_gma || "—")}</span>
+         ${p.ortholog_gma_gene ? `(${esc(p.ortholog_gma_gene)})` : ""}
+         ${
+           p.ortholog_gma_tier
+             ? `· <span class="tier ${esc(p.ortholog_gma_tier)}">${esc(p.ortholog_gma_tier)}</span>`
+             : ""
+         }
+         ${
+           p.ortholog_gma_score != null && Number.isFinite(Number(p.ortholog_gma_score))
+             ? `· score ${fmtScore(p.ortholog_gma_score)}`
+             : ""
+         }
+         ${
+           p.ortholog_gma
+             ? `· <a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.ortholog_gma)}/entry" target="_blank" rel="noopener">UniProt</a>`
              : ""
          }</p>
     </div>
@@ -1032,7 +1092,7 @@ app.get("/download", (req, res) => {
   res.type("html").send(layout("Download", body, filters.q || filters.family || filters.keyword));
 });
 
-app.get("/hooks", (_req, res) => {
+app.get("/hooks", (req, res) => {
   const meta = getMeta(db);
   let hooks = { hooks: [] };
   try {
@@ -1040,10 +1100,18 @@ app.get("/hooks", (_req, res) => {
   } catch {
     /* ignore */
   }
+  let soyJoin = null;
+  try {
+    soyJoin = meta.second_crop_soybean ? JSON.parse(meta.second_crop_soybean) : null;
+  } catch {
+    soyJoin = null;
+  }
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const soyTier = String(req.query.soy_tier || "").trim().toUpperCase();
   const dbHooks = db
     .prepare(
       `SELECT protein_id, gene_name, tier, score, cross_crop_family, ortholog_ath, ortholog_ath_gene,
-              ortholog_osa, ortholog_osa_gene
+              ortholog_osa, ortholog_osa_gene, ortholog_gma, ortholog_gma_gene, ortholog_gma_score, ortholog_gma_tier
        FROM proteins WHERE cross_crop_family IS NOT NULL AND cross_crop_family != ''
        ORDER BY cross_crop_family, score DESC`
     )
@@ -1053,21 +1121,99 @@ app.get("/hooks", (_req, res) => {
       const g = (h.grape || []).map((x) => `<a class="mono" href="/protein/${esc(x)}">${esc(x)}</a>`).join(", ") || "—";
       const a = (h.arabidopsis || []).map((x) => esc(x)).join(", ") || "—";
       const r = (h.rice || []).map((x) => esc(x)).join(", ") || "—";
+      const soy = ((h.other_crops || {}).soybean || [])
+        .map((x) => `<span class="mono">${esc(x)}</span>`)
+        .join(", ") || "—";
       return `<div class="card" style="margin-bottom:0.75rem">
         <h3>${esc(h.family)}</h3>
         <p class="muted">${esc(h.note || "")}</p>
         <p>Grape: ${g}</p>
         <p>Arabidopsis: <span class="mono">${a}</span></p>
         <p>Rice: <span class="mono">${r}</span></p>
+        <p>Soybean: ${soy}</p>
       </div>`;
     })
     .join("");
+
+  let soyPanel = `<div class="card"><p class="muted">Soybean condensatome SQLite not loaded — run
+    <span class="mono">scripts/score_second_crop_proteome.py</span>.</p></div>`;
+  if (soyDb) {
+    const clauses = [];
+    const params = [];
+    if (["A", "B", "C", "D"].includes(soyTier)) {
+      clauses.push("tier = ?");
+      params.push(soyTier);
+    }
+    const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+    const total = soyDb.prepare(`SELECT COUNT(*) AS n FROM proteins ${where}`).get(...params).n;
+    const offset = (page - 1) * PAGE_SIZE;
+    const soyRows = soyDb
+      .prepare(
+        `SELECT protein_id, gene_name, protein_name, score, tier, percentile, grape_ortholog, grape_ortholog_gene
+         FROM proteins ${where} ORDER BY score DESC LIMIT ? OFFSET ?`
+      )
+      .all(...params, PAGE_SIZE, offset);
+    const tierCounts = {};
+    for (const r of soyDb.prepare("SELECT tier, COUNT(*) AS c FROM proteins GROUP BY tier").all()) {
+      tierCounts[r.tier] = r.c;
+    }
+    const soyTable = soyRows
+      .map((r) => {
+        const grape = r.grape_ortholog
+          ? `<a class="mono" href="/protein/${esc(r.grape_ortholog)}">${esc(r.grape_ortholog)}</a>
+             ${r.grape_ortholog_gene ? `(${esc(r.grape_ortholog_gene)})` : ""}`
+          : "—";
+        return `<tr>
+          <td class="mono"><a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(r.protein_id)}/entry" target="_blank" rel="noopener">${esc(r.protein_id)}</a></td>
+          <td class="mono">${esc(r.gene_name || "—")}</td>
+          <td><span class="tier ${esc(r.tier)}">${esc(r.tier)}</span></td>
+          <td>${fmtScore(r.score)}</td>
+          <td>${fmtPct(r.percentile)}</td>
+          <td>${grape}</td>
+          <td class="muted">${esc((r.protein_name || "").slice(0, 72) || "—")}</td>
+        </tr>`;
+      })
+      .join("");
+    const base = soyTier ? `/hooks?soy_tier=${encodeURIComponent(soyTier)}` : "/hooks";
+    soyPanel = `
+      <div class="card">
+        <h2>Soybean condensatome <span class="mono">UP000008827</span></h2>
+        <p class="muted">PlantLLPS v13 (composition-proxy disorder) scored on <em>Glycine max</em> reference
+        proteome; tiers recalibrated on this proteome. Not a soybean-retrained model.
+        OrthoDB join to grape: <strong>${esc(soyJoin?.n_matched ?? "—")}</strong> / ${esc(soyJoin?.n_grape ?? "—")}
+        (${esc(soyJoin?.n_matched_with_crop_score ?? "—")} with crop scores).</p>
+        <p>Tiers:
+          ${["A", "B", "C", "D"]
+            .map(
+              (t) =>
+                `<a href="/hooks?soy_tier=${t}">${t}=${esc(tierCounts[t] || 0)}</a>`
+            )
+            .join(" · ")}
+          · <a href="/hooks">all</a>
+          · n=${esc(total)}${soyTier ? ` (filter Tier ${esc(soyTier)})` : ""}
+        </p>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Soybean ID</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th><th>Percentile</th>
+            <th>Grape ortholog</th><th>Protein name</th>
+          </tr></thead>
+          <tbody>${soyTable || `<tr><td colspan="7" class="muted">No rows</td></tr>`}</tbody>
+        </table>
+      </div>
+      ${pager(base, page, total)}`;
+  }
+
   const body = `
     <div class="card"><h2>Cross-crop condensatome hooks</h2>
-    <p class="muted">Curated family anchors plus OrthoDB-joined Ath/rice columns on proteome rows.</p></div>
+    <p class="muted">Curated family anchors plus OrthoDB-joined Ath/rice/<strong>soybean</strong> columns on grape rows.
+    Full second-crop atlas deposited under <span class="mono">data/second_crop/</span>.</p></div>
     ${hookCards || `<p class="muted">No hooks in meta — load data/cross_crop_hooks.json via enrich_orthologs.py</p>`}
-    <h2 style="font-family:var(--font-display)">Proteome rows with family tag</h2>
-    ${proteinTable(dbHooks.map((r) => getProtein(db, r.protein_id)).filter(Boolean))}`;
+    <h2 style="font-family:var(--font-display)">Grape proteome rows with family tag</h2>
+    ${proteinTable(dbHooks.map((r) => getProtein(db, r.protein_id)).filter(Boolean))}
+    <h2 style="font-family:var(--font-display);margin-top:1.5rem">Second crop · soybean</h2>
+    ${soyPanel}`;
   res.type("html").send(layout("Cross-crop", body));
 });
 
