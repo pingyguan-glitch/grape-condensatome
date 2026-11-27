@@ -1,0 +1,215 @@
+{
+  "version": "1.2.0",
+  "layer": "stress_condensatome_modules",
+  "accessions": [
+    "E-GEOD-67932",
+    "E-MTAB-4324"
+  ],
+  "n_enrichment_tests": 18,
+  "n_enrichment_fdr_lt_0.05": 1,
+  "n_modules": 42,
+  "n_seed_neighborhoods": 1120,
+  "n_gene_sets": 1198,
+  "n_profiled_tier_ab": 3857,
+  "n_seed_partner_links_r_ge_thr": 307885,
+  "parameters": {
+    "p_threshold": 0.05,
+    "lfc_threshold": 1.0,
+    "r_threshold": 0.85,
+    "min_module_size": 5,
+    "min_contrasts": 4,
+    "top_n": 15,
+    "seeds": "A",
+    "n_background": 25810,
+    "n_tier_ab_background": 3857,
+    "background_tier_ab_rate": 0.149438,
+    "n_profiled_tier_ab": 3857,
+    "n_seed_partner_links_r_ge_thr": 307885,
+    "n_modules": 42,
+    "n_gene_sets": 1198,
+    "module_definition": "Tier A\u222aB proteins sharing the same signed significant DE pattern across contrasts (min size 5)",
+    "contrasts": [
+      {
+        "accession": "E-GEOD-67932",
+        "contrast_id": "g1_g2",
+        "contrast_label": "control; control vs stage 1; Botrytis cinerea"
+      },
+      {
+        "accession": "E-GEOD-67932",
+        "contrast_id": "g1_g3",
+        "contrast_label": "control; control vs stage 2; Botrytis cinerea"
+      },
+      {
+        "accession": "E-GEOD-67932",
+        "contrast_id": "g1_g4",
+        "contrast_label": "control; control vs stage 3; Botrytis cinerea"
+      },
+      {
+        "accession": "E-MTAB-4324",
+        "contrast_id": "g4_g1",
+        "contrast_label": "none vs Plasmopara viticola"
+      },
+      {
+        "accession": "E-MTAB-4324",
+        "contrast_id": "g4_g2",
+        "contrast_label": "none vs Trichoderma harzianum"
+      },
+      {
+        "accession": "E-MTAB-4324",
+        "contrast_id": "g4_g3",
+        "contrast_label": "none vs Trichoderma harzianum and Plasmopara viticola"
+      }
+    ],
+    "accessions": [
+      "E-GEOD-67932",
+      "E-MTAB-4324"
+    ]
+  },
+  "paths": {
+    "de_enrichment": "data/stress_modules/de_enrichment.tsv",
+    "coexpression_modules": "data/stress_modules/coexpression_modules.tsv",
+    "seed_neighborhoods": "data/stress_modules/seed_neighborhoods.tsv.gz",
+    "module_members": "data/stress_modules/module_members.tsv.gz",
+    "gene_sets_gmt": "data/stress_modules/gene_sets.gmt.gz",
+    "ui_tables": "data/stress_modules/ui_tables.json"
+  },
+  "top_enrichment": [
+    {
+      "accession": "E-GEOD-67932",
+      "contrast_id": "g1_g4",
+      "contrast_label": "control; control vs stage 3; Botrytis cinerea",
+      "direction": "down",
+      "n_background": 25810,
+      "n_tier_ab_background": 3857,
+      "background_tier_ab_rate": 0.149438,
+      "n_de": 2825,
+      "n_de_tier_ab": 493,
+      "frac_de_tier_ab": 0.174513,
+      "enrichment_fold": 1.167796,
+      "hypergeom_pvalue": 5.6e-05,
+      "gene_set_id": "DE_E-GEOD-67932_g1_g4_down_TierAB",
+      "full_de_set_id": "DE_E-GEOD-67932_g1_g4_down",
+      "bh_fdr": 0.001
+    },
+    {
+      "accession": "E-GEOD-67932",
+      "contrast_id": "g1_g3",
+      "contrast_label": "control; control vs stage 2; Botrytis cinerea",
+      "direction": "down",
+      "n_background": 25810,
+      "n_tier_ab_background": 3857,
+      "background_tier_ab_rate": 0.149438,
+      "n_de": 2914,
+      "n_de_tier_ab": 474,
+      "frac_de_tier_ab": 0.162663,
+      "enrichment_fold": 1.088497,
+      "hypergeom_pvalue": 0.018663,
+      "gene_set_id": "DE_E-GEOD-67932_g1_g3_down_TierAB",
+      "full_de_set_id": "DE_E-GEOD-67932_g1_g3_down",
+      "bh_fdr": 0.16797
+    },
+    {
+      "accession": "E-GEOD-67932",
+      "contrast_id": "g1_g4",
+      "contrast_label": "control; control vs stage 3; Botrytis cinerea",
+      "direction": "any",
+      "n_background": 25810,
+      "n_tier_ab_background": 3857,
+      "background_tier_ab_rate": 0.149438,
+      "n_de": 5198,
+      "n_de_tier_ab": 806,
+      "frac_de_tier_ab": 0.15506,
+      "enrichment_fold": 1.037617,
+      "hypergeom_pvalue": 0.105896,
+      "gene_set_id": "DE_E-GEOD-67932_g1_g4_any_TierAB",
+      "full_de_set_id": "DE_E-GEOD-67932_g1_g4_any",
+      "bh_fdr": 0.635375
+    },
+    {
+      "accession": "E-MTAB-4324",
+      "contrast_id": "g4_g3",
+      "contrast_label": "none vs Trichoderma harzianum and Plasmopara viticola",
+      "direction": "down",
+      "n_background": 25810,
+      "n_tier_ab_background": 3857,
+      "background_tier_ab_rate": 0.149438,
+      "n_de": 2396,
+      "n_de_tier_ab": 375,
+      "frac_de_tier_ab": 0.156511,
+      "enrichment_fold": 1.047328,
+      "hypergeom_pvalue": 0.161182,
+      "gene_set_id": "DE_E-MTAB-4324_g4_g3_down_TierAB",
+      "full_de_set_id": "DE_E-MTAB-4324_g4_g3_down",
+      "bh_fdr": 0.72532
+    },
+    {
+      "accession": "E-MTAB-4324",
+      "contrast_id": "g4_g2",
+      "contrast_label": "none vs Trichoderma harzianum",
+      "direction": "down",
+      "n_background": 25810,
+      "n_tier_ab_background": 3857,
+      "background_tier_ab_rate": 0.149438,
+      "n_de": 801,
+      "n_de_tier_ab": 126,
+      "frac_de_tier_ab": 0.157303,
+      "enrichment_fold": 1.052632,
+      "hypergeom_pvalue": 0.2772,
+      "gene_set_id": "DE_E-MTAB-4324_g4_g2_down_TierAB",
+      "full_de_set_id": "DE_E-MTAB-4324_g4_g2_down",
+      "bh_fdr": 0.996007
+    },
+    {
+      "accession": "E-MTAB-4324",
+      "contrast_id": "g4_g1",
+      "contrast_label": "none vs Plasmopara viticola",
+      "direction": "down",
+      "n_background": 25810,
+      "n_tier_ab_background": 3857,
+      "background_tier_ab_rate": 0.149438,
+      "n_de": 1957,
+      "n_de_tier_ab": 291,
+      "frac_de_tier_ab": 0.148697,
+      "enrichment_fold": 0.99504,
+      "hypergeom_pvalue": 0.548631,
+      "gene_set_id": "DE_E-MTAB-4324_g4_g1_down_TierAB",
+      "full_de_set_id": "DE_E-MTAB-4324_g4_g1_down",
+      "bh_fdr": 0.996007
+    },
+    {
+      "accession": "E-GEOD-67932",
+      "contrast_id": "g1_g3",
+      "contrast_label": "control; control vs stage 2; Botrytis cinerea",
+      "direction": "any",
+      "n_background": 25810,
+      "n_tier_ab_background": 3857,
+      "background_tier_ab_rate": 0.149438,
+      "n_de": 5651,
+      "n_de_tier_ab": 842,
+      "frac_de_tier_ab": 0.149,
+      "enrichment_fold": 0.997069,
+      "hypergeom_pvalue": 0.548899,
+      "gene_set_id": "DE_E-GEOD-67932_g1_g3_any_TierAB",
+      "full_de_set_id": "DE_E-GEOD-67932_g1_g3_any",
+      "bh_fdr": 0.996007
+    },
+    {
+      "accession": "E-MTAB-4324",
+      "contrast_id": "g4_g2",
+      "contrast_label": "none vs Trichoderma harzianum",
+      "direction": "any",
+      "n_background": 25810,
+      "n_tier_ab_background": 3857,
+      "background_tier_ab_rate": 0.149438,
+      "n_de": 1186,
+      "n_de_tier_ab": 175,
+      "frac_de_tier_ab": 0.147555,
+      "enrichment_fold": 0.987397,
+      "hypergeom_pvalue": 0.586878,
+      "gene_set_id": "DE_E-MTAB-4324_g4_g2_any_TierAB",
+      "full_de_set_id": "DE_E-MTAB-4324_g4_g2_any",
+      "bh_fdr": 0.996007
+    }
+  ],
+  "honesty": "DE call rule matches stress join (p<0.05, |log2FC|\u22651). Hypergeometric enrichment of Tier A\u222aB among DE genes is descriptive. Response-pattern modules group Tier A\u222aB proteins by shared signed significant DE calls across Atlas contrasts; seed neighborhoods use Pearson r on the same short log2FC vectors \u2014 not a dedicated multi-condition coexpression atlas. Berry TPM E-MTAB-8758 has only 6 assay groups and is not the primary module signal. Not WGCNA."
+}
