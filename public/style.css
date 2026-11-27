@@ -171,6 +171,30 @@ tr:hover td { background: #f7f3ea; }
   .detail-hero { grid-template-columns: 1fr; }
 }
 
+.track { margin: 0.65rem 0 0.85rem; }
+.track-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.track-bar {
+  position: relative;
+  height: 1.05rem;
+  background: linear-gradient(90deg, #ebe4d8, #f7f2e8);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.track-seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  opacity: 0.9;
+}
+.track-seg.tone-domain { background: #2f5d3a; }
+.track-seg.tone-idr { background: #b86b2a; }
+
 .site-footer {
   margin-top: 2.5rem;
   padding-top: 1rem;
