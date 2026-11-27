@@ -1,5 +1,16 @@
 # Release notes
 
+## v1.3.0 (2026-11-27)
+
+NAR+ **fair comparison suite**: leakage-controlled PlantLLPS vs native PSAP / LLPhyScore / PLAAC-approx / ProX-style feature baseline on the same gold, family hold-out, and expanded cross-species panels.
+
+- `scripts/eval_fair_benchmark.py` + `plantllps/prox_features.py`
+- Deposits: `data/benchmarks/fair_comparison_metrics.json`, `fair_comparison_scores.tsv`, `fair_comparison_family.tsv`, `train_v13_oob_comparator_scores.tsv`, `FAIR_COMPARISON_README.md`
+- Leaderboard: [`docs/BENCHMARK_LEADERBOARD.md`](./docs/BENCHMARK_LEADERBOARD.md)
+- Headline (fair): gold leave-out PlantLLPS hybrid ≈ **0.959** (production in-sample ≈ 0.990 caveated); family-hold-out mean hybrid ≈ **0.833**; ProX-style family mean ≈ **0.836** but gold leave-out ≈ **0.467**; OOB LLPhyScore gold ≈ **0.769**, PSAP ≈ **0.718**
+- Cross-species expansion: Ath→cereal (rice+maize, n=9), Ath→non_ath_crop (n=38), non_ath_crop→Ath / cereal→Ath; Ath→maize / Ath→soybean skipped (insufficient labels)
+- Honesty: ProX/PU-style ≠ published Plant PS proteins LightGBM/PU; PLAAC-approx ≠ Java PLAAC; shared negatives in family protocol documented
+
 ## v1.2.0 (2026-11-27)
 
 NAR+ omics layer: condensatome × stress DE enrichment + high-tier response modules.

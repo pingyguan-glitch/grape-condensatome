@@ -2,13 +2,13 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.2.0-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.3.0-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.2.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.3.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
 
 > Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
@@ -26,7 +26,8 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Proteome SQLite | `data/grape_condensatome.sqlite` | 25 972 scored rows + UniProt + Expression Atlas |
 | Proteome TSV | Zenodo bundle / local export | flat table (gitignored; rebuild from SQLite or `export_zenodo_bundle.py`) |
 | Node web UI | `server.js` + `lib/` + `public/` | Express + `node:sqlite` (Node ≥22) |
-| Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + family hold-out / transfer + **feature ablation** |
+| Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + family hold-out / transfer + **feature ablation** + **fair NAR+ suite** |
+| Fair leaderboard | [`docs/BENCHMARK_LEADERBOARD.md`](./docs/BENCHMARK_LEADERBOARD.md) | leakage-controlled PlantLLPS vs PSAP / LLPhy / PLAAC / ProX-style |
 | Experimental models | `data/experimental/` | optional metapredict / AF-pLDDT disorder retrains (**not** production default) |
 | Curated LLPS gold | `data/curated/` | experimentally anchored overlay + SQLite/UI badge |
 | MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
@@ -48,7 +49,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - **STRING** Vitis PPI neighborhoods + Tier A∪B enrichment via `scripts/enrich_string_neighborhood.py` (UI `/network`); combined scores are **not** LLPS evidence.
 - **Stress condensatome modules** via `scripts/enrich_stress_condensatome_modules.py` (UI `/modules`): DE × Tier A∪B enrichment for E-MTAB-4324 / E-GEOD-67932 + response-pattern modules + deposited gene sets (`data/stress_modules/`).
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
-- Gold-standard PlantLLPS AUCs are **partially in-sample** (IDs overlap the training corpus). Prefer **family hold-out / Ath↔rice transfer** metrics in `data/benchmarks/family_holdout_metrics.json`. LLPhyScore / PSAP remain out-of-the-box baselines on the 13+15 gold set.
+- Gold-standard PlantLLPS AUCs from the production model are **partially in-sample** (IDs overlap the training corpus). Prefer the **leakage-controlled fair suite** (`scripts/eval_fair_benchmark.py` → `data/benchmarks/fair_comparison_metrics.json`, leaderboard [`docs/BENCHMARK_LEADERBOARD.md`](./docs/BENCHMARK_LEADERBOARD.md)): leave-gold-out PlantLLPS hybrid ≈ **0.959**, family-hold-out mean ≈ **0.833**, vs OOB LLPhyScore ≈ **0.769** / PSAP ≈ **0.718** on gold. ProX/PU-style is a feature-family logistic baseline (not the published Plant PS proteins model).
 - **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
 - Companion-cited MAP-screen ρ = **0.368** used the unpublished Supplemental Data S1 PSAP table. This repo deposits an **annotation reconstruction** (`data/map_screen/`) and recomputes ρ vs **native proteome PSAP** (annotation set ≈ 0.20) — not a byte-for-byte replication of 0.368.
 
@@ -147,14 +148,18 @@ Public hosting: **https://grape-condensatome.apps.grok.bot** (see [`docs/HOSTING
 
 Data/model deposit for Zenodo: [`docs/ZENODO.md`](./docs/ZENODO.md) (`python3 scripts/export_zenodo_bundle.py [--parquet]`). Archives land under gitignored `dist/` — upload to Zenodo; paste the real DOI into `CITATION.cff` after publish — do not invent one.
 
-## Benchmarks vs PSAP / LLPhyScore
+## Benchmarks vs PSAP / LLPhyScore / PLAAC / ProX-style
 
 ```bash
+# Fair leakage-controlled suite (preferred for NAR+ claims)
+export PSAP_PYTHON=/path/to/psap39/bin/python
 export LLPHYSCORE_HOME=/path/to/LLPhyScore/standalone_package/LLPhyScore
 export LLPHYSCORE_PYTHON=/path/to/llphy39/bin/python
-python3 scripts/compare_gold_standard.py
+python3 scripts/eval_fair_benchmark.py
+# → data/benchmarks/fair_comparison_metrics.json + docs/BENCHMARK_LEADERBOARD.md
 
-export PSAP_PYTHON=/path/to/psap39/bin/python
+# Legacy in-sample gold QA + native OOB baselines
+python3 scripts/compare_gold_standard.py
 python3 scripts/run_psap_gold.py
 # → data/benchmarks/gold_standard_comparison.json
 
@@ -166,9 +171,12 @@ python3 scripts/enrich_comparator_scores.py
 
 | Predictor | Gold AUC (13+15) | Notes |
 |-----------|----------------:|-------|
-| PlantLLPS hybrid | ≈ 0.990 | **In-sample** — do not claim as transfer |
-| LLPhyScore | ≈ 0.769 | Runnable; companion cited 0.774 |
-| PSAP (native) | ≈ 0.718 | Runnable in py3.9 env; companion cited 0.692 |
+| PlantLLPS hybrid (leave-gold-out) | ≈ 0.959 | **Fair** — `eval_fair_benchmark.py` |
+| PlantLLPS hybrid (production) | ≈ 0.990 | **In-sample** — do not claim as transfer |
+| LLPhyScore | ≈ 0.769 | OOB; companion cited 0.774 |
+| PSAP (native) | ≈ 0.718 | OOB in py3.9 env; companion cited 0.692 |
+| ProX/PU-style (leave-gold-out) | ≈ 0.467 | Feature-family logistic; not published PU |
+| PLAAC-approx | ≈ 0.497 | Stdlib approx; not Java PLAAC |
 
 ## Expression Atlas
 
@@ -183,7 +191,10 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 **`v0.3.1`** = metapredict wiring, native PSAP gold AUC, Expression Atlas joins, hosting docs.  
 **`v0.4.0`** = AlphaFold pLDDT joins, batched proteome metapredict, Ath/rice OrthoDB + cross-crop hooks, side-by-side PSAP/LLPhyScore/PLAAC-approx UI.  
 **`v0.5.0`** = full-proteome **native** PSAP + LLPhyScore (batched/checkpointed) joined into SQLite + `/compare`.  
-**`v0.6.0`** = Pfam/InterPro domains + IDR tracks, bulk download API, Ensembl Plants link-outs.
+**`v0.6.0`** = Pfam/InterPro domains + IDR tracks, bulk download API, Ensembl Plants link-outs.  
+**`v1.1.1`** = feature ablation + experimental disorder retrains.  
+**`v1.2.0`** = stress DE × condensatome modules (parallel PR).
+**`v1.3.0`** = fair NAR+ benchmark suite + leaderboard (leave-gold-out / family / expanded species).
 
 ## Still open (not claimed done)
 
