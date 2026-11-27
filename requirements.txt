@@ -13,3 +13,6 @@
 #
 # LLPhyScore standalone 20220627:
 #   https://github.com/julie-forman-kay-lab/LLPhyScore
+#
+# Zenodo Parquet export (scripts/export_zenodo_bundle.py --parquet):
+#   pip install 'numpy>=2' pyarrow

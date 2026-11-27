@@ -8,11 +8,11 @@ It is **not** a static site: GitHub Pages cannot serve the SQLite-backed API/UI.
 | Mode | Status |
 |------|--------|
 | **Local server** | Supported — `npm install && npm start` → `http://127.0.0.1:8765/` |
-| **Confirmed public URL** | **None.** Do not invent or paste placeholder URLs. |
-| Cursor **publish-app** | May have been *proposed* in a Cloud Agent run; only live after the owner confirms the publish dialog + terms. Until then, treat hosting as **local-only**. |
-| Railway / Render / Fly | Documented below; not deployed from this repo unless you deploy them. |
+| **Confirmed public URL** | **None yet.** Do not invent or paste placeholder hostnames as live. |
+| Cursor **publish-app** | Propose from a Cloud Agent after commit+push + local preview; only live after the owner confirms the publish dialog. |
+| Railway / Render / Fly | Configs in-repo (`railway.toml`, `render.yaml`, `fly.toml`, `Dockerfile`). Deploy requires your account login — see steps below. |
 
-When a real public URL exists, record it here (and in the project store honesty table) in the same PR that confirms the deploy.
+When a real public HTTPS URL exists, replace the table row above and the README badges in the same PR. Health check path: `GET /api/health`.
 
 ## Local preview (default)
 
@@ -22,52 +22,62 @@ npm install && npm start
 # Browse /download or call:
 #   curl 'http://127.0.0.1:8765/api/download?tier=A&format=tsv' -o tierA.tsv
 #   curl 'http://127.0.0.1:8765/api/download?family=MAP65&format=fasta' -o map65.fasta
+#   curl -s http://127.0.0.1:8765/api/health | head
 ```
 
 Runtime needs `data/UP000009183.fasta.gz` for FASTA downloads (indexed at startup).
-Ship `data/grape_condensatome.sqlite` (~100 MiB at v1.1.0) with the app.
+Ship `data/grape_condensatome.sqlite` (~100 MiB at v1.1.x) with the app.
 
 ## Cursor publish-app
 
 From a Cloud Agent / Cursor environment with this repo committed **and pushed**:
 
 1. Start the preview: `npm install && npm start` → `http://127.0.0.1:8765/`
-2. Call Cursor **publish-app** on project dir `.` with that preview URL.
-3. Confirm in the Cursor publish dialog (visibility: private / team / public).
-4. Only after confirm: paste the issued URL into this file’s status table.
+2. Call Cursor **publish-app** on project dir `.` with that preview URL (suggested slug `grape-condensatome`).
+3. Confirm in the Cursor publish dialog (visibility: **public** for NAR/database citation; private / team also available).
+4. Only after confirm: paste the issued URL into this file’s status table and the README badges.
 
 If publish-app is blocked (unpushed git, security review, or platform refusal), use a
 container host below.
 
-## Alternatives (SQLite server)
+## Deploy configs (in this repo)
 
-| Option | Fit | Notes |
-|--------|-----|-------|
-| **Railway / Render / Fly.io** free tier | Good | Deploy Node 22+, ship `data/grape_condensatome.sqlite` (~100 MiB), set `PORT` |
-| **Docker on a VPS** | Good | `node:22` image; bind `0.0.0.0:$PORT` |
-| **GitHub Pages** | **No** | Static only; cannot run Express/SQLite |
-| **Python `plantllps serve`** | Local / VPS | Stdlib HTTP UI; same SQLite |
+| File | Platform | Role |
+|------|----------|------|
+| `Dockerfile` | All | `node:22-bookworm-slim`; `HOST=0.0.0.0` `PORT=8080` |
+| `render.yaml` | Render | Blueprint free Web Service; build `npm ci`; start `npm start`; health `/api/health` |
+| `railway.toml` | Railway | Dockerfile build; health `/api/health` |
+| `fly.toml` | Fly.io | Dockerfile; `force_https`; health check `/api/health` |
+| `.dockerignore` | Docker | Keeps image lean (excludes `dist/`, caches) |
 
-### Railway / Render one-liners (after you create an account)
+### Exact user steps — Render (recommended free path)
 
-Railway (CLI; creates a project from the current directory):
+1. Log in at [https://dashboard.render.com](https://dashboard.render.com) (GitHub OAuth).
+2. **New → Blueprint** → connect `pingyguan-glitch/grape-condensatome` → apply `render.yaml`.
+   - Or **New → Web Service** → connect the repo → Build `npm ci --omit=dev` → Start `npm start` → Node **22** → Health `/api/health`.
+3. Wait for the first deploy (SQLite ~100 MiB ships with the repo).
+4. Open the issued `https://….onrender.com` URL; verify `…/api/health` returns `"ok": true`.
+5. Paste that URL into this file + README badges; commit.
 
-```bash
-npm install && npx --yes @railway/cli login && npx --yes @railway/cli init && npx --yes @railway/cli up
-# Set start command to: npm start
-# Ensure PORT is provided by the platform (server.js already reads process.env.PORT)
-```
+Free tier may spin down after idle (cold start tens of seconds).
 
-Render (GitHub-connected Web Service — dashboard is the usual path):
+### Exact user steps — Railway
 
-```bash
-# In Render: New → Web Service → connect this GitHub repo
-# Build:  npm install
-# Start:  npm start
-# Env:    NODE_VERSION=22   (or choose Node 22 runtime)
-```
+1. Log in at [https://railway.app](https://railway.app) (GitHub).
+2. **New Project → Deploy from GitHub** → select this repo (uses `railway.toml` / `Dockerfile`).
+   - Or CLI: `npx --yes @railway/cli login && npx --yes @railway/cli init && npx --yes @railway/cli up`
+3. Generate a public HTTPS domain in the service Settings.
+4. Verify `/api/health`; paste URL into this file + README.
 
-### Fly.io sketch
+### Exact user steps — Fly.io
+
+1. Install CLI: [https://fly.io/docs/hands-on/install-flyctl/](https://fly.io/docs/hands-on/install-flyctl/)
+2. `fly auth login`
+3. `fly apps create grape-condensatome` (rename in `fly.toml` if taken)
+4. `fly deploy`
+5. Verify `https://grape-condensatome.fly.dev/api/health`; paste URL into this file + README.
+
+### Docker (any VPS)
 
 ```dockerfile
 FROM node:22-bookworm-slim
@@ -80,8 +90,25 @@ EXPOSE 8080
 CMD ["npm","start"]
 ```
 
+```bash
+docker build -t grape-condensatome .
+docker run --rm -p 8080:8080 grape-condensatome
+```
+
 Egress: downloading UniProt / Expression Atlas caches at build time needs outbound HTTPS;
 runtime browse mode is local SQLite only.
+
+## Uptime / README badges
+
+Until a public URL exists, README uses **pending** shield placeholders (not fake hosts).
+After deploy, point shields at the live host, e.g.:
+
+```markdown
+[![Public atlas](https://img.shields.io/badge/atlas-LIVE_URL-0B6E4F)](https://YOUR-HOST/)
+[![Health](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2FYOUR-HOST%2Fapi%2Fhealth&query=%24.ok&label=health&prefix=&suffix=)](https://YOUR-HOST/api/health)
+```
+
+Optional: register the public URL with [UptimeRobot](https://uptimerobot.com/) (or similar) on `GET /api/health` and add their badge.
 
 ## Related
 

@@ -22,6 +22,13 @@ Figure 3 feature-ablation panels + optional experimental disorder retrains (comp
 - `docs/ZENODO.md` + `scripts/export_zenodo_bundle.py` — build Zenodo bundle (weights, SQLite, TSV.gz, optional Parquet, checksums). **No invented DOI**; user publishes on Zenodo and pastes DOI into `CITATION.cff`.
 - `docs/HOSTING.md` — clarified **local-server-only** until a real public URL exists; Railway/Render one-liners; SQLite size note (~100 MiB).
 
+## Public host + Zenodo automation (post-v1.1.1)
+
+- Deploy configs: `render.yaml`, `railway.toml`, `fly.toml`, `.dockerignore` (+ existing `Dockerfile`); health path `/api/health`.
+- README pending badges for public atlas / uptime / Zenodo DOI (grey until real URL/DOI).
+- `docs/HOSTING.md` / `docs/ZENODO.md` updated for **v1.1.1** with exact user deploy + Zenodo mint steps; export script reads `VERSION`.
+- Bundle built locally with `--parquet` into gitignored `dist/` (~33 MiB zip); not committed.
+
 ## v1.1.0 (2026-11-27)
 
 P1 atlas layers on v1.0.0: full scored-proteome AlphaFold low-pLDDT segments + multi-stress RNA-seq.

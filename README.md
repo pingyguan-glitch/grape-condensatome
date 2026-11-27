@@ -2,7 +2,15 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
+[![Version](https://img.shields.io/badge/version-1.1.1-0B6E4F)](./VERSION)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Public atlas](https://img.shields.io/badge/public_atlas-pending_URL-lightgrey)](./docs/HOSTING.md)
+[![Uptime](https://img.shields.io/badge/uptime-pending_public_URL-lightgrey)](./docs/HOSTING.md)
+[![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
+
 **Version:** 1.1.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+
+> Badge note: grey **pending** shields are intentional until a real public HTTPS host and Zenodo DOI exist. Do not invent URLs/DOIs — update shields when live (see [`docs/HOSTING.md`](./docs/HOSTING.md), [`docs/ZENODO.md`](./docs/ZENODO.md)).
 
 > **v1.0.0** combines Wave 2 curated gold/MAP/hold-out, STRING neighborhoods, and the soybean second-crop condensatome.
 
@@ -23,7 +31,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Curated LLPS gold | `data/curated/` | experimentally anchored overlay + SQLite/UI badge |
 | MAP screen deposit | `data/map_screen/` | annotation-reconstructed MAP table + Spearman ρ |
 | External tool docs | [`docs/EXTERNAL_TOOLS.md`](./docs/EXTERNAL_TOOLS.md) | metapredict / PSAP env pins |
-| Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **Local server only** until a real public URL exists; publish-app / Railway / Render / Fly |
+| Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **Local server only** until a real public URL exists; `render.yaml` / `railway.toml` / `fly.toml` + publish-app |
 | Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
 
 ## Honesty (read before citing metrics)
@@ -122,9 +130,9 @@ python3 -m plantllps serve --host 0.0.0.0 --port 8765
 npm start
 ```
 
-Public hosting: see [`docs/HOSTING.md`](./docs/HOSTING.md) — **local server only** unless a confirmed public URL is recorded there. **GitHub Pages will not work** (needs a SQLite server).
+Public hosting: see [`docs/HOSTING.md`](./docs/HOSTING.md) — **local server only** unless a confirmed public URL is recorded there. **GitHub Pages will not work** (needs a SQLite server). Deploy configs: `render.yaml`, `railway.toml`, `fly.toml`, `Dockerfile`.
 
-Data/model deposit for Zenodo: [`docs/ZENODO.md`](./docs/ZENODO.md) (`python3 scripts/export_zenodo_bundle.py`). Paste the real DOI into `CITATION.cff` after publish — do not invent one.
+Data/model deposit for Zenodo: [`docs/ZENODO.md`](./docs/ZENODO.md) (`python3 scripts/export_zenodo_bundle.py [--parquet]`). Archives land under gitignored `dist/` — upload to Zenodo; paste the real DOI into `CITATION.cff` after publish — do not invent one.
 
 ## Benchmarks vs PSAP / LLPhyScore
 
@@ -167,8 +175,8 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 ## Still open (not claimed done)
 
 - Exact RBGD4 AGI  
-- Confirmed public hosted URL (local-only until publish-app confirm or Railway/Render/Fly deploy — see `docs/HOSTING.md`)  
-- Zenodo DOI (bundle script + steps in `docs/ZENODO.md`; paste DOI after you publish)  
+- Confirmed public hosted URL (local-only until publish-app confirm or Render/Railway/Fly deploy — configs ready; see `docs/HOSTING.md`)  
+- Zenodo DOI (bundle verified for v1.1.1 under `dist/`; mint on Zenodo then paste DOI — `docs/ZENODO.md`)  
 - Splice isoforms; coexpression-only track; tomato second-crop deposit  
 
 
