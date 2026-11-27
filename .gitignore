@@ -22,3 +22,4 @@ data/benchmarks/llphyscore_proteome.checkpoint.json
 data/benchmarks/llphyscore_proteome.shard*.checkpoint.json
 data/benchmarks/llphyscore_proteome.shard*.tsv
 data/benchmarks/llphyscore_proteome.shard*.tsv.summary.json
+data/domains/interpro_pfam_backfill.checkpoint.json

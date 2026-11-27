@@ -44,4 +44,9 @@ runtime browse mode is local SQLite only.
 ```bash
 npm install && npm start
 # → http://127.0.0.1:8765/
+# Browse /download or call:
+#   curl 'http://127.0.0.1:8765/api/download?tier=A&format=tsv' -o tierA.tsv
+#   curl 'http://127.0.0.1:8765/api/download?family=MAP65&format=fasta' -o map65.fasta
 ```
+
+Runtime needs `data/UP000009183.fasta.gz` for FASTA downloads (indexed at startup).

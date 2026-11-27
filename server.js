@@ -5,7 +5,9 @@
  */
 
 import express from "express";
-import { existsSync, readFileSync } from "node:fs";
+import { createGunzip } from "node:zlib";
+import { createReadStream, existsSync, readFileSync } from "node:fs";
+import { createInterface } from "node:readline";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -16,6 +18,7 @@ import {
   searchProteins,
   listByTier,
   topProteins,
+  filterProteins,
   DEFAULT_DB,
 } from "./lib/db.js";
 import { loadModel, scoreSequence } from "./lib/model.js";
@@ -27,6 +30,8 @@ const PAGE_SIZE = 40;
 const DB_PATH = process.env.GRAPE_DB || DEFAULT_DB;
 const MODEL_PATH =
   process.env.GRAPE_MODEL || join(__dirname, "data", "model_formal.json");
+const FASTA_PATH =
+  process.env.GRAPE_FASTA || join(__dirname, "data", "UP000009183.fasta.gz");
 
 if (!existsSync(DB_PATH)) {
   console.error(`SQLite not found: ${DB_PATH}`);
@@ -35,9 +40,37 @@ if (!existsSync(DB_PATH)) {
 
 const db = openDb(DB_PATH);
 const model = loadModel(MODEL_PATH);
+/** @type {Map<string, string>} */
+const seqById = new Map();
 const app = express();
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(express.static(join(__dirname, "public")));
+
+async function loadFastaIndex(path) {
+  if (!existsSync(path)) {
+    console.warn(`FASTA not found (${path}); /api/download FASTA will be empty.`);
+    return;
+  }
+  const stream = path.endsWith(".gz")
+    ? createReadStream(path).pipe(createGunzip())
+    : createReadStream(path);
+  const rl = createInterface({ input: stream, crlfDelay: Infinity });
+  let pid = null;
+  let chunks = [];
+  for await (const line of rl) {
+    if (line.startsWith(">")) {
+      if (pid) seqById.set(pid, chunks.join(""));
+      const header = line.slice(1).split(/\s+/)[0];
+      const parts = header.split("|");
+      pid = parts.length > 1 ? parts[1] : header;
+      chunks = [];
+    } else {
+      chunks.push(line.trim());
+    }
+  }
+  if (pid) seqById.set(pid, chunks.join(""));
+  console.log(`FASTA index: ${seqById.size} sequences from ${path}`);
+}
 
 function esc(s) {
   return String(s ?? "")
@@ -55,6 +88,56 @@ function fmtScore(x) {
 function fmtPct(x) {
   const n = Number(x);
   return Number.isFinite(n) ? n.toFixed(2) : "—";
+}
+
+function vitGeneName(geneName) {
+  const g = String(geneName || "").trim();
+  if (!g) return null;
+  const m = g.match(/VIT_\d+s\d+g\d+/i);
+  return m ? m[0] : null;
+}
+
+function genomeLinksHtml(p) {
+  const vit = vitGeneName(p.gene_name);
+  const links = [];
+  if (vit) {
+    const ens = `https://plants.ensembl.org/Vitis_vinifera/Gene/Summary?g=${encodeURIComponent(vit)}`;
+    const loc = `https://plants.ensembl.org/Vitis_vinifera/Location/View?g=${encodeURIComponent(vit)}`;
+    links.push(
+      `<a href="${ens}" target="_blank" rel="noopener">Ensembl Plants · ${esc(vit)}</a>`
+    );
+    links.push(
+      `<a href="${loc}" target="_blank" rel="noopener">Ensembl location / JBrowse</a>`
+    );
+  }
+  links.push(
+    `<a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.protein_id)}/entry" target="_blank" rel="noopener">UniProt</a>`
+  );
+  if ((p.domain_pfam_ids || []).length) {
+    const pf = p.domain_pfam_ids[0];
+    links.push(
+      `<a href="https://www.ebi.ac.uk/interpro/entry/pfam/${encodeURIComponent(pf)}/" target="_blank" rel="noopener">InterPro/Pfam ${esc(pf)}</a>`
+    );
+  }
+  return links.join(" · ");
+}
+
+function trackHtml(length, segments, { title, tone }) {
+  const L = Math.max(1, Number(length) || 1);
+  const bars = (segments || [])
+    .map((s) => {
+      const start = Number(s.start) || 1;
+      const end = Number(s.end) || start;
+      const left = ((start - 1) / L) * 100;
+      const width = Math.max(0.15, ((end - start + 1) / L) * 100);
+      const tip = `${s.label || s.source || "seg"} ${start}–${end}`;
+      return `<span class="track-seg ${tone}" style="left:${left}%;width:${width}%" title="${esc(tip)}"></span>`;
+    })
+    .join("");
+  return `<div class="track">
+    <div class="track-label">${esc(title)} <span class="muted">1–${esc(L)}</span></div>
+    <div class="track-bar">${bars || `<span class="muted" style="font-size:0.8rem;padding:0.2rem">no segments</span>`}</div>
+  </div>`;
 }
 
 function layout(title, body, query = "") {
@@ -81,6 +164,7 @@ function layout(title, body, query = "") {
       <a href="/tiers/D">Tier D</a>
       <a href="/compare">Compare</a>
       <a href="/hooks">Cross-crop</a>
+      <a href="/download">Download</a>
       <a href="/score">Score FASTA</a>
     </nav>
   </header>
@@ -279,20 +363,53 @@ app.get("/protein/:id", (req, res) => {
         `<div><span class="k">${esc(k)}</span><span class="v">${esc(feats[k])}</span></div>`
     )
     .join("");
-  const uniprot = `https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.protein_id)}/entry`;
   const go = (p.go_terms || []).slice(0, 24).map((g) => esc(g)).join(", ") || "—";
   const kw = (p.keywords || []).slice(0, 24).map((g) => esc(g)).join(", ") || "—";
+  const pfamList =
+    (p.domain_pfam_ids || []).map((x) => esc(x)).join(", ") || "—";
+  const iprList =
+    (p.domain_interpro_ids || []).slice(0, 12).map((x) => esc(x)).join(", ") || "—";
+  const domainTrack = trackHtml(p.length, p.domains, {
+    title: "Domains",
+    tone: "tone-domain",
+  });
+  const idrTrack = trackHtml(p.length, p.idr_segments, {
+    title: "IDR",
+    tone: "tone-idr",
+  });
+  const domainRows = (p.domains || [])
+    .slice(0, 40)
+    .map(
+      (d) =>
+        `<div><span class="k">${esc(d.start)}–${esc(d.end)}</span><span class="v">${esc(
+          d.label || d.accession || d.source || ""
+        )}${d.accession ? ` · <span class="mono">${esc(d.accession)}</span>` : ""} · ${esc(
+          d.source || ""
+        )}</span></div>`
+    )
+    .join("");
+  const idrRows = (p.idr_segments || [])
+    .slice(0, 40)
+    .map(
+      (d) =>
+        `<div><span class="k">${esc(d.start)}–${esc(d.end)}</span><span class="v">${esc(
+          d.source || ""
+        )}${d.label ? ` · ${esc(d.label)}` : ""}</span></div>`
+    )
+    .join("");
   const body = `
     <div class="detail-hero">
       <div class="card">
         <h2 class="mono">${esc(p.protein_id)}</h2>
         <p><strong>${esc(p.gene_name || "—")}</strong>
            · <span class="tier ${esc(p.tier)}">${esc(p.tier)}</span>
-           · length ${esc(p.length)}
-           · <a href="${uniprot}" rel="noopener" target="_blank">UniProt</a></p>
+           · length ${esc(p.length)}</p>
         <p>${esc(p.protein_name || "No UniProt protein name in DB.")}</p>
+        <p><span class="muted">Links:</span> ${genomeLinksHtml(p)}</p>
         <p><span class="muted">GO:</span> ${go}</p>
         <p><span class="muted">Keywords:</span> ${kw}</p>
+        <p><span class="muted">Pfam:</span> ${pfamList}
+           · <span class="muted">InterPro:</span> ${iprList}</p>
         <p class="muted mono">hash=${esc(p.sequence_hash)} · source=${esc(p.source)}</p>
       </div>
       <div class="card">
@@ -341,6 +458,26 @@ app.get("/protein/:id", (req, res) => {
              ? `· <a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.ortholog_osa)}/entry" target="_blank" rel="noopener">UniProt</a>`
              : ""
          }</p>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <h3>Domain / IDR track</h3>
+      <p class="muted">Domains: UniProt FT Domain + InterPro Pfam coords where FT empty.
+         IDR: AlphaFold pLDDT&lt;50 (when deposited) ∪ UniProt REGION Disordered (MobiDB-lite).
+         metapredict supplies mean frac only — no per-residue IDR track.</p>
+      ${domainTrack}
+      ${idrTrack}
+      ${
+        domainRows
+          ? `<h4 style="margin-top:1rem">Domain intervals</h4><div class="features">${domainRows}</div>`
+          : `<p class="muted">No domain coordinates for this protein.</p>`
+      }
+      ${
+        idrRows
+          ? `<h4 style="margin-top:1rem">IDR intervals (${esc(
+              p.idr_n_residues ?? ""
+            )} residues · ${esc(p.idr_sources || "")})</h4><div class="features">${idrRows}</div>`
+          : `<p class="muted">No IDR segments deposited for this protein.</p>`
+      }
     </div>
     ${
       p.af_disorder_segments && p.af_disorder_segments.length
@@ -475,6 +612,138 @@ app.get("/compare", (_req, res) => {
   res.type("html").send(layout("Compare", body));
 });
 
+const DOWNLOAD_TSV_COLS = [
+  "protein_id",
+  "gene_name",
+  "tier",
+  "score",
+  "score_companion",
+  "score_logistic",
+  "score_psap",
+  "score_llphyscore_percentile",
+  "plaac_nllr_approx",
+  "frac_disorder_metapredict",
+  "af_mean_plddt",
+  "af_frac_very_low",
+  "domain_pfam_ids",
+  "cross_crop_family",
+  "keywords",
+];
+
+function downloadFilters(query) {
+  return {
+    tier: String(query.tier || "").trim(),
+    family: String(query.family || "").trim(),
+    keyword: String(query.keyword || query.keywords || "").trim(),
+    q: String(query.q || "").trim(),
+    limit: Number(query.limit || 0) || 0,
+  };
+}
+
+function rowsToTsv(rows) {
+  const lines = [DOWNLOAD_TSV_COLS.join("\t")];
+  for (const r of rows) {
+    lines.push(
+      DOWNLOAD_TSV_COLS.map((c) => {
+        let v = r[c];
+        if (c === "domain_pfam_ids" && Array.isArray(v)) v = v.join(";");
+        if (c === "keywords" && Array.isArray(v)) v = v.join(";");
+        if (v == null) return "";
+        return String(v).replace(/[\t\n\r]/g, " ");
+      }).join("\t")
+    );
+  }
+  return lines.join("\n") + "\n";
+}
+
+function rowsToFasta(rows) {
+  const chunks = [];
+  let missing = 0;
+  for (const r of rows) {
+    const seq = seqById.get(r.protein_id);
+    if (!seq) {
+      missing += 1;
+      continue;
+    }
+    const gene = r.gene_name || "";
+    chunks.push(`>${r.protein_id}${gene ? ` ${gene}` : ""} tier=${r.tier} score=${r.score}`);
+    for (let i = 0; i < seq.length; i += 60) chunks.push(seq.slice(i, i + 60));
+  }
+  return { text: chunks.join("\n") + (chunks.length ? "\n" : ""), missing };
+}
+
+app.get("/api/download", (req, res) => {
+  const filters = downloadFilters(req.query);
+  const format = String(req.query.format || "tsv").toLowerCase();
+  const rows = filterProteins(db, filters);
+  const stamp = [
+    filters.tier && `tier${filters.tier}`,
+    filters.family && `fam-${filters.family}`,
+    filters.keyword && `kw`,
+    filters.q && `q`,
+  ]
+    .filter(Boolean)
+    .join("_") || "proteome";
+  if (format === "fasta" || format === "fa") {
+    const { text, missing } = rowsToFasta(rows);
+    res.setHeader("Content-Type", "text/x-fasta; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="grape_condensatome_${stamp}.fasta"`
+    );
+    if (missing) res.setHeader("X-Missing-Sequences", String(missing));
+    return res.send(text);
+  }
+  res.setHeader("Content-Type", "text/tab-separated-values; charset=utf-8");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="grape_condensatome_${stamp}.tsv"`
+  );
+  res.send(rowsToTsv(rows));
+});
+
+app.get("/download", (req, res) => {
+  const filters = downloadFilters(req.query);
+  const preview = filterProteins(db, { ...filters, limit: filters.limit || 20 });
+  const count = filterProteins(db, filters).length;
+  const qs = new URLSearchParams(
+    Object.fromEntries(
+      Object.entries(filters).filter(([k, v]) => v && k !== "limit")
+    )
+  ).toString();
+  const body = `
+    <div class="card">
+      <h2>Bulk download</h2>
+      <p class="muted">Filter the scored proteome by tier, cross-crop family, keyword, or free-text,
+      then download TSV (score columns) or FASTA (sequences from UP000009183).
+      API: <span class="mono">GET /api/download?tier=A&amp;format=tsv|fasta</span></p>
+      <form method="get" action="/download" class="inline">
+        <label>Tier
+          <select name="tier">
+            <option value="">Any</option>
+            ${["A", "B", "C", "D"]
+              .map(
+                (t) =>
+                  `<option value="${t}" ${filters.tier === t ? "selected" : ""}>${t}</option>`
+              )
+              .join("")}
+          </select>
+        </label>
+        <label>Family <input name="family" value="${esc(filters.family)}" placeholder="MAP65"/></label>
+        <label>Keyword <input name="keyword" value="${esc(filters.keyword)}" placeholder="Kinase"/></label>
+        <label>Search <input name="q" value="${esc(filters.q)}" placeholder="VIT_ / Pfam / name"/></label>
+        <button type="submit">Preview</button>
+      </form>
+      <p style="margin-top:0.75rem">${count} proteins match.
+        <a href="/api/download?${qs}&format=tsv">Download TSV</a> ·
+        <a href="/api/download?${qs}&format=fasta">Download FASTA</a>
+      </p>
+    </div>
+    <h2 style="font-family:var(--font-display)">Preview (up to 20)</h2>
+    ${proteinTable(preview)}`;
+  res.type("html").send(layout("Download", body, filters.q || filters.family || filters.keyword));
+});
+
 app.get("/hooks", (_req, res) => {
   const meta = getMeta(db);
   let hooks = { hooks: [] };
@@ -584,9 +853,16 @@ app.post("/score", (req, res) => {
   res.type("html").send(layout("Score FASTA", scoreForm(result)));
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`GrapeCondensatome → http://${HOST === "0.0.0.0" ? "127.0.0.1" : HOST}:${PORT}/`);
-  console.log(`Bound ${HOST}:${PORT}`);
-  console.log(`SQLite: ${DB_PATH}`);
-  console.log(`Model: ${MODEL_PATH}`);
-});
+loadFastaIndex(FASTA_PATH)
+  .catch((err) => console.error("FASTA index failed:", err))
+  .finally(() => {
+    app.listen(PORT, HOST, () => {
+      console.log(
+        `GrapeCondensatome → http://${HOST === "0.0.0.0" ? "127.0.0.1" : HOST}:${PORT}/`
+      );
+      console.log(`Bound ${HOST}:${PORT}`);
+      console.log(`SQLite: ${DB_PATH}`);
+      console.log(`Model: ${MODEL_PATH}`);
+      console.log(`FASTA sequences indexed: ${seqById.size}`);
+    });
+  });

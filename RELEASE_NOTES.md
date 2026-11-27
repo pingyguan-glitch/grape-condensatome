@@ -1,5 +1,14 @@
 # Release notes
 
+## v0.6.0 (2026-11-27)
+
+P0 atlas layers: domains / IDR tracks, bulk download, genome link-outs.
+
+- `scripts/enrich_domains_idr.py` — UniProt Domain FT + InterPro Pfam coordinate backfill; IDR from AF pLDDT&lt;50 ∪ UniProt REGION Disordered (MobiDB-lite). Coverage on scored proteome: **21 856** with domain coords, **21 670** with Pfam xref, **9 401** with IDR segments.
+- Protein page: domain/IDR track visualization + Ensembl Plants / location (JBrowse) links from `VIT_*` gene names.
+- `GET /api/download` + UI `/download` — filter by tier / family / keyword / q; TSV or FASTA.
+- Honest limit: metapredict remains mean-fraction only (no per-residue IDR); splice isoforms not annotated.
+
 ## v0.5.0 (2026-11-26)
 
 Full-proteome **native** PSAP and LLPhyScore (user priority: comparator columns).

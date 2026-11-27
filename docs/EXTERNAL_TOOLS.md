@@ -135,3 +135,15 @@ values remain near zero / negative under both.
 python3 scripts/enrich_expression_atlas.py --db data/grape_condensatome.sqlite
 # Default experiment E-MTAB-8758 (Pinot Noir berry baseline); GeneID = VIT_* loci
 ```
+
+## Domains / IDR tracks
+
+```bash
+python3 scripts/enrich_domains_idr.py
+# UniProt FT Domain + Pfam/InterPro xrefs; InterPro API backfill for Pfam coords
+# IDR = AF pLDDT<50 segments (when present) ∪ UniProt REGION Disordered (MobiDB-lite)
+# → SQLite domains_json / idr_segments_json; UI protein-page track
+```
+
+Cache: `data/domains/uniprot_up000009183_domains.tsv.gz` (committed). InterPro checkpoint
+`data/domains/interpro_pfam_backfill.checkpoint.json` is gitignored.
