@@ -52,6 +52,14 @@ CROPS = {
         "label": "tomato",
         "odb_key": "sly",
     },
+    "arabidopsis": {
+        "proteome": "UP000006548",
+        "taxon": 3702,
+        "species": "Arabidopsis thaliana",
+        "slug": "arabidopsis",
+        "label": "arabidopsis",
+        "odb_key": "ath",
+    },
 }
 
 TSV_COLUMNS = [

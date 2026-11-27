@@ -86,6 +86,10 @@ PROTEINS_PARQUET_COLS = [
     "ortholog_gma_gene",
     "ortholog_gma_score",
     "ortholog_gma_tier",
+    "ortholog_sly",
+    "ortholog_sly_gene",
+    "ortholog_sly_score",
+    "ortholog_sly_tier",
 ]
 
 CORE_FILES = [
@@ -108,6 +112,14 @@ OPTIONAL_FILES = [
     ("data/second_crop/soybean_condensatome.sqlite", "second_crop/soybean_condensatome.sqlite"),
     ("data/second_crop/soybean_condensatome.summary.json", "second_crop/soybean_condensatome.summary.json"),
     ("data/second_crop/soybean_grape_ortholog_join.json", "second_crop/soybean_grape_ortholog_join.json"),
+    ("data/second_crop/tomato_condensatome.sqlite", "second_crop/tomato_condensatome.sqlite"),
+    ("data/second_crop/tomato_condensatome.summary.json", "second_crop/tomato_condensatome.summary.json"),
+    ("data/second_crop/tomato_grape_ortholog_join.json", "second_crop/tomato_grape_ortholog_join.json"),
+    ("data/cross_crop/conserved_summary.json", "cross_crop/conserved_summary.json"),
+    ("data/cross_crop/conserved_tier_ab_overlap.tsv.gz", "cross_crop/conserved_tier_ab_overlap.tsv.gz"),
+    ("data/cross_crop/conserved_orthodb_clusters.tsv.gz", "cross_crop/conserved_orthodb_clusters.tsv.gz"),
+    ("data/cross_crop/arabidopsis_condensatome.sqlite", "cross_crop/arabidopsis_condensatome.sqlite"),
+    ("data/cross_crop/arabidopsis_condensatome.summary.json", "cross_crop/arabidopsis_condensatome.summary.json"),
     ("data/string/enrichment_summary.json", "string/enrichment_summary.json"),
 ]
 

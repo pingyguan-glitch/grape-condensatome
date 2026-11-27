@@ -53,6 +53,9 @@ const FASTA_PATH =
 const SOY_DB_PATH =
   process.env.SOY_DB ||
   join(__dirname, "data", "second_crop", "soybean_condensatome.sqlite");
+const TOM_DB_PATH =
+  process.env.TOM_DB ||
+  join(__dirname, "data", "second_crop", "tomato_condensatome.sqlite");
 const EXPLAIN_PATH =
   process.env.GRAPE_EXPLAIN ||
   join(__dirname, "data", "explainability", "attributions.json.gz");
@@ -78,6 +81,14 @@ if (existsSync(SOY_DB_PATH)) {
   console.log(`Second-crop SQLite: ${SOY_DB_PATH}`);
 } else {
   console.warn(`Soybean condensatome DB not found (${SOY_DB_PATH}); /hooks crop panel limited.`);
+}
+/** @type {DatabaseSync | null} */
+let tomDb = null;
+if (existsSync(TOM_DB_PATH)) {
+  tomDb = new DatabaseSync(TOM_DB_PATH, { readOnly: true });
+  console.log(`Tomato condensatome SQLite: ${TOM_DB_PATH}`);
+} else {
+  console.warn(`Tomato condensatome DB not found (${TOM_DB_PATH}); /hooks tomato panel limited.`);
 }
 /** @type {Map<string, string>} */
 const seqById = new Map();
@@ -380,7 +391,7 @@ function layout(title, body, query = "") {
     stress DE × condensatome enrichment + modules (/modules), atlas analyses
     (family enrichment / comparator disagreement / structure–score on /analyses),
     and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
-    Second-crop soybean condensatome on /hooks. Treat ranks as hypotheses.
+    Soybean + tomato crop condensatomes and conserved grape↔soy↔Ath overlap on /hooks. Treat ranks as hypotheses.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -459,28 +470,47 @@ function pager(base, page, total) {
   </div>`;
 }
 
-function secondCropMeta() {
+function cropDbMeta(cropDb, path, joinKey) {
   const meta = getMeta(db);
   let join = null;
   try {
-    join = meta.second_crop_soybean ? JSON.parse(meta.second_crop_soybean) : null;
+    join = meta[joinKey] ? JSON.parse(meta[joinKey]) : null;
   } catch {
     join = null;
   }
-  let soy = null;
-  if (soyDb) {
+  let crop = null;
+  if (cropDb) {
     try {
-      const n = soyDb.prepare("SELECT COUNT(*) AS n FROM proteins").get().n;
+      const n = cropDb.prepare("SELECT COUNT(*) AS n FROM proteins").get().n;
       const tiers = {};
-      for (const r of soyDb.prepare("SELECT tier, COUNT(*) AS c FROM proteins GROUP BY tier").all()) {
+      for (const r of cropDb.prepare("SELECT tier, COUNT(*) AS c FROM proteins GROUP BY tier").all()) {
         tiers[r.tier] = r.c;
       }
-      soy = { path: SOY_DB_PATH, n_proteins: n, tiers };
+      crop = { path, n_proteins: n, tiers };
     } catch {
-      soy = { path: SOY_DB_PATH, error: "unreadable" };
+      crop = { path, error: "unreadable" };
     }
   }
-  return { join, soy };
+  return { join, crop };
+}
+
+function secondCropMeta() {
+  const soy = cropDbMeta(soyDb, SOY_DB_PATH, "second_crop_soybean");
+  const tom = cropDbMeta(tomDb, TOM_DB_PATH, "second_crop_tomato");
+  let conserved = null;
+  try {
+    const raw = getMeta(db).cross_crop_conserved;
+    conserved = raw ? JSON.parse(raw) : null;
+  } catch {
+    conserved = null;
+  }
+  return {
+    join: soy.join,
+    soy: soy.crop,
+    tomato_join: tom.join,
+    tomato: tom.crop,
+    conserved,
+  };
 }
 
 app.get("/api/health", (_req, res) => {
@@ -1257,6 +1287,23 @@ app.get("/protein/:id", (req, res) => {
              ? `· <a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.ortholog_gma)}/entry" target="_blank" rel="noopener">UniProt</a>`
              : ""
          }</p>
+      <p>Tomato (<em>Solanum lycopersicum</em>): <span class="mono">${esc(p.ortholog_sly || "—")}</span>
+         ${p.ortholog_sly_gene ? `(${esc(p.ortholog_sly_gene)})` : ""}
+         ${
+           p.ortholog_sly_tier
+             ? `· <span class="tier ${esc(p.ortholog_sly_tier)}">${esc(p.ortholog_sly_tier)}</span>`
+             : ""
+         }
+         ${
+           p.ortholog_sly_score != null && Number.isFinite(Number(p.ortholog_sly_score))
+             ? `· score ${fmtScore(p.ortholog_sly_score)}`
+             : ""
+         }
+         ${
+           p.ortholog_sly
+             ? `· <a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(p.ortholog_sly)}/entry" target="_blank" rel="noopener">UniProt</a>`
+             : ""
+         }</p>
     </div>
     <div class="card" style="margin-top:1rem">
       <h3>Domain / IDR track</h3>
@@ -1784,6 +1831,103 @@ app.get("/download", (req, res) => {
   res.type("html").send(layout("Download", body, filters.q || filters.family || filters.keyword));
 });
 
+function cropBrowsePanel({
+  cropDb,
+  join,
+  cropLabel,
+  proteome,
+  speciesEm,
+  tierParam,
+  pageParam,
+  page,
+  emptyHint,
+}) {
+  if (!cropDb) {
+    return `<div class="card"><p class="muted">${esc(emptyHint)}</p></div>`;
+  }
+  const tier = String(tierParam || "").trim().toUpperCase();
+  const clauses = [];
+  const params = [];
+  if (["A", "B", "C", "D"].includes(tier)) {
+    clauses.push("tier = ?");
+    params.push(tier);
+  }
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const total = cropDb.prepare(`SELECT COUNT(*) AS n FROM proteins ${where}`).get(...params).n;
+  const offset = (page - 1) * PAGE_SIZE;
+  const rows = cropDb
+    .prepare(
+      `SELECT protein_id, gene_name, protein_name, score, tier, percentile, grape_ortholog, grape_ortholog_gene
+       FROM proteins ${where} ORDER BY score DESC LIMIT ? OFFSET ?`
+    )
+    .all(...params, PAGE_SIZE, offset);
+  const tierCounts = {};
+  for (const r of cropDb.prepare("SELECT tier, COUNT(*) AS c FROM proteins GROUP BY tier").all()) {
+    tierCounts[r.tier] = r.c;
+  }
+  const table = rows
+    .map((r) => {
+      const grape = r.grape_ortholog
+        ? `<a class="mono" href="/protein/${esc(r.grape_ortholog)}">${esc(r.grape_ortholog)}</a>
+           ${r.grape_ortholog_gene ? `(${esc(r.grape_ortholog_gene)})` : ""}`
+        : "—";
+      return `<tr>
+        <td class="mono"><a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(r.protein_id)}/entry" target="_blank" rel="noopener">${esc(r.protein_id)}</a></td>
+        <td class="mono">${esc(r.gene_name || "—")}</td>
+        <td><span class="tier ${esc(r.tier)}">${esc(r.tier)}</span></td>
+        <td>${fmtScore(r.score)}</td>
+        <td>${fmtPct(r.percentile)}</td>
+        <td>${grape}</td>
+        <td class="muted">${esc((r.protein_name || "").slice(0, 72) || "—")}</td>
+      </tr>`;
+    })
+    .join("");
+  // pageParam is e.g. soy_page / tom_page; tier query keys soy_tier / tom_tier
+  const tierKey = pageParam.replace(/_?page$/, "_tier").replace(/^page$/, "tier");
+  const baseQs = new URLSearchParams();
+  if (tier) baseQs.set(tierKey, tier);
+  const base = `/hooks${baseQs.toString() ? `?${baseQs}` : ""}`;
+  const pageBase = base.includes("?") ? `${base}&` : `${base}?`;
+  // pager() appends page=; for multi panels use custom pager with pageParam
+  const nPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const prev = page > 1 ? `${pageBase}${pageParam}=${page - 1}` : "#";
+  const next = page < nPages ? `${pageBase}${pageParam}=${page + 1}` : "#";
+  const pagerHtml = `<div class="pager">
+    <a class="btn secondary" href="${esc(prev)}">← Prev</a>
+    <span class="muted">Page ${page} / ${nPages} · ${total} proteins</span>
+    <a class="btn secondary" href="${esc(next)}">Next →</a>
+  </div>`;
+  return `
+    <div class="card">
+      <h2>${esc(cropLabel)} condensatome <span class="mono">${esc(proteome)}</span></h2>
+      <p class="muted">PlantLLPS v13 (composition-proxy disorder) scored on <em>${speciesEm}</em> reference
+      proteome; tiers recalibrated on this proteome. Not a species-retrained model.
+      OrthoDB join to grape: <strong>${esc(join?.n_matched ?? "—")}</strong> / ${esc(join?.n_grape ?? "—")}
+      (${esc(join?.n_matched_with_crop_score ?? "—")} with crop scores).</p>
+      <p>Tiers:
+        ${["A", "B", "C", "D"]
+          .map((t) => {
+            const tQs = new URLSearchParams();
+            tQs.set(tierKey, t);
+            return `<a href="/hooks?${tQs}">${t}=${esc(tierCounts[t] || 0)}</a>`;
+          })
+          .join(" · ")}
+        · <a href="/hooks">all</a>
+        · n=${esc(total)}${tier ? ` (filter Tier ${esc(tier)})` : ""}
+      </p>
+    </div>
+    <div class="card" style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th>${esc(cropLabel)} ID</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th><th>Percentile</th>
+          <th>Grape ortholog</th><th>Protein name</th>
+        </tr></thead>
+        <tbody>${table || `<tr><td colspan="7" class="muted">No rows</td></tr>`}</tbody>
+      </table>
+    </div>
+    ${pagerHtml}`;
+}
+
 app.get("/hooks", (req, res) => {
   const meta = getMeta(db);
   let hooks = { hooks: [] };
@@ -1793,17 +1937,32 @@ app.get("/hooks", (req, res) => {
     /* ignore */
   }
   let soyJoin = null;
+  let tomJoin = null;
+  let conserved = null;
   try {
     soyJoin = meta.second_crop_soybean ? JSON.parse(meta.second_crop_soybean) : null;
   } catch {
     soyJoin = null;
   }
-  const page = Math.max(1, Number(req.query.page) || 1);
+  try {
+    tomJoin = meta.second_crop_tomato ? JSON.parse(meta.second_crop_tomato) : null;
+  } catch {
+    tomJoin = null;
+  }
+  try {
+    conserved = meta.cross_crop_conserved ? JSON.parse(meta.cross_crop_conserved) : null;
+  } catch {
+    conserved = null;
+  }
+  const soyPage = Math.max(1, Number(req.query.soy_page) || Number(req.query.page) || 1);
+  const tomPage = Math.max(1, Number(req.query.tom_page) || 1);
   const soyTier = String(req.query.soy_tier || "").trim().toUpperCase();
+  const tomTier = String(req.query.tom_tier || "").trim().toUpperCase();
   const dbHooks = db
     .prepare(
       `SELECT protein_id, gene_name, tier, score, cross_crop_family, ortholog_ath, ortholog_ath_gene,
-              ortholog_osa, ortholog_osa_gene, ortholog_gma, ortholog_gma_gene, ortholog_gma_score, ortholog_gma_tier
+              ortholog_osa, ortholog_osa_gene, ortholog_gma, ortholog_gma_gene, ortholog_gma_score, ortholog_gma_tier,
+              ortholog_sly, ortholog_sly_gene, ortholog_sly_score, ortholog_sly_tier
        FROM proteins WHERE cross_crop_family IS NOT NULL AND cross_crop_family != ''
        ORDER BY cross_crop_family, score DESC`
     )
@@ -1816,6 +1975,9 @@ app.get("/hooks", (req, res) => {
       const soy = ((h.other_crops || {}).soybean || [])
         .map((x) => `<span class="mono">${esc(x)}</span>`)
         .join(", ") || "—";
+      const tom = ((h.other_crops || {}).tomato || [])
+        .map((x) => `<span class="mono">${esc(x)}</span>`)
+        .join(", ") || "—";
       return `<div class="card" style="margin-bottom:0.75rem">
         <h3>${esc(h.family)}</h3>
         <p class="muted">${esc(h.note || "")}</p>
@@ -1823,89 +1985,56 @@ app.get("/hooks", (req, res) => {
         <p>Arabidopsis: <span class="mono">${a}</span></p>
         <p>Rice: <span class="mono">${r}</span></p>
         <p>Soybean: ${soy}</p>
+        <p>Tomato: ${tom}</p>
       </div>`;
     })
     .join("");
 
-  let soyPanel = `<div class="card"><p class="muted">Soybean condensatome SQLite not loaded — run
-    <span class="mono">scripts/score_second_crop_proteome.py</span>.</p></div>`;
-  if (soyDb) {
-    const clauses = [];
-    const params = [];
-    if (["A", "B", "C", "D"].includes(soyTier)) {
-      clauses.push("tier = ?");
-      params.push(soyTier);
-    }
-    const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
-    const total = soyDb.prepare(`SELECT COUNT(*) AS n FROM proteins ${where}`).get(...params).n;
-    const offset = (page - 1) * PAGE_SIZE;
-    const soyRows = soyDb
-      .prepare(
-        `SELECT protein_id, gene_name, protein_name, score, tier, percentile, grape_ortholog, grape_ortholog_gene
-         FROM proteins ${where} ORDER BY score DESC LIMIT ? OFFSET ?`
-      )
-      .all(...params, PAGE_SIZE, offset);
-    const tierCounts = {};
-    for (const r of soyDb.prepare("SELECT tier, COUNT(*) AS c FROM proteins GROUP BY tier").all()) {
-      tierCounts[r.tier] = r.c;
-    }
-    const soyTable = soyRows
-      .map((r) => {
-        const grape = r.grape_ortholog
-          ? `<a class="mono" href="/protein/${esc(r.grape_ortholog)}">${esc(r.grape_ortholog)}</a>
-             ${r.grape_ortholog_gene ? `(${esc(r.grape_ortholog_gene)})` : ""}`
-          : "—";
-        return `<tr>
-          <td class="mono"><a href="https://www.uniprot.org/uniprotkb/${encodeURIComponent(r.protein_id)}/entry" target="_blank" rel="noopener">${esc(r.protein_id)}</a></td>
-          <td class="mono">${esc(r.gene_name || "—")}</td>
-          <td><span class="tier ${esc(r.tier)}">${esc(r.tier)}</span></td>
-          <td>${fmtScore(r.score)}</td>
-          <td>${fmtPct(r.percentile)}</td>
-          <td>${grape}</td>
-          <td class="muted">${esc((r.protein_name || "").slice(0, 72) || "—")}</td>
-        </tr>`;
-      })
-      .join("");
-    const base = soyTier ? `/hooks?soy_tier=${encodeURIComponent(soyTier)}` : "/hooks";
-    soyPanel = `
-      <div class="card">
-        <h2>Soybean condensatome <span class="mono">UP000008827</span></h2>
-        <p class="muted">PlantLLPS v13 (composition-proxy disorder) scored on <em>Glycine max</em> reference
-        proteome; tiers recalibrated on this proteome. Not a soybean-retrained model.
-        OrthoDB join to grape: <strong>${esc(soyJoin?.n_matched ?? "—")}</strong> / ${esc(soyJoin?.n_grape ?? "—")}
-        (${esc(soyJoin?.n_matched_with_crop_score ?? "—")} with crop scores).</p>
-        <p>Tiers:
-          ${["A", "B", "C", "D"]
-            .map(
-              (t) =>
-                `<a href="/hooks?soy_tier=${t}">${t}=${esc(tierCounts[t] || 0)}</a>`
-            )
-            .join(" · ")}
-          · <a href="/hooks">all</a>
-          · n=${esc(total)}${soyTier ? ` (filter Tier ${esc(soyTier)})` : ""}
-        </p>
-      </div>
-      <div class="card" style="overflow-x:auto">
-        <table>
-          <thead><tr>
-            <th>Soybean ID</th><th>Gene</th><th>Tier</th><th>PlantLLPS</th><th>Percentile</th>
-            <th>Grape ortholog</th><th>Protein name</th>
-          </tr></thead>
-          <tbody>${soyTable || `<tr><td colspan="7" class="muted">No rows</td></tr>`}</tbody>
-        </table>
-      </div>
-      ${pager(base, page, total)}`;
-  }
+  const soyPanel = cropBrowsePanel({
+    cropDb: soyDb,
+    join: soyJoin,
+    cropLabel: "Soybean",
+    proteome: "UP000008827",
+    speciesEm: "Glycine max",
+    tierParam: soyTier,
+    pageParam: "soy_page",
+    page: soyPage,
+    emptyHint: "Soybean condensatome SQLite not loaded — run scripts/score_second_crop_proteome.py --crop soybean.",
+  });
+  const tomPanel = cropBrowsePanel({
+    cropDb: tomDb,
+    join: tomJoin,
+    cropLabel: "Tomato",
+    proteome: "UP000004994",
+    speciesEm: "Solanum lycopersicum",
+    tierParam: tomTier,
+    pageParam: "tom_page",
+    page: tomPage,
+    emptyHint: "Tomato condensatome SQLite not loaded — run scripts/score_second_crop_proteome.py --crop tomato.",
+  });
+
+  const po = conserved?.protein_overlap || {};
+  const conservedCard = conserved
+    ? `<div class="card"><h2>Conserved condensatome (grape ↔ soybean ↔ Ath)</h2>
+      <p class="muted">Tier A∪B OrthoDB overlap deposited under <span class="mono">data/cross_crop/</span>.
+      Grape Tier A∪B: <strong>${esc(conserved.n_grape_tier_ab)}</strong>.
+      Shared grape∩soy Tier A/B: <strong>${esc(po.grape_ab_with_soy_ab)}</strong>.
+      Triple Tier A/B: <strong>${esc(po.triple_tier_ab)}</strong>.
+      Grape-specific Tier A/B: <strong>${esc(po.grape_specific_ab)}</strong>.</p></div>`
+    : "";
 
   const body = `
     <div class="card"><h2>Cross-crop condensatome hooks</h2>
-    <p class="muted">Curated family anchors plus OrthoDB-joined Ath/rice/<strong>soybean</strong> columns on grape rows.
-    Full second-crop atlas deposited under <span class="mono">data/second_crop/</span>.</p></div>
+    <p class="muted">Curated family anchors plus OrthoDB-joined Ath/rice/<strong>soybean</strong>/<strong>tomato</strong> columns on grape rows.
+    Crop atlases under <span class="mono">data/second_crop/</span>; conserved overlap under <span class="mono">data/cross_crop/</span>.</p></div>
+    ${conservedCard}
     ${hookCards || `<p class="muted">No hooks in meta — load data/cross_crop_hooks.json via enrich_orthologs.py</p>`}
     <h2 style="font-family:var(--font-display)">Grape proteome rows with family tag</h2>
     ${proteinTable(dbHooks.map((r) => getProtein(db, r.protein_id)).filter(Boolean))}
     <h2 style="font-family:var(--font-display);margin-top:1.5rem">Second crop · soybean</h2>
-    ${soyPanel}`;
+    ${soyPanel}
+    <h2 style="font-family:var(--font-display);margin-top:1.5rem">Third crop · tomato</h2>
+    ${tomPanel}`;
   res.type("html").send(layout("Cross-crop", body));
 });
 

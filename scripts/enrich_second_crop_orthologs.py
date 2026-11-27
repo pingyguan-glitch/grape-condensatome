@@ -276,29 +276,16 @@ def main() -> None:
                 h["tier"] = (crop_scores.get(h["accession"]) or {}).get("tier")
             grape_to_crop[pid] = hits
 
-        # merge into existing ortholog_json if present
-        ortho_raw = conn.execute(
-            "SELECT ortholog_json FROM proteins WHERE protein_id=?", (pid,)
-        ).fetchone()
-        payload = {}
-        if ortho_raw and ortho_raw[0]:
-            try:
-                payload = json.loads(ortho_raw[0])
-            except json.JSONDecodeError:
-                payload = {}
-        payload[crop["slug"]] = hits
-        payload[f"orthodb_{crop['slug']}"] = primary_odb
-        if hook and hook.get("family"):
-            payload.setdefault("cross_crop_family", hook.get("family"))
-
+        # Keep thin ortholog_{col}* columns as the crop join source of truth.
+        # Do NOT expand ortholog_json with full second-crop hit lists (GitHub ~100 MiB
+        # SQLite limit); Ath/rice compact entries stay as deposited by enrich_orthologs.py.
         conn.execute(
             f"""
             UPDATE proteins SET
                 ortholog_{col} = ?,
                 ortholog_{col}_gene = ?,
                 ortholog_{col}_score = ?,
-                ortholog_{col}_tier = ?,
-                ortholog_json = ?
+                ortholog_{col}_tier = ?
             WHERE protein_id = ?
             """,
             (
@@ -306,10 +293,17 @@ def main() -> None:
                 hits[0].get("gene") if hits else None,
                 score,
                 tier,
-                json.dumps(payload, sort_keys=True),
                 pid,
             ),
         )
+        if hook and hook.get("family"):
+            conn.execute(
+                """
+                UPDATE proteins SET cross_crop_family = COALESCE(cross_crop_family, ?)
+                WHERE protein_id = ?
+                """,
+                (hook.get("family"), pid),
+            )
 
     summary = {
         "crop": crop["slug"],

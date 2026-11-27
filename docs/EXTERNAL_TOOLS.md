@@ -86,22 +86,30 @@ Honest limit: OrthoDB eukaryote-level groups can be broad (e.g. large enzyme
 families). Curated hooks seed high-value families even when xref coverage is thin
 (F6HET4 itself often lacks an OrthoDB xref in UniProt).
 
-## Second-crop condensatome (soybean / tomato)
+## Second-/third-crop condensatome (soybean / tomato) + conserved overlap
 
 ```bash
 # Soybean Glycine max UP000008827 (default; full proteome ~71k sequences, ~3–5 min)
 python3 scripts/score_second_crop_proteome.py --crop soybean
 python3 scripts/enrich_second_crop_orthologs.py --crop soybean
 
-# Optional tomato Solanum lycopersicum UP000004994
+# Tomato Solanum lycopersicum UP000004994 (~31k sequences)
 python3 scripts/score_second_crop_proteome.py --crop tomato
 python3 scripts/enrich_second_crop_orthologs.py --crop tomato
+
+# Ath scores for conserved Tier A/B labels + overlap tables
+python3 scripts/score_second_crop_proteome.py --crop arabidopsis --out-dir data/cross_crop
+python3 scripts/analyze_cross_crop_conserved.py
 ```
 
-Deposits under `data/second_crop/` (TSV.gz + slim SQLite). Grape atlas gains thin
-`ortholog_gma*` (or `ortholog_sly*`) columns only — keeps `grape_condensatome.sqlite`
-under GitHub’s ~100 MB limit. UI: `/hooks` soybean panel. Uses grape-trained PlantLLPS
-v13 with composition-proxy disorder; tiers recalibrated per crop proteome.
+Deposits under `data/second_crop/` (crop SQLite + summary/join JSON; TSV.gz gitignored)
+and `data/cross_crop/` (Ath SQLite + conserved overlap TSV.gz + summary). Grape atlas gains
+thin `ortholog_gma*` / `ortholog_sly*` columns only — keeps `grape_condensatome.sqlite`
+under GitHub’s ~100 MiB limit. UI: `/hooks` soybean + tomato panels. Uses grape-trained
+PlantLLPS v13 with composition-proxy disorder; tiers recalibrated per crop proteome.
+
+If tomato FASTA download fails after retries: document the blocker and
+`python3 scripts/write_tomato_schema_stub.py --blocker "…"`.
 
 ## Fair NAR+ benchmark suite
 

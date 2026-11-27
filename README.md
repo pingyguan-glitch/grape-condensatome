@@ -38,7 +38,9 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **https://grape-condensatome.apps.grok.bot** (+ local / Render / Railway / Fly fallbacks) |
 | Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
 | Explainability | `data/explainability/` + `plantllps/explain.py` | SHAP-equivalent Ser-rich / charge-block / IDR attributions (gold ∪ Tier A; F6HET4 example) |
-| NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.x atlas analysis deposits; Zenodo DOI pending |
+| Cross-crop conserved (v1.5.2) | `data/cross_crop/` | Grape↔soy↔Ath Tier A∪B OrthoDB overlap + Ath score deposit |
+| Tomato third crop (v1.5.2) | `data/second_crop/tomato_*` | UP000004994 scores + grape `ortholog_sly*`; UI `/hooks` |
+| NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.x atlas + cross-crop/tomato deposits; Zenodo DOI pending |
 
 ## Honesty (read before citing metrics)
 
@@ -47,7 +49,8 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - **Explainability (NAR+):** exact logistic SHAP (`φ=w·z`) + companion decomposition + Gly-occlusion windows via `scripts/deposit_explainability.py` → `data/explainability/` (gold ∪ Tier A; protein-page panel). Not KernelSHAP.
 - **AlphaFold pLDDT** summaries + **scored-proteome low-pLDDT segments** via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache; browser-like User-Agent).
 - **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
-- **Soybean second-crop condensatome** (UP000008827) via `scripts/score_second_crop_proteome.py` + `scripts/enrich_second_crop_orthologs.py` → `data/second_crop/` + grape `ortholog_gma*` columns; UI `/hooks`.
+- **Soybean / tomato crop condensatomes** (UP000008827 / UP000004994) via `scripts/score_second_crop_proteome.py` + `scripts/enrich_second_crop_orthologs.py` → `data/second_crop/` + grape `ortholog_gma*` / `ortholog_sly*`; UI `/hooks`.
+- **Conserved cross-crop Tier A∪B** (grape↔soy↔Ath OrthoDB) via `scripts/analyze_cross_crop_conserved.py` → `data/cross_crop/`.
 - Side-by-side **PSAP / LLPhyScore / PLAAC-approx** via `scripts/enrich_comparator_scores.py`. Full-proteome native PSAP / LLPhyScore via `scripts/score_psap_proteome.py` and `scripts/score_llphyscore_proteome.py` (external envs; batched + checkpointed).
 - **Pfam / InterPro domains** + **IDR segments** (AF pLDDT&lt;50 ∪ UniProt MobiDB-lite disordered) via `scripts/enrich_domains_idr.py`; protein-page track + Ensembl Plants link-outs.
 - **Bulk download** UI `/download` and `GET /api/download?tier=A&format=tsv|fasta` (optional `family` / `keyword` / `q`).
@@ -110,7 +113,11 @@ python3 scripts/analyze_stress_network_isoforms.py              # v1.5 analyses 
 ```bash
 python3 scripts/score_second_crop_proteome.py --crop soybean
 python3 scripts/enrich_second_crop_orthologs.py --crop soybean
-# deposits: data/second_crop/soybean_condensatome.*
+python3 scripts/score_second_crop_proteome.py --crop tomato
+python3 scripts/enrich_second_crop_orthologs.py --crop tomato
+python3 scripts/score_second_crop_proteome.py --crop arabidopsis --out-dir data/cross_crop
+python3 scripts/analyze_cross_crop_conserved.py
+# deposits: data/second_crop/{soybean,tomato}_* ; data/cross_crop/conserved_*
 # optional: --crop tomato (UP000004994)
 ```
 
@@ -219,12 +226,15 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 **`v1.3.0`** = fair NAR+ benchmark suite + leaderboard (leave-gold-out / family / expanded species).  
 **`v1.4.0`** = explainability SHAP/grammar attributions on protein pages (gold ∪ Tier A).  
 **`v1.5.0`** = stress GO/keyword deep dive + STRING/stress hubs + VIT multi-accession score deltas.
+**`v1.5.1`** = family enrichment + comparator disagreement + structure–score (UI `/analyses`).
+**`v1.5.2`** = conserved grape↔soy↔Ath Tier A∪B + tomato third-crop condensatome.
 
 ## Still open (not claimed done)
 
 - Exact RBGD4 AGI  
 - Zenodo DOI (bundle verified for v1.1.1 under `dist/`; mint on Zenodo then paste DOI — `docs/ZENODO.md`)  
 - Host hardening follow-up (publish review: resource exhaustion / data exposure — noted in `docs/HOSTING.md`)  
-- Broader splice-isoform annotation (UP000009183 is nearly 1:1 VIT↔accession; v1.5 deposits the rare multi-accession deltas); coexpression-only track; tomato second-crop deposit  
+- Broader splice-isoform annotation (UP000009183 is nearly 1:1 VIT↔accession; v1.5 deposits the rare multi-accession deltas); coexpression-only track  
+
 
 

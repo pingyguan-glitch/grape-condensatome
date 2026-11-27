@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "grape_db": "grape_condensatome.sqlite",
+  "soy_db": "soybean_condensatome.sqlite",
+  "ath_db": "arabidopsis_condensatome.sqlite",
+  "n_grape_proteins": 25972,
+  "n_grape_tier_ab": 3870,
+  "n_soy_scored": 71064,
+  "n_ath_scored": 37706,
+  "protein_overlap": {
+    "grape_ab_with_soy_ab": 968,
+    "grape_ab_with_ath_ortholog": 1867,
+    "grape_ab_with_ath_ab": 576,
+    "triple_tier_ab": 271,
+    "grape_soy_ab_and_ath_ortholog": 610,
+    "grape_specific_ab": 1645,
+    "by_class": {
+      "grape_ab_ath_ortholog_only": 952,
+      "grape_ath_ab": 305,
+      "grape_soy_ab": 358,
+      "grape_soy_ab_ath_ortholog": 339,
+      "grape_specific": 1645,
+      "triple_tier_ab": 271
+    }
+  },
+  "orthodb_clusters": {
+    "n_with_grape_ab": 1790,
+    "n_with_soy_ab": 646,
+    "n_with_ath_ab": 322,
+    "n_triple_tier_ab": 167,
+    "n_grape_soy_ab_ath_ortholog": 336
+  },
+  "deposits": {
+    "overlap_tsv": "conserved_tier_ab_overlap.tsv.gz",
+    "clusters_tsv": "conserved_orthodb_clusters.tsv.gz"
+  },
+  "honesty": "Conserved condensatome overlap uses grape PlantLLPS tiers (atlas SQLite), soybean OrthoDB joins + deposited soybean tiers (data/second_crop/), and Arabidopsis OrthoDB accessions on grape rows. When arabidopsis_condensatome.sqlite is present, Ath Tier A/B is assigned with grape-trained PlantLLPS v13 (composition-proxy disorder; tiers recalibrated on Ath). OrthoDB eukaryote-level groups can be broad; curated cross_crop_hooks.json overlays are noted via cross_crop_family when present. Not a multi-species retrained model."
+}
