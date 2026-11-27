@@ -1,0 +1,14 @@
+{
+  "n": 25972,
+  "merged_from": [
+    "llphyscore_proteome.shard0.checkpoint.json",
+    "llphyscore_proteome.shard1.checkpoint.json",
+    "llphyscore_proteome.shard2.checkpoint.json",
+    "llphyscore_proteome.shard3.checkpoint.json"
+  ],
+  "updated_at": "2026-11-27T01:30:31Z",
+  "native": true,
+  "model": "human+PDB",
+  "out": "/agent/repos/grape-condensatome/data/benchmarks/llphyscore_proteome.tsv",
+  "mean_percentile": 55.0816
+}

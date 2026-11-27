@@ -1,0 +1,9 @@
+{
+  "n": 25972,
+  "out": "/agent/repos/grape-condensatome/data/benchmarks/psap_proteome.tsv",
+  "mean_score": 0.016611,
+  "elapsed_sec_this_run": 262.0,
+  "pending_this_run": 25952,
+  "psap_python": "/tmp/mamba/envs/psap39/bin/python",
+  "native": true
+}

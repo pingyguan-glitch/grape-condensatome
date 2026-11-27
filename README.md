@@ -2,7 +2,7 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-**Version:** 0.4.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
+**Version:** 0.5.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
 
 Author: Pingyin Guan (College of Horticulture, China Agricultural University; ORCID [0000-0003-4890-3412](https://orcid.org/0000-0003-4890-3412)).
 
@@ -25,7 +25,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 - Default disorder is a **composition proxy**. **metapredict** can be joined proteome-wide via `scripts/score_metapredict_proteome.py` (batched/checkpointed; v13 logistic weights still expect the proxy unless you retrain).
 - **AlphaFold pLDDT** summaries (+ Tier A / gold low-pLDDT segments) via `scripts/enrich_alphafold_plddt.py` (network-bound; resumable cache).
 - **Ath/rice OrthoDB orthologs** + curated `data/cross_crop_hooks.json` via `scripts/enrich_orthologs.py`.
-- Side-by-side **PSAP / LLPhyScore** (gold) + **PLAAC-approx** (proteome) via `scripts/enrich_comparator_scores.py`. Full-proteome PSAP/LLPhyScore need external envs.
+- Side-by-side **PSAP / LLPhyScore / PLAAC-approx** via `scripts/enrich_comparator_scores.py`. Full-proteome native PSAP / LLPhyScore via `scripts/score_psap_proteome.py` and `scripts/score_llphyscore_proteome.py` (external envs; batched + checkpointed).
 - v13 adds **hard disordered non-LLPS negatives**; companion-composite AUC falls vs folded-heavy v12 by design.
 - Gold-standard PlantLLPS AUCs are **partially in-sample** (IDs overlap the training corpus). LLPhyScore / PSAP are out-of-the-box.
 - **PSAP** runs in a pinned Python 3.9 env (`scripts/run_psap_gold.py`); gold AUC ≈ **0.718** (companion cited 0.692). System Python 3.12 cannot import `sklearn-json`.
@@ -96,11 +96,17 @@ Public hosting: see [`docs/HOSTING.md`](./docs/HOSTING.md). **GitHub Pages will 
 
 ```bash
 export LLPHYSCORE_HOME=/path/to/LLPhyScore/standalone_package/LLPhyScore
+export LLPHYSCORE_PYTHON=/path/to/llphy39/bin/python
 python3 scripts/compare_gold_standard.py
 
 export PSAP_PYTHON=/path/to/psap39/bin/python
 python3 scripts/run_psap_gold.py
 # → data/benchmarks/gold_standard_comparison.json
+
+# Full proteome (resumable)
+python3 scripts/score_psap_proteome.py --db-ids-only --batch-size 500
+python3 scripts/score_llphyscore_proteome.py --db-ids-only --batch-size 100
+python3 scripts/enrich_comparator_scores.py
 ```
 
 | Predictor | Gold AUC (13+15) | Notes |
@@ -117,12 +123,13 @@ Experiment **E-MTAB-8758** (Pinot Noir berry baseline) TPMs joined on `gene_name
 
 Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.  
 **`v0.3.1`** = metapredict wiring, native PSAP gold AUC, Expression Atlas joins, hosting docs.  
-**`v0.4.0`** = AlphaFold pLDDT joins, batched proteome metapredict, Ath/rice OrthoDB + cross-crop hooks, side-by-side PSAP/LLPhyScore/PLAAC-approx UI.
+**`v0.4.0`** = AlphaFold pLDDT joins, batched proteome metapredict, Ath/rice OrthoDB + cross-crop hooks, side-by-side PSAP/LLPhyScore/PLAAC-approx UI.  
+**`v0.5.0`** = full-proteome **native** PSAP + LLPhyScore (batched/checkpointed) joined into SQLite + `/compare`.
 
 ## Still open (not claimed done)
 
-- Full-proteome **native** PSAP / LLPhyScore columns (gold joined; proteome needs external envs + hours–days)  
 - MAP-screen table deposit (ρ vs PSAP)  
 - Exact RBGD4 AGI; family-held-out PlantLLPS transfer AUC  
 - Confirmed public URL after publish-app / Railway / Render / Fly deploy  
+- AlphaFold low-pLDDT segments for every protein (default remains gold + Tier A)  
 

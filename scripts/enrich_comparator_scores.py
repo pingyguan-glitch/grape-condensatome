@@ -2,15 +2,19 @@
 """Join side-by-side comparator scores into SQLite (PlantLLPS vs PSAP / LLPhyScore / PLAAC).
 
 Sources (honest scope):
-  * PSAP / LLPhyScore — gold-standard TSV from data/benchmarks/ (native runs);
-    proteome-wide PSAP/LLPhyScore require external envs (see docs/EXTERNAL_TOOLS.md).
+  * PSAP / LLPhyScore — gold-standard TSV from data/benchmarks/, plus optional
+    proteome-wide native runs from ``score_psap_proteome.py`` /
+    ``score_llphyscore_proteome.py`` (see docs/EXTERNAL_TOOLS.md).
   * PLAAC-approx — stdlib scores for every proteome sequence (not Java PLAAC HMM).
   * metapredict / AlphaFold columns are joined by their own scripts; this script
-    only ensures comparator_* columns + a /compare view-friendly summary.
+    ensures comparator_* columns + a /compare view-friendly summary.
 
 Example::
 
     python3 scripts/enrich_comparator_scores.py
+    python3 scripts/enrich_comparator_scores.py \\
+      --psap-tsv data/benchmarks/psap_proteome.tsv \\
+      --llphy-tsv data/benchmarks/llphyscore_proteome.tsv
 """
 
 from __future__ import annotations
@@ -32,6 +36,8 @@ DATA = ROOT / "data"
 DEFAULT_DB = DATA / "grape_condensatome.sqlite"
 GOLD_TSV = DATA / "benchmarks" / "gold_standard_scores.tsv"
 FASTA = DATA / "UP000009183.fasta.gz"
+DEFAULT_PSAP_TSV = DATA / "benchmarks" / "psap_proteome.tsv"
+DEFAULT_LLPHY_TSV = DATA / "benchmarks" / "llphyscore_proteome.tsv"
 
 
 def ensure_columns(conn: sqlite3.Connection) -> None:
@@ -49,28 +55,47 @@ def ensure_columns(conn: sqlite3.Connection) -> None:
             conn.execute(f"ALTER TABLE proteins ADD COLUMN {col} {decl}")
 
 
+def _f(row: dict, *keys: str) -> float | None:
+    for k in keys:
+        v = row.get(k)
+        if v is None or v == "":
+            continue
+        try:
+            return float(v)
+        except ValueError:
+            continue
+    return None
+
+
 def load_gold_comparators(path: Path) -> dict[str, dict]:
     if not path.exists():
         return {}
     out = {}
     for row in csv.DictReader(path.open(), delimiter="\t"):
         pid = row["protein_id"]
-        def f(k):
-            v = row.get(k)
-            if v is None or v == "":
-                return None
-            try:
-                return float(v)
-            except ValueError:
-                return None
-
         out[pid] = {
-            "score_psap": f("psap_score"),
-            "score_llphyscore_percentile": f("llphyscore_percentile"),
+            "score_psap": _f(row, "psap_score", "score_psap"),
+            "score_llphyscore_percentile": _f(
+                row, "llphyscore_percentile", "score_llphyscore_percentile"
+            ),
             "label": row.get("label"),
             "note": row.get("note"),
             "comparator_set": "gold_standard",
         }
+    return out
+
+
+def load_score_tsv(path: Path, score_keys: tuple[str, ...]) -> dict[str, float]:
+    if not path.exists():
+        return {}
+    out: dict[str, float] = {}
+    for row in csv.DictReader(path.open(), delimiter="\t"):
+        pid = row.get("protein_id")
+        if not pid:
+            continue
+        val = _f(row, *score_keys)
+        if val is not None:
+            out[pid] = val
     return out
 
 
@@ -98,8 +123,11 @@ def main() -> None:
     ap.add_argument("--db", default=str(DEFAULT_DB))
     ap.add_argument("--gold-tsv", default=str(GOLD_TSV))
     ap.add_argument("--fasta", default=str(FASTA))
+    ap.add_argument("--psap-tsv", default=str(DEFAULT_PSAP_TSV))
+    ap.add_argument("--llphy-tsv", default=str(DEFAULT_LLPHY_TSV))
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--skip-plaac", action="store_true")
+    ap.add_argument("--skip-proteome-native", action="store_true")
     args = ap.parse_args()
 
     conn = sqlite3.connect(str(args.db))
@@ -107,7 +135,40 @@ def main() -> None:
     gold = load_gold_comparators(Path(args.gold_tsv))
     print(f"Gold comparator rows: {len(gold)}", flush=True)
 
-    # Join gold PSAP / LLPhyScore onto any matching proteome IDs (+ keep for UI even if not in proteome)
+    # Join proteome-wide native scores first (gold overlay wins for matching IDs)
+    psap_n = 0
+    llphy_n = 0
+    if not args.skip_proteome_native:
+        psap_scores = load_score_tsv(Path(args.psap_tsv), ("score_psap", "psap_score"))
+        llphy_scores = load_score_tsv(
+            Path(args.llphy_tsv),
+            ("score_llphyscore_percentile", "llphyscore_percentile", "8-feature sum"),
+        )
+        print(f"Proteome PSAP TSV: {len(psap_scores)}; LLPhyScore TSV: {len(llphy_scores)}", flush=True)
+        for pid, sc in psap_scores.items():
+            cur = conn.execute(
+                """
+                UPDATE proteins SET
+                    score_psap = ?,
+                    comparator_set = COALESCE(NULLIF(comparator_set, ''), 'proteome_native')
+                WHERE protein_id = ?
+                """,
+                (sc, pid),
+            )
+            psap_n += cur.rowcount
+        for pid, sc in llphy_scores.items():
+            cur = conn.execute(
+                """
+                UPDATE proteins SET
+                    score_llphyscore_percentile = ?,
+                    comparator_set = COALESCE(NULLIF(comparator_set, ''), 'proteome_native')
+                WHERE protein_id = ?
+                """,
+                (sc, pid),
+            )
+            llphy_n += cur.rowcount
+
+    # Join gold PSAP / LLPhyScore onto any matching proteome IDs (overlay)
     gold_joined = 0
     for pid, g in gold.items():
         exists = conn.execute(
@@ -118,8 +179,8 @@ def main() -> None:
         conn.execute(
             """
             UPDATE proteins SET
-                score_psap = ?,
-                score_llphyscore_percentile = ?,
+                score_psap = COALESCE(?, score_psap),
+                score_llphyscore_percentile = COALESCE(?, score_llphyscore_percentile),
                 comparator_set = ?
             WHERE protein_id = ?
             """,
@@ -245,14 +306,22 @@ def main() -> None:
         for e in side_by_side:
             w.writerow(e)
 
+    n_psap_db = conn.execute("SELECT COUNT(*) FROM proteins WHERE score_psap IS NOT NULL").fetchone()[0]
+    n_llphy_db = conn.execute(
+        "SELECT COUNT(*) FROM proteins WHERE score_llphyscore_percentile IS NOT NULL"
+    ).fetchone()[0]
     summary = {
         "gold_comparator_ids": len(gold),
         "gold_joined_proteome": gold_joined,
+        "psap_proteome_joined": psap_n,
+        "llphyscore_proteome_joined": llphy_n,
+        "psap_db_n": n_psap_db,
+        "llphyscore_db_n": n_llphy_db,
         "plaac_proteome_n": plaac_n,
         "side_by_side": str(out_tsv.name),
         "note": (
-            "PSAP/LLPhyScore columns are gold-standard only unless a full-proteome "
-            "external run is deposited; PLAAC-approx covers the scored proteome."
+            "Native PSAP / LLPhyScore joined from proteome TSVs when present; "
+            "gold-standard rows overlay matching IDs. PLAAC-approx is stdlib (not Java HMM)."
         ),
     }
     conn.execute(

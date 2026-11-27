@@ -17,3 +17,8 @@ build/
 data/alphafold/*.json
 data/orthologs/*.tsv.gz
 data/benchmarks/metapredict_proteome.checkpoint.json
+data/benchmarks/psap_proteome.checkpoint.json
+data/benchmarks/llphyscore_proteome.checkpoint.json
+data/benchmarks/llphyscore_proteome.shard*.checkpoint.json
+data/benchmarks/llphyscore_proteome.shard*.tsv
+data/benchmarks/llphyscore_proteome.shard*.tsv.summary.json
