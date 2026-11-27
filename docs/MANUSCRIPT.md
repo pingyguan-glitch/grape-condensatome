@@ -176,16 +176,16 @@ LLPSDB plant freeze inventory: Supplemental Table S1. Companion sequences and MA
 
 ## SUPPLEMENTARY DATA
 
-**Supplemental Figure S1.** PlantLLPS v13 stratified cross-validation and gold-standard ROC panels (in-sample caveat marked).  
-**Supplemental Figure S2.** Fair leave-gold-out / family hold-out / Ath→non_ath_crop transfer panels versus ProX-style, PSAP, LLPhyScore and PLAAC-approx (`docs/BENCHMARK_LEADERBOARD.md`).  
-**Supplemental Figure S3.** Feature-ablation (leave-one-group-out) and F6HET4 Ser-rich / charge-block / IDR SHAP grammar bars.  
-**Supplemental Figure S4.** Grapevine proteome-wide score distribution (*n* = 25 972) with Tier A/B and MAP anchors.  
-**Supplemental Figure S5.** Stress DE × condensatome enrichment and response-pattern modules (E-MTAB-4324 / E-GEOD-67932).  
+**Supplemental Figure S1.** PlantLLPS v13 stratified cross-validation and gold-standard ROC panels (in-sample caveat marked). [PNG](./figures/supp/Figure_S1.png) · [PDF](./figures/supp/Figure_S1.pdf) · [legends](./figures/supp/LEGENDS.md).  
+**Supplemental Figure S2.** Fair leave-gold-out / family hold-out / Ath→non_ath_crop transfer panels versus ProX-style, PSAP, LLPhyScore and PLAAC-approx (`docs/BENCHMARK_LEADERBOARD.md`). [PNG](./figures/supp/Figure_S2.png) · [PDF](./figures/supp/Figure_S2.pdf).  
+**Supplemental Figure S3.** Feature-ablation (leave-one-group-out) and F6HET4 Ser-rich / charge-block / IDR SHAP grammar bars. [PNG](./figures/supp/Figure_S3.png) · [PDF](./figures/supp/Figure_S3.pdf).  
+**Supplemental Figure S4.** Grapevine proteome-wide score distribution (*n* = 25 972) with Tier A/B and MAP anchors. [PNG](./figures/supp/Figure_S4.png) · [PDF](./figures/supp/Figure_S4.pdf).  
+**Supplemental Figure S5.** Stress DE × condensatome enrichment and response-pattern modules (E-MTAB-4324 / E-GEOD-67932). [PNG](./figures/supp/Figure_S5.png) · [PDF](./figures/supp/Figure_S5.pdf).  
 **Supplemental Table S1.** LLPSDB plant entries at corpus freeze (11 PS + 8 no-PS); see [`docs/supplemental-table-s1-llpsdb-plant.md`](./supplemental-table-s1-llpsdb-plant.md).  
 **Supplemental Table S2.** Feature dictionary for PlantLLPS (including grammar-axis mapping for SHAP).  
 **Supplemental Table S3.** Proteome-wide Tier A/B gene lists (v1.4.0).  
 **Supplemental Table S4.** Stress-module enrichment summary (18 tests) and pattern-module sizes.  
-**Supplemental Data S1.** Software package, scored proteome tables, fair-benchmark JSON/TSV, explainability sidecars and reproducibility scripts (GitHub **v1.4.0**).
+**Supplemental Data S1.** Software package, scored proteome tables, fair-benchmark JSON/TSV, explainability sidecars and reproducibility scripts (GitHub **v1.4.0**). Regenerate figures: `python3 scripts/generate_supp_figures.py` → `docs/figures/supp/` (see `requirements-figures.txt`).
 
 ## ACKNOWLEDGEMENTS
 
