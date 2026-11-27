@@ -147,3 +147,28 @@ python3 scripts/enrich_domains_idr.py
 
 Cache: `data/domains/uniprot_up000009183_domains.tsv.gz` (committed). InterPro checkpoint
 `data/domains/interpro_pfam_backfill.checkpoint.json` is gitignored.
+
+## STRING neighborhood (Vitis PPI)
+
+```bash
+python3 scripts/enrich_string_neighborhood.py
+# Downloads taxid 29760 (Vitis) aliases / info / links from stringdb-downloads.org (v12.0 files)
+# Maps STRING ↔ UniProt (~99.6% of atlas); builds 1-hop neighborhoods at combined_score ≥ 400
+# → SQLite string_neighborhood (Tier A seeds only) + TSV.gz sidecars; UI /network + protein page
+# Deposits: enrichment_summary.json, neighborhood_stats.tsv.gz, top_neighbors.tsv.gz,
+#           seed_edges.tsv.gz, README.md
+```
+
+Notes:
+
+- **Combined score** (0–1000) mixes experiments, databases, co-expression, textmining,
+  neighborhood, fusion, and co-occurrence — **not** LLPS-specific evidence.
+  Conventional cutoffs: 150 low / 400 medium / 700 high / 900 highest.
+- Species is **native grape** STRING (29760), not Arabidopsis transfer. A small set of
+  atlas IDs remain unmapped (~100).
+- Full `*.protein.links*.txt.gz` caches are gitignored (~47 MB); re-download on demand.
+- SQLite keeps **Tier A seed** neighborhood rows only (GitHub 100 MB SQLite limit).
+  Full-proteome stats / top-N / seed edges are committed as `data/string/*.tsv.gz`;
+  the Node UI loads those sidecars at startup.
+- Enrichment fold = (neighbor Tier A∪B fraction) / (proteome A∪B rate); hypergeometric
+  p-value is descriptive adjacency bias, not condensate membership.

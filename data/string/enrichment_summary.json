@@ -1,0 +1,108 @@
+{
+  "string_version_files": "12.0",
+  "string_api_note": "Downloads from stringdb-downloads.org v12.0; API may report 12.5",
+  "taxon_id": 29760,
+  "species": "Vitis vinifera",
+  "min_combined_score": 400,
+  "score_meaning": "STRING combined_score (0\u20131000); 150 low / 400 medium / 700 high / 900 highest. Channels mixed: experiments, databases, coexpression, textmining, neighborhood, fusion, cooccurrence \u2014 not LLPS-specific.",
+  "atlas_proteins": 25972,
+  "mapped_to_string": 25867,
+  "mapping_frac": 0.995957,
+  "unmapped": 105,
+  "proteins_with_neighbors": 19523,
+  "undirected_edges_ge_threshold": 648618,
+  "seed_set": "A",
+  "n_seeds": 1142,
+  "n_seed_edges_deposited": 44932,
+  "n_neighborhood_rows_tsv": 19523,
+  "n_neighborhood_rows_sqlite_seeds": 833,
+  "background_tier_ab": 3870,
+  "background_tier_ab_rate": 0.149007,
+  "enrichment_definition": "fold = (frac neighbors in Tier A\u222aB) / (proteome Tier A\u222aB rate); p = Hypergeometric survival P(X>=k | N,K,n)",
+  "limits": [
+    "Native Vitis STRING network; no Ath/rice PPI transfer in this pass.",
+    "Combined score \u2260 experimental PPI proof; textmining can link co-mentioned genes.",
+    "SQLite stores Tier A seed neighborhood rows only; full-proteome stats and top-N neighbors are in data/string/*.tsv.gz (GitHub 100\u202fMB SQLite limit).",
+    "Gold LLPS overlay (PR #7) is optional; seeds here are score tiers only."
+  ],
+  "anchor_F6HET4": {
+    "string_id": "29760.F6HET4",
+    "n_neighbors": 29,
+    "n_tier_ab": 5,
+    "frac_tier_ab": 0.1724137931034483,
+    "enrichment_fold": 1.157088122605364,
+    "hypergeom_pvalue": 0.43848747319190845,
+    "top": [
+      {
+        "protein_id": "F6H0L8",
+        "combined_score": 694,
+        "tier": "A",
+        "score": 0.849259,
+        "gene_name": "VIT_18s0001g03680"
+      },
+      {
+        "protein_id": "A0ACM8QLW4",
+        "combined_score": 584,
+        "tier": "D",
+        "score": 0.288882,
+        "gene_name": "VIT_15s0048g01730"
+      },
+      {
+        "protein_id": "D7STJ9",
+        "combined_score": 584,
+        "tier": "D",
+        "score": 0.276004,
+        "gene_name": "VIT_04s0008g00530"
+      },
+      {
+        "protein_id": "A0ACM8QL36",
+        "combined_score": 584,
+        "tier": "D",
+        "score": 0.261424,
+        "gene_name": "VIT_01s0010g02430"
+      },
+      {
+        "protein_id": "D7SKP1",
+        "combined_score": 567,
+        "tier": "C",
+        "score": 0.73188,
+        "gene_name": "VIT_06s0004g03810"
+      },
+      {
+        "protein_id": "F6H8R7",
+        "combined_score": 565,
+        "tier": "C",
+        "score": 0.743945,
+        "gene_name": "VIT_05s0049g01350"
+      },
+      {
+        "protein_id": "F6HKM5",
+        "combined_score": 565,
+        "tier": "C",
+        "score": 0.728515,
+        "gene_name": "VIT_08s0007g03090"
+      },
+      {
+        "protein_id": "F6HQY4",
+        "combined_score": 565,
+        "tier": "C",
+        "score": 0.686352,
+        "gene_name": "VIT_08s0040g02590"
+      },
+      {
+        "protein_id": "A0ACM8QPT1",
+        "combined_score": 565,
+        "tier": "C",
+        "score": 0.53926,
+        "gene_name": "VIT_12s0142g00280"
+      },
+      {
+        "protein_id": "F6H137",
+        "combined_score": 557,
+        "tier": "D",
+        "score": 0.327934,
+        "gene_name": "VIT_18s0001g07560"
+      }
+    ]
+  }
+}
