@@ -7,12 +7,16 @@ It is **not** a static site: GitHub Pages cannot serve the SQLite-backed API/UI.
 
 | Mode | Status |
 |------|--------|
-| **Local server** | Supported — `npm install && npm start` → `http://127.0.0.1:8765/` |
-| **Confirmed public URL** | **None yet.** Do not invent or paste placeholder hostnames as live. |
-| Cursor **publish-app** | **Proposed** (slug `grape-condensatome`, proposal awaiting owner confirm + terms). Not live until confirmed — then paste the issued URL here. |
-| Railway / Render / Fly | Configs in-repo (`railway.toml`, `render.yaml`, `fly.toml`, `Dockerfile`). No platform tokens in the Cloud Agent; deploy requires your account login — see steps below. |
+| **Confirmed public URL** | **https://grape-condensatome.apps.grok.bot** (Cursor publish-app, public; confirmed 2026-11-27) |
+| Health | Prefer `GET /api/health` after the app shell loads; first hit may show the Cursor apps-gate “Open this app” page |
+| **Local server** | Still supported — `npm install && npm start` → `http://127.0.0.1:8765/` |
+| Railway / Render / Fly | Configs in-repo as fallback / alternate hosts (`railway.toml`, `render.yaml`, `fly.toml`, `Dockerfile`) |
 
-When a real public HTTPS URL exists, replace the table row above and the README badges in the same PR. Health check path: `GET /api/health`.
+Do **not** invent other hostnames. If the public URL moves, update this table and the README badges in the same PR.
+
+### Security review notes (follow-up)
+
+Cursor publish security review flagged **resource_exhaustion** and **data_exposure** class findings for this public atlas (broad download/search surfaces over a full proteome SQLite). **Not fixed in this hosting pass** — track for a later hardening PR (rate limits, download caps, tighter static/data exposure). The atlas data are intentionally public research tables; secrets are not embedded.
 
 ## Local preview (default)
 
@@ -31,17 +35,13 @@ Ship `data/grape_condensatome.sqlite` (~100 MiB at v1.1.x) with the app.
 ## Cursor publish-app
 
 Pack limit is **50 MiB gzipped**. Flat proteome TSV dumps are gitignored so the
-pack stays under the limit (SQLite + FASTA remain). If a pack still exceeds 50 MiB,
-use Render/Railway/Fly instead.
+pack stays under the limit (SQLite + FASTA remain).
 
-From a Cloud Agent / Cursor environment with this repo committed **and pushed**:
+Live instance (this repo): **https://grape-condensatome.apps.grok.bot**
 
-1. Start the preview: `npm install && npm start` → `http://127.0.0.1:8765/`
-2. Call Cursor **publish-app** on project dir `.` with that preview URL (suggested slug `grape-condensatome`).
-3. Confirm in the Cursor publish dialog (visibility: **public** for NAR/database citation; private / team also available).
-4. Only after confirm: paste the issued URL into this file’s status table and the README badges.
+To republish after code changes: commit + push, keep a local preview on `:8765`, call **publish-app**, confirm if the platform asks.
 
-If publish-app is blocked (pack size, unpushed git, security review, or platform refusal), use a
+If publish-app is blocked (pack size, unpushed git, security review hard-block, or platform refusal), use a
 container host below.
 
 ## Deploy configs (in this repo)
@@ -54,32 +54,30 @@ container host below.
 | `fly.toml` | Fly.io | Dockerfile; `force_https`; health check `/api/health` |
 | `.dockerignore` | Docker | Keeps image lean (excludes `dist/`, caches) |
 
-### Exact user steps — Render (recommended free path)
+### Exact user steps — Render (alternate)
 
 1. Log in at [https://dashboard.render.com](https://dashboard.render.com) (GitHub OAuth).
 2. **New → Blueprint** → connect `pingyguan-glitch/grape-condensatome` → apply `render.yaml`.
    - Or **New → Web Service** → connect the repo → Build `npm ci --omit=dev` → Start `npm start` → Node **22** → Health `/api/health`.
 3. Wait for the first deploy (SQLite ~100 MiB ships with the repo).
-4. Open the issued `https://….onrender.com` URL; verify `…/api/health` returns `"ok": true`.
-5. Paste that URL into this file + README badges; commit.
+4. Open the issued `https://….onrender.com` URL; verify health.
+5. If this becomes the primary host, replace the URL in this file + README badges.
 
-Free tier may spin down after idle (cold start tens of seconds).
-
-### Exact user steps — Railway
+### Exact user steps — Railway (alternate)
 
 1. Log in at [https://railway.app](https://railway.app) (GitHub).
 2. **New Project → Deploy from GitHub** → select this repo (uses `railway.toml` / `Dockerfile`).
    - Or CLI: `npx --yes @railway/cli login && npx --yes @railway/cli init && npx --yes @railway/cli up`
 3. Generate a public HTTPS domain in the service Settings.
-4. Verify `/api/health`; paste URL into this file + README.
+4. Verify health; update this file + README if primary.
 
-### Exact user steps — Fly.io
+### Exact user steps — Fly.io (alternate)
 
 1. Install CLI: [https://fly.io/docs/hands-on/install-flyctl/](https://fly.io/docs/hands-on/install-flyctl/)
 2. `fly auth login`
 3. `fly apps create grape-condensatome` (rename in `fly.toml` if taken)
 4. `fly deploy`
-5. Verify `https://grape-condensatome.fly.dev/api/health`; paste URL into this file + README.
+5. Verify `https://grape-condensatome.fly.dev/api/health`; update docs if primary.
 
 ### Docker (any VPS)
 
@@ -104,15 +102,8 @@ runtime browse mode is local SQLite only.
 
 ## Uptime / README badges
 
-Until a public URL exists, README uses **pending** shield placeholders (not fake hosts).
-After deploy, point shields at the live host, e.g.:
-
-```markdown
-[![Public atlas](https://img.shields.io/badge/atlas-LIVE_URL-0B6E4F)](https://YOUR-HOST/)
-[![Health](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2FYOUR-HOST%2Fapi%2Fhealth&query=%24.ok&label=health&prefix=&suffix=)](https://YOUR-HOST/api/health)
-```
-
-Optional: register the public URL with [UptimeRobot](https://uptimerobot.com/) (or similar) on `GET /api/health` and add their badge.
+README points the public-atlas / uptime shields at **https://grape-condensatome.apps.grok.bot**.
+Optional: register that URL with [UptimeRobot](https://uptimerobot.com/) (or similar). Note the Cursor apps-gate may return an HTML interstitial before the Express app answers `/api/health`, so prefer a simple HTTP-200 uptime check on `/` unless you automate the gate.
 
 ## Related
 

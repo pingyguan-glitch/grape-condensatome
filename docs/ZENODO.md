@@ -111,7 +111,7 @@ Also update:
 ## What this prep does *not* do
 
 - Does not create a Zenodo account or publish a record.
-- Does not claim a public hosted atlas URL (see [`HOSTING.md`](./HOSTING.md)).
+- Does not invent a DOI (public atlas URL is separate — see [`HOSTING.md`](./HOSTING.md): https://grape-condensatome.apps.grok.bot).
 - Does not enlarge GitHub with the 100 MiB+ archive.
 
 ## Related
