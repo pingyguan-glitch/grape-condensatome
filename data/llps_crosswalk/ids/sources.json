@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-11-27T07:33:30Z",
+  "sources": {
+    "phasepro": {
+      "url": "https://phasepro.elte.hu/download_full.json",
+      "cache_name": "phasepro_download_full.json",
+      "citation": "M\u00e9sz\u00e1ros et al. 2020 Nucleic Acids Res. 48:D360\u2013D367",
+      "homepage": "https://phasepro.elte.hu/",
+      "license_note": "Public JSON dump of curated LLPS-driver entries (UniProt accession keys). Redistribute UniProt ID list with citation; do not claim PhaSePro curation.",
+      "cache": "data/llps_crosswalk/cache/phasepro_download_full.json"
+    },
+    "llpsdb": {
+      "url": "http://bio-comp.org.cn/llpsdbv2/download/Phase_separation_unambiguous.zip",
+      "cache_name": "llpsdb_Phase_separation_unambiguous.zip",
+      "citation": "Li et al. 2020 Nucleic Acids Res. 48:D320\u2013D327; LLPSDB v2 (2021)",
+      "homepage": "http://bio-comp.org.cn/llpsdbv2/",
+      "license_note": "Free download of unambiguous phase-separation protein.xls from LLPSDB v2. We deposit UniProt accessions only (not sequences or full XLS).",
+      "cache": "data/llps_crosswalk/cache/llpsdb_Phase_separation_unambiguous.zip"
+    },
+    "drllps_experimental": {
+      "url": "http://llps.biocuckoo.cn/download/LLPS.txt",
+      "cache_name": "drllps_LLPS.txt",
+      "citation": "Ning et al. 2020 Nucleic Acids Res. 48:D288\u2013D295",
+      "homepage": "http://llps.biocuckoo.cn/",
+      "license_note": "Download page TXT of experimentally identified LLPS-associated proteins (~9.2k rows with UniProt IDs). Free for academic use; cite DrLLPS.",
+      "cache": "data/llps_crosswalk/cache/drllps_LLPS.txt"
+    },
+    "drllps_vitis": {
+      "url": "http://llps.biocuckoo.cn/download/protein/Vitis_vinifera.zip",
+      "cache_name": "drllps_Vitis_vinifera.zip",
+      "citation": "Ning et al. 2020 Nucleic Acids Res. 48:D288\u2013D295",
+      "homepage": "http://llps.biocuckoo.cn/",
+      "license_note": "Species FASTA of DrLLPS ortholog-expanded Vitis entries (gene IDs, not UniProt). We deposit gene-symbol list only; raw FASTA stays in gitignored cache.",
+      "cache": "data/llps_crosswalk/cache/drllps_Vitis_vinifera.zip"
+    },
+    "cdcode": {
+      "url": "https://edmond.mpg.de/api/access/datafile/350809",
+      "cache_name": "cdcode_edmond_350809.zip",
+      "citation": "Rostam et al. 2023 Nat Methods (CD-CODE); Hadarovich et al. 2025 NAR (CD-CODE 2.0); Edmond dump doi:10.17617/3.WDM3PG",
+      "homepage": "https://cd-code.org/release",
+      "license_note": "CD-CODE dumps are CC BY-NC 4.0. We deposit UniProt accession lists extracted from protein2cdcode / protein CSV for cross-annotation only \u2014 not the full dump. Commercial redistribution of CD-CODE content requires their license terms.",
+      "cache": "data/llps_crosswalk/cache/cdcode_edmond_350809.zip"
+    }
+  },
+  "counts": {
+    "phasepro_uniprot": 121,
+    "llpsdb_uniprot": 374,
+    "drllps_experimental_uniprot": 9253,
+    "drllps_vitis_genes": 2563,
+    "cdcode_uniprot": 11474,
+    "union_uniprot_phasepro_llpsdb_drllps_cdcode": 12480
+  }
+}

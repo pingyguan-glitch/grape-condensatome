@@ -78,6 +78,8 @@ PROTEINS_PARQUET_COLS = [
     "idr_n_residues",
     "idr_sources",
     "llps_gold",
+    "ext_llps_dbs",
+    "ext_llps_unique",
     "string_id",
     "string_n_neighbors",
     "string_enrichment_fold",
@@ -124,6 +126,11 @@ OPTIONAL_FILES = [
     ("data/fruit_crops/index.json", "fruit_crops/index.json"),
     ("data/fruit_crops/failures.json", "fruit_crops/failures.json"),
     ("data/fruit_crops/README.md", "fruit_crops/README.md"),
+    ("data/llps_crosswalk/summary.json", "llps_crosswalk/summary.json"),
+    ("data/llps_crosswalk/gold_crosswalk.tsv", "llps_crosswalk/gold_crosswalk.tsv"),
+    ("data/llps_crosswalk/candidates_crosswalk.tsv.gz", "llps_crosswalk/candidates_crosswalk.tsv.gz"),
+    ("data/llps_crosswalk/README.md", "llps_crosswalk/README.md"),
+    ("docs/LLPS_CROSSWALK.md", "docs/LLPS_CROSSWALK.md"),
     ("data/string/enrichment_summary.json", "string/enrichment_summary.json"),
 ]
 

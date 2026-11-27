@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-11-27T07:35:46Z",
+  "tool_version": "1.8.0",
+  "external_id_counts": {
+    "phasepro": 121,
+    "llpsdb": 374,
+    "drllps_experimental": 9253,
+    "cdcode": 11474,
+    "drllps_vitis_genes": 2563
+  },
+  "gold_panel": {
+    "n": 164,
+    "unique": 100,
+    "shared": 64,
+    "definition": "train_formal_v13 \u222a curated_llps_experimental_gold \u222a gold_standard_reconstructed"
+  },
+  "proteome": {
+    "n_updated": 25972,
+    "tiers": {
+      "A": {
+        "n": 1142,
+        "unique": 974,
+        "shared": 168,
+        "by_db": {
+          "drllps": 166,
+          "cdcode": 29
+        }
+      },
+      "B": {
+        "n": 2728,
+        "unique": 2422,
+        "shared": 306,
+        "by_db": {
+          "drllps": 304,
+          "cdcode": 46
+        }
+      },
+      "C": {
+        "n": 9653,
+        "unique": 8458,
+        "shared": 1195,
+        "by_db": {
+          "drllps": 1191,
+          "cdcode": 237
+        }
+      },
+      "D": {
+        "n": 12449,
+        "unique": 11311,
+        "shared": 1138,
+        "by_db": {
+          "drllps": 1135,
+          "cdcode": 286
+        }
+      }
+    },
+    "tier_ABC": {
+      "n": 13523,
+      "unique": 11854,
+      "shared": 1669
+    },
+    "tier_AB": {
+      "n": 3870,
+      "unique": 3396,
+      "shared": 474
+    }
+  },
+  "match_rules": [
+    "direct UniProt in PhaSePro / LLPSDB / DrLLPS-experimental / CD-CODE",
+    "ortholog_ath UniProt in those sets",
+    "gene_name in DrLLPS Vitis ortholog-expansion gene list \u2192 counts as DrLLPS"
+  ],
+  "honesty": "DrLLPS Vitis matches are ortholog expansions of animal/yeast scaffolds, not plant-experimental LLPS assays. 'Unique' means absent from these four catalogs under the match rules \u2014 not experimental proof of novelty.",
+  "files": {
+    "gold_tsv": "data/llps_crosswalk/gold_crosswalk.tsv",
+    "gold_json": "data/llps_crosswalk/gold_crosswalk.json",
+    "candidates_tsv_gz": "data/llps_crosswalk/candidates_crosswalk.tsv.gz",
+    "ids": "data/llps_crosswalk/ids/"
+  }
+}
