@@ -45,7 +45,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | LLPS DB crosswalk (v1.8.0) | `data/llps_crosswalk/` | PhaSePro / LLPSDB / DrLLPS / CD-CODE ID joins; unique vs shared; UI `/crosswalk` · [`docs/LLPS_CROSSWALK.md`](./docs/LLPS_CROSSWALK.md) |
 | RNA-binding crosswalk (v1.9.0) | `data/rbp/` | RBP2GO Ath × OrthoDB + ATtRACT + UniProt GO/KW + RG/RGG; UI `/rbp` |
 | Per-protein tracks (v1.10.0) | `data/tracks/` | metapredict + AF pLDDT rails + orthogonal cross-check; grape + candidate deposits |
-| NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to **v1.4.0** base; v1.5.x atlas + cross-crop/tomato deposits; Zenodo DOI pending |
+| NAR Database draft | [`docs/MANUSCRIPT.md`](./docs/MANUSCRIPT.md) | Manuscript synced to software **v1.10.0**; Zenodo DOI pending |
 | Supplemental figures S1–S5 (v1.5.3) | [`docs/figures/supp/`](./docs/figures/supp/) | PNG/PDF + [`LEGENDS.md`](./docs/figures/supp/LEGENDS.md); regenerate via `scripts/generate_supp_figures.py` (`requirements-figures.txt`) |
 
 ## Honesty (read before citing metrics)
