@@ -2,15 +2,15 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.11.0-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.11.1-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
-[![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
+[![Public atlas](https://img.shields.io/badge/NAR_host-Fly.io_pending_owner_deploy-lightgrey)](./docs/DEPLOY.md)
+[![Cursor preview](https://img.shields.io/badge/Cursor_preview-gated-orange)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.11.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.11.1 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff)
 
-> Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
+> **NAR host:** deploy with Fly.io per [`docs/DEPLOY.md`](./docs/DEPLOY.md) (owner must `fly auth login` — no invented public URL yet). Cursor preview [apps.grok.bot](https://grape-condensatome.apps.grok.bot) is **gated** and not proposal-ready. Zenodo DOI still pending ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
 > **v1.0.0** combines Wave 2 curated gold/MAP/hold-out, STRING neighborhoods, and the soybean second-crop condensatome.
 
@@ -36,7 +36,8 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Stress condensatome modules | `data/stress_modules/` | DE × Tier A∪B enrichment + response modules; UI `/modules` |
 | Atlas analyses 2/6/7 (v1.5.0) | `data/stress_modules/deepdive/`, `data/string/stress_seed_hubs.tsv`, `data/isoforms/` | Botrytis GO/keyword deep dive + STRING/stress hubs + VIT multi-accession deltas |
 | Atlas analyses family/comparator/structure (v1.5.1) | `data/family_enrichment/`, `data/comparator_disagreement/`, `data/structure_score/` | Domain enrichment + comparator disagreement + structure–score; UI `/analyses` |
-| Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | **https://grape-condensatome.apps.grok.bot** (+ local / Render / Railway / Fly fallbacks) |
+| Deploy (NAR host) | [`docs/DEPLOY.md`](./docs/DEPLOY.md) | **Fly.io recommended**; owner credentials required |
+| Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | Fly pending owner deploy; Cursor preview gated |
 | Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
 | Explainability | `data/explainability/` + `plantllps/explain.py` | SHAP-equivalent Ser-rich / charge-block / IDR attributions (gold ∪ Tier A; F6HET4 example) |
 | Cross-crop conserved (v1.5.2) | `data/cross_crop/` | Grape↔soy↔Ath Tier A∪B OrthoDB overlap + Ath score deposit |

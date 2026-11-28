@@ -1,4 +1,5 @@
 # Render Blueprint — GrapeCondensatome (Node + SQLite)
+# Alternate host: Fly.io is recommended for NAR (docs/DEPLOY.md).
 # Dashboard: New → Blueprint → connect this repo, or:
 #   https://dashboard.render.com/blueprints
 #
@@ -18,4 +19,6 @@ services:
         value: "22"
       - key: HOST
         value: "0.0.0.0"
+      - key: NODE_ENV
+        value: "production"
       # PORT is injected by Render

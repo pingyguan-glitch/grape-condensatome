@@ -1,5 +1,15 @@
 # Release notes
 
+## v1.11.1 (2026-11-28)
+
+NAR Web Server path: **independent long-term host** hardening (Fly.io recommended).
+
+- Recommend **Fly.io** over Cursor `apps.grok.bot` (gated) and Render free (idle spin-down): hardened `fly.toml` (HTTPS, warm machine, 1 GB, `/api/health` grace 90 s), `Dockerfile` HEALTHCHECK + non-root + bundled weights/SQLite assert, `Procfile`.
+- Early bind + `ready` on `/api/health` so platform checks succeed while sidecars warm.
+- Landing: MIT licence blurb + links to `/score?example=1`, `/methods`, `/limitations`; new `/license` (full MIT) and `/privacy` (FASTA retention / no public job listing); footer links.
+- Docs: [`docs/DEPLOY.md`](./docs/DEPLOY.md) (exact Fly/Render/Railway steps + credentials the user must provide); [`docs/HOSTING.md`](./docs/HOSTING.md) updated — **no invented live URL** until owner runs `fly deploy`.
+- Out of scope (unchanged): Zenodo DOI minting, proposal PDF prose.
+
 ## v1.11.0 (2026-11-28)
 
 NAR Web Server Issue path: **paste-FASTA online scoring** + methods/limits docs.

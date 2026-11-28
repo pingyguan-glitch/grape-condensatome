@@ -186,6 +186,9 @@ app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(express.json({ limit: "2mb" }));
 app.use(express.static(join(__dirname, "public")));
 
+/** Set true after background sidecars finish; scoring works as soon as listen starts. */
+let bootReady = false;
+
 /** @type {number[]|null} */
 let grapeScoresSorted = null;
 
@@ -624,7 +627,11 @@ function layout(title, body, query = "") {
   <footer class="site-footer">
     PlantLLPS + GrapeCondensatome <span class="mono">v${esc(APP_VERSION)}</span>
     · ${esc(model.train_note?.slice(0, 140) || "")}…
-    · <a href="/methods">Methods</a> · <a href="/limitations">Limitations</a>
+    · <a href="/license">MIT License</a>
+    · <a href="/privacy">Privacy</a>
+    · <a href="/score?example=1">Sample score</a>
+    · <a href="/methods">Methods</a>
+    · <a href="/limitations">Limitations</a>
   </footer>
 </div>
 </body>
@@ -843,6 +850,7 @@ app.get("/api/health", (_req, res) => {
   }
   res.json({
     ok: true,
+    ready: bootReady,
     version: APP_VERSION,
     db: DB_PATH,
     n: summarize(db).n_proteins,
@@ -1074,6 +1082,22 @@ app.get("/", (_req, res) => {
     /* ignore */
   }
   const body = `
+    <div class="card" style="margin-bottom:1rem">
+      <h2>Public web server</h2>
+      <p>No login required. Browse the grapevine condensatome or
+         <a href="/score?example=1">score a sample FASTA</a> with the bundled PlantLLPS model.</p>
+      <p><a href="/score?example=1">/score sample</a>
+         · <a href="/methods">/methods</a>
+         · <a href="/limitations">/limitations</a>
+         · <a href="/license">MIT License</a>
+         · <a href="/privacy">Privacy (FASTA)</a></p>
+      <p class="muted"><strong>License:</strong> MIT — free to use, copy, modify, and redistribute
+         under the terms in <a href="/license">/license</a> (full text also in the repository
+         <span class="mono">LICENSE</span> file).</p>
+      <p class="muted"><strong>Submitted sequences:</strong> paste/upload FASTA is scored in request
+         memory only — not written to the proteome DB, and there is no public job listing.
+         See <a href="/privacy">/privacy</a>.</p>
+    </div>
     <div class="grid stats">
       <div class="card stat"><div class="n">${summary.n_proteins}</div><div class="l">Proteins in DB</div></div>
       ${stats}
@@ -3146,13 +3170,15 @@ function scoreForm(resultHtml = "", { preset = "" } = {}) {
          Scored with the bundled PlantLLPS v13 weights — the same
          <span class="mono">${esc(FEATURE_NAMES.length)}</span> features + hybrid logistic/companion
          logic as <span class="mono">plantllps score</span> (tool
-         <span class="mono">v${esc(APP_VERSION)}</span>). Results are <em>not</em> written back to the proteome DB.</p>
+         <span class="mono">v${esc(APP_VERSION)}</span>). Results are <em>not</em> written back to the proteome DB.
+         No account required. <a href="/privacy">Privacy note</a>.</p>
       <p class="muted">Caps: ≤${esc(L.max_sequences)} sequences · ${esc(L.min_length)}–${esc(
         L.max_length
       )} aa each · ≤${esc(L.max_total_residues.toLocaleString())} total residues ·
          suggested browser timeout ${esc(L.suggested_timeout_ms / 1000)}s.
          Larger jobs → CLI. <a href="/examples/score_demo.fasta">Sample FASTA</a> ·
-         <a href="/methods">Methods</a> · <a href="/limitations">Limitations</a>.</p>
+         <a href="/methods">Methods</a> · <a href="/limitations">Limitations</a> ·
+         <a href="/license">MIT License</a>.</p>
       <div id="score-ui">
         <p><label>Optional default ID (used when paste has no <span class="mono">&gt;</span> header)<br/>
           <input id="score-id" type="text" name="protein_id" placeholder="QUERY" value="" style="min-width:12rem"/>
@@ -3409,12 +3435,60 @@ function limitationsPage() {
         <li>Browser scoring caps (≤${esc(L.max_sequences)} seq / ${esc(
           L.max_length
         )} aa) exist for responsiveness — use the CLI for proteome-scale jobs.</li>
-        <li>External hosts may add Cursor apps-gate latency; long pastes can hit reverse-proxy body
-            limits. Prefer local <span class="mono">npm start</span> for demos.</li>
-        <li>Zenodo DOI and independent long-term hosting are out of scope for this web-scoring release.</li>
+        <li>Long pastes can hit reverse-proxy body limits on some hosts; prefer local
+            <span class="mono">npm start</span> or CLI for oversized jobs.</li>
+        <li>Independent long-term HTTPS hosting: follow <span class="mono">docs/DEPLOY.md</span>
+            (Fly.io recommended). Cursor <span class="mono">apps.grok.bot</span> is gated and
+            is <em>not</em> the NAR anonymous-demo target. Zenodo DOI minting remains separate.</li>
       </ul>
       <p><a href="/score">Score FASTA</a> · <a href="/methods">Methods</a> ·
+         <a href="/privacy">Privacy</a> · <a href="/license">License</a> ·
          <a href="/">Atlas home</a></p>
+    </div>`;
+}
+
+function licensePage() {
+  let text = "";
+  try {
+    text = readFileSync(join(__dirname, "LICENSE"), "utf8");
+  } catch {
+    text = "MIT License — see the repository LICENSE file.";
+  }
+  return `
+    <div class="card">
+      <h2>License</h2>
+      <p>GrapeCondensatome / PlantLLPS is released under the <strong>MIT License</strong>.</p>
+      <pre class="mono" style="white-space:pre-wrap;font-size:0.85rem">${esc(text)}</pre>
+      <p><a href="/">Home</a> · <a href="/score?example=1">Sample score</a> ·
+         <a href="/privacy">Privacy</a></p>
+    </div>`;
+}
+
+function privacyPage() {
+  return `
+    <div class="card">
+      <h2>Privacy — submitted FASTA</h2>
+      <p>Tool <span class="mono">v${esc(APP_VERSION)}</span>. No account or login is required to
+         browse the atlas or use <a href="/score">/score</a>.</p>
+      <ul>
+        <li><strong>Retention:</strong> sequences pasted or uploaded for scoring are held in
+            process memory for that HTTP request only. The Express app does <em>not</em> write
+            them to <span class="mono">grape_condensatome.sqlite</span>, disk caches, or any
+            job queue.</li>
+        <li><strong>No public job listing:</strong> there is no shared results board, history
+            page, or multi-user queue that would expose your FASTA to other visitors.</li>
+        <li><strong>Atlas data:</strong> the proteome tables already shipped with the app are
+            public research deposits (UniProt UP000009183 scores and joins), not user uploads.</li>
+        <li><strong>Operator logs:</strong> the hosting platform (e.g. Fly.io) may retain standard
+            access logs (timestamp, IP, path, status). Operators should not enable request-body
+            logging for <span class="mono">/score</span> or <span class="mono">/api/score</span>.
+            This application does not log sequence bodies.</li>
+        <li><strong>Sensitive sequences:</strong> do not submit unpublished or confidential
+            sequences to a shared public instance if institutional policy forbids it — run
+            <span class="mono">npm start</span> or the CLI locally instead.</li>
+      </ul>
+      <p><a href="/score?example=1">Sample score</a> · <a href="/methods">Methods</a> ·
+         <a href="/limitations">Limitations</a> · <a href="/license">License</a></p>
     </div>`;
 }
 
@@ -3424,6 +3498,25 @@ app.get("/methods", (_req, res) => {
 
 app.get("/limitations", (_req, res) => {
   res.type("html").send(layout("Limitations", limitationsPage()));
+});
+
+app.get("/license", (_req, res) => {
+  res.type("html").send(layout("License", licensePage()));
+});
+
+app.get("/privacy", (_req, res) => {
+  res.type("html").send(layout("Privacy", privacyPage()));
+});
+
+// Bind early so platform healthchecks succeed while sidecars warm in the background.
+app.listen(PORT, HOST, () => {
+  console.log(
+    `GrapeCondensatome → http://${HOST === "0.0.0.0" ? "127.0.0.1" : HOST}:${PORT}/`
+  );
+  console.log(`Bound ${HOST}:${PORT}`);
+  console.log(`Version: ${APP_VERSION}`);
+  console.log(`SQLite: ${DB_PATH}`);
+  console.log(`Model: ${MODEL_PATH}`);
 });
 
 Promise.all([
@@ -3451,18 +3544,11 @@ Promise.all([
   }),
   Promise.resolve().then(() => ensureGrapeScoreBackground()),
 ]).finally(() => {
-  app.listen(PORT, HOST, () => {
-    console.log(
-      `GrapeCondensatome → http://${HOST === "0.0.0.0" ? "127.0.0.1" : HOST}:${PORT}/`
-    );
-    console.log(`Bound ${HOST}:${PORT}`);
-    console.log(`Version: ${APP_VERSION}`);
-    console.log(`SQLite: ${DB_PATH}`);
-    console.log(`Model: ${MODEL_PATH}`);
-    console.log(`FASTA sequences indexed: ${seqById.size}`);
-    console.log(`Explainability attributions: ${explainById.size}`);
-    console.log(`Grape score background: ${grapeScoresSorted?.length ?? 0}`);
-    const tc = getTracksCoverage();
-    if (tc) console.log(`Residue tracks coverage: ${JSON.stringify(tc)}`);
-  });
+  bootReady = true;
+  console.log(`FASTA sequences indexed: ${seqById.size}`);
+  console.log(`Explainability attributions: ${explainById.size}`);
+  console.log(`Grape score background: ${grapeScoresSorted?.length ?? 0}`);
+  const tc = getTracksCoverage();
+  if (tc) console.log(`Residue tracks coverage: ${JSON.stringify(tc)}`);
+  console.log("Boot sidecars ready");
 });
