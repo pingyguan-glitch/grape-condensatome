@@ -341,3 +341,28 @@ tr:hover td { background: #f7f3ea; }
   color: var(--muted);
   font-size: 0.85rem;
 }
+
+/* Live paste-score progress */
+.score-progress {
+  margin: 0.5rem 0 0.25rem;
+  height: 0.45rem;
+  background: var(--bg-deep);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.score-progress-bar { height: 100%; width: 100%; }
+.score-progress-bar > span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--leaf), var(--amber));
+  transition: width 0.35s ease;
+}
+.card.err {
+  background: #fbf0ef;
+  border-color: #e0b4b0;
+  color: var(--danger);
+}
+.score-result h4 { font-size: 1rem; color: var(--leaf-deep); }
+input[type=file] { font: inherit; max-width: 100%; }

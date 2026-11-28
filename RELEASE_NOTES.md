@@ -1,5 +1,15 @@
 # Release notes
 
+## v1.11.0 (2026-11-28)
+
+NAR Web Server Issue path: **paste-FASTA online scoring** + methods/limits docs.
+
+- UI `/score`: multi-FASTA paste or file upload → CLI-identical PlantLLPS v13 features/scores (JS port), grape-background empirical percentiles, live composition-proxy disorder track, grammar SHAP bars; progress + 120 s client timeout.
+- JSON `POST /api/score`; caps (25 seq / 8 k aa / 50 k residues) with user-visible errors.
+- Sample input `public/examples/score_demo.fasta`; pages `/methods` + `/limitations`; doc [`docs/WEB_SCORING.md`](./docs/WEB_SCORING.md).
+- `VERSION` / `package.json` / `CITATION.cff` → **1.11.0**; `plantllps.__version__` now reads root `VERSION` (was stale 1.4.0).
+- Out of scope (unchanged): Zenodo DOI minting, independent long-term host, new species.
+
 ## v1.10.0 (2026-11-27)
 
 NAR layer **A2**: AlphaFold pLDDT as orthogonal disorder rail vs metapredict (grape + fruit high-score candidates).

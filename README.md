@@ -2,13 +2,13 @@
 
 Plant-aware LLPS propensity scoring (**PlantLLPS**) and a browsable *Vitis vinifera* condensatome atlas (**GrapeCondensatome**) for UniProt proteome **UP000009183**.
 
-[![Version](https://img.shields.io/badge/version-1.10.0-0B6E4F)](./VERSION)
+[![Version](https://img.shields.io/badge/version-1.11.0-0B6E4F)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Public atlas](https://img.shields.io/badge/public_atlas-live-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Uptime](https://img.shields.io/badge/host-grape--condensatome.apps.grok.bot-0B6E4F)](https://grape-condensatome.apps.grok.bot)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-pending_Zenodo_publish-lightgrey)](./docs/ZENODO.md)
 
-**Version:** 1.10.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
+**Version:** 1.11.0 · **License:** MIT · **Cite:** see [`CITATION.cff`](./CITATION.cff) · **Public atlas:** [https://grape-condensatome.apps.grok.bot](https://grape-condensatome.apps.grok.bot)
 
 > Hosting: live Cursor publish-app URL recorded in [`docs/HOSTING.md`](./docs/HOSTING.md). Zenodo DOI still pending — do not invent one ([`docs/ZENODO.md`](./docs/ZENODO.md)).
 
@@ -25,7 +25,8 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Model weights | `data/model_formal.json` | **v13** hybrid logistic + companion |
 | Proteome SQLite | `data/grape_condensatome.sqlite` | 25 972 scored rows + UniProt + Expression Atlas |
 | Proteome TSV | Zenodo bundle / local export | flat table (gitignored; rebuild from SQLite or `export_zenodo_bundle.py`) |
-| Node web UI | `server.js` + `lib/` + `public/` | Express + `node:sqlite` (Node ≥22) |
+| Node web UI | `server.js` + `lib/` + `public/` | Express + `node:sqlite` (Node ≥22); paste-FASTA `/score` + `/api/score` |
+| Web scoring docs | [`docs/WEB_SCORING.md`](./docs/WEB_SCORING.md) | Caps, percentiles, methods/limitations pages, sample FASTA |
 | Benchmarks | `data/benchmarks/` | gold vs LLPhyScore + **native PSAP** + family hold-out / transfer + **feature ablation** + **fair NAR+ suite** |
 | Fair leaderboard | [`docs/BENCHMARK_LEADERBOARD.md`](./docs/BENCHMARK_LEADERBOARD.md) | leakage-controlled PlantLLPS vs PSAP / LLPhy / PLAAC / ProX-style |
 | Experimental models | `data/experimental/` | optional metapredict / AF-pLDDT disorder retrains (**not** production default) |
