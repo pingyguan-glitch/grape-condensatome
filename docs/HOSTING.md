@@ -7,8 +7,9 @@ It is **not** a static site: GitHub Pages cannot serve the SQLite-backed API/UI.
 
 | Mode | Status |
 |------|--------|
-| **Recommended for NAR** | **Fly.io** — see exact click/CLI steps in [`DEPLOY.md`](./DEPLOY.md) |
-| **Confirmed Fly public URL** | **Not yet** — requires the repo owner to `fly auth login` + `fly deploy` (no token in this environment) |
+| **Recommended for NAR** | **Fly.io** — CLI + GitHub Actions path in [`DEPLOY.md`](./DEPLOY.md) |
+| **GitHub Actions deploy** | [`.github/workflows/fly-deploy.yml`](../.github/workflows/fly-deploy.yml) on `main` / `workflow_dispatch` when repo secret `FLY_API_TOKEN` is set |
+| **Confirmed Fly public URL** | **Not yet** — owner one-time: `fly apps create` + paste `FLY_API_TOKEN` into GitHub Actions secrets (agents cannot mint tokens) |
 | Cursor publish-app | `https://grape-condensatome.apps.grok.bot` — **Cursor apps-gate**; not anonymous-demo ready |
 | Local server | `npm install && npm start` → `http://127.0.0.1:8765/` |
 | Render / Railway | In-repo alternates (`render.yaml`, `railway.toml`); Render free spins down after idle |
@@ -41,7 +42,8 @@ Ship `data/grape_condensatome.sqlite` (~100 MiB at v1.1.x) and `data/model_for
 
 | File | Platform | Role |
 |------|----------|------|
-| [`DEPLOY.md`](./DEPLOY.md) | — | **Start here** — credentials + Fly steps |
+| [`DEPLOY.md`](./DEPLOY.md) | — | **Start here** — one-time Fly create + `FLY_API_TOKEN` secret |
+| `.github/workflows/fly-deploy.yml` | GitHub Actions | Auto `fly deploy` on `main` when `FLY_API_TOKEN` is set |
 | `Dockerfile` | All | `node:22-bookworm-slim`; `HOST=0.0.0.0` `PORT=8080`; HEALTHCHECK; non-root |
 | `fly.toml` | **Fly.io (recommended)** | `force_https`; warm machine; health `/api/health` |
 | `render.yaml` | Render | Blueprint free Web Service; health `/api/health` |

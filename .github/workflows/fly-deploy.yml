@@ -1,0 +1,41 @@
+# Deploy GrapeCondensatome to Fly.io (NAR anonymous HTTPS).
+# One-time owner setup (see docs/DEPLOY.md):
+#   1. fly auth login && fly apps create grape-condensatome
+#   2. Create a deploy token (fly tokens create deploy -x 999999h  OR dashboard)
+#   3. GitHub → Settings → Secrets and variables → Actions → New repository secret
+#      Name: FLY_API_TOKEN  Value: <token>
+# Until the secret exists, this workflow exits 0 with a notice (does not fail main CI).
+
+name: Fly Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: fly-deploy-grape-condensatome
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Fly.io
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy (or skip if FLY_API_TOKEN unset)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FLY_API_TOKEN}" ]; then
+            echo "::notice title=FLY_API_TOKEN missing::Paste a Fly deploy token into GitHub → Settings → Secrets and variables → Actions as FLY_API_TOKEN (after one-time fly apps create). See docs/DEPLOY.md."
+            exit 0
+          fi
+          flyctl deploy --remote-only
+          echo "Deployed. Expected URL: https://grape-condensatome.fly.dev (confirm in Fly dashboard if app was renamed)."

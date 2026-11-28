@@ -7,7 +7,7 @@ authors:
     given-names: Pingyin
     orcid: "https://orcid.org/0000-0003-4890-3412"
     affiliation: "College of Horticulture, China Agricultural University, Beijing 100193, China"
-version: "1.11.1"
+version: "1.11.2"
 date-released: "2026-11-28"
 license: MIT
 repository-code: "https://github.com/pingyguan-glitch/grape-condensatome"
@@ -32,4 +32,4 @@ preferred-citation:
   authors:
     - family-names: Guan
       given-names: Pingyin
-  notes: "NAR Database draft in docs/MANUSCRIPT.md (software v1.11.1). Cite this software release and the companion MAP/LLPS screen when available. Independent host: Fly.io per docs/DEPLOY.md (owner deploy); Cursor apps.grok.bot is gated. Zenodo DOI pending — see docs/ZENODO.md."
+  notes: "NAR Database draft in docs/MANUSCRIPT.md (software v1.11.2). Cite this software release and the companion MAP/LLPS screen when available. Independent host: Fly.io via docs/DEPLOY.md + GitHub Actions (paste FLY_API_TOKEN once); Cursor apps.grok.bot is gated. Zenodo DOI pending — see docs/ZENODO.md."
