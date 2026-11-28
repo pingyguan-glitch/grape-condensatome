@@ -4,7 +4,7 @@
 
 Alternates (`render.yaml`, `railway.toml`) remain in-repo for cheap fallbacks; Render’s free tier spins down after idle (cold starts), so it is a weaker NAR demo host than Fly with `min_machines_running = 1`.
 
-Agents **cannot** create your cloud account or mint deploy tokens. You (or a teammate with billing access) must log in once and run the commands below.
+Agents **cannot** create your cloud account or mint deploy tokens. You (or a teammate with billing access) must do a **one-time** Fly login + app create, then paste a deploy token into GitHub Actions secrets. After that, pushes to `main` (and `workflow_dispatch`) redeploy automatically via [`.github/workflows/fly-deploy.yml`](../.github/workflows/fly-deploy.yml).
 
 ## What ships in the image
 
@@ -28,28 +28,46 @@ No boot-time weight download is required for the default demo. Optional large ca
 
 Do **not** paste tokens into chat. Store them in your password manager or Fly/Render secret stores.
 
-## Fly.io — exact steps
+## Fly.io — one-time owner setup (then Actions deploys)
+
+### A. Create the app once (local CLI)
 
 1. Install the CLI: [https://fly.io/docs/hands-on/install-flyctl/](https://fly.io/docs/hands-on/install-flyctl/)
 2. Authenticate on **your** machine:
    ```bash
    fly auth login
    ```
-3. From the repo root (this branch / `main` after merge):
+3. From the repo root:
    ```bash
    # If the default name is taken, edit app = "…" in fly.toml first
    fly apps create grape-condensatome
-   fly deploy
    ```
-4. Verify (replace hostname if you renamed the app):
+   Optional first deploy from your laptop: `fly deploy`. Prefer letting GitHub Actions deploy after step B.
+
+### B. Paste `FLY_API_TOKEN` into GitHub (once)
+
+1. Create a **deploy** token (do **not** paste it into chat):
+   ```bash
+   fly tokens create deploy -x 999999h
+   ```
+   Or: [Fly dashboard](https://fly.io/dashboard) → Account → Access Tokens.
+2. In GitHub: **Settings → Secrets and variables → Actions → New repository secret**
+   - Name: `FLY_API_TOKEN`
+   - Value: the token from step 1
+3. Trigger deploy: push to `main`, or **Actions → Fly Deploy → Run workflow**.
+4. Until the secret exists, the workflow **skips** deploy with a notice (does not fail the run).
+
+### C. Verify + record the URL
+
+1. After a successful Actions deploy (or local `fly deploy`), verify (replace hostname if you renamed the app):
    ```bash
    curl -sS https://grape-condensatome.fly.dev/api/health | head
    curl -sS -o /dev/null -w "%{http_code}\n" https://grape-condensatome.fly.dev/score?example=1
    curl -sS -o /dev/null -w "%{http_code}\n" https://grape-condensatome.fly.dev/license
    curl -sS -o /dev/null -w "%{http_code}\n" https://grape-condensatome.fly.dev/privacy
    ```
-5. Record the public URL in `docs/HOSTING.md` and the README badges in the same follow-up PR. **Do not invent a URL** before `fly deploy` succeeds.
-6. Optional custom domain (NAR-friendly): Fly dashboard → Certificates → add your DNS CNAME.
+2. Record the public URL in `docs/HOSTING.md` and the README badges in a follow-up PR. **Do not invent a URL** before deploy succeeds.
+3. Optional custom domain (NAR-friendly): Fly dashboard → Certificates → add your DNS CNAME.
 
 ### Fly config knobs (already in `fly.toml`)
 
@@ -62,7 +80,7 @@ Do **not** paste tokens into chat. Store them in your password manager or Fly/Re
 
 - Keep the Fly app billed/active; renew DNS if you attach a custom domain.
 - Point NAR reviewers at the Fly (or custom) URL, **not** `*.apps.grok.bot` (Cursor gate).
-- Source of truth remains this GitHub repo + MIT `LICENSE`; redeploy with `fly deploy` after merges.
+- Source of truth remains this GitHub repo + MIT `LICENSE`; redeploy via Actions on `main` (or `fly deploy` locally) after merges.
 - Zenodo DOI for data/software citation is separate (`docs/ZENODO.md`) and not required to keep HTTPS up.
 
 ## Render — alternate (Blueprint)

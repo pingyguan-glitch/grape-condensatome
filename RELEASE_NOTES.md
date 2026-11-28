@@ -1,5 +1,13 @@
 # Release notes
 
+## v1.11.2 (2026-11-28)
+
+NAR Web Server path: **GitHub Actions → Fly.io** so the owner only pastes a token once.
+
+- Add [`.github/workflows/fly-deploy.yml`](./.github/workflows/fly-deploy.yml): deploy on push to `main` or `workflow_dispatch` when repo secret `FLY_API_TOKEN` is set; skip with notice (exit 0) if unset.
+- Docs: [`docs/DEPLOY.md`](./docs/DEPLOY.md) / [`docs/HOSTING.md`](./docs/HOSTING.md) — one-time `fly apps create` + paste `FLY_API_TOKEN` into GitHub Actions secrets; no invented live URL.
+- Still blocked on owner credentials: no Fly/Zenodo tokens in agent env / Cursor app secrets; Actions secrets list not readable (403).
+
 ## v1.11.1 (2026-11-28)
 
 NAR Web Server path: **independent long-term host** hardening (Fly.io recommended).

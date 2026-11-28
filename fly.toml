@@ -1,10 +1,10 @@
 # Fly.io — recommended independent host for GrapeCondensatome (NAR Web Server path).
 # Anonymous HTTPS :443, no Cursor apps-gate. Exact steps: docs/DEPLOY.md
 #
-# One-time (on a machine where YOU are logged in — agents cannot mint your Fly account):
-#   fly auth login
-#   fly apps create grape-condensatome   # rename app= below if taken
-#   fly deploy
+# One-time (YOU — agents cannot mint your Fly account/token):
+#   fly auth login && fly apps create grape-condensatome
+#   paste FLY_API_TOKEN into GitHub → Settings → Secrets → Actions
+#   (workflow .github/workflows/fly-deploy.yml redeploys on main)
 # Then paste https://<app>.fly.dev into docs/HOSTING.md + README badges.
 
 app = "grape-condensatome"
