@@ -21,6 +21,7 @@ from ..db import (
     summarize,
     top_proteins,
 )
+from ..features import FEATURE_NAMES
 from ..model import ensure_trained_model
 
 WEB_ROOT = Path(__file__).resolve().parent
@@ -30,6 +31,11 @@ DEFAULT_DB = PACKAGE_ROOT / "data" / "grape_condensatome.sqlite"
 DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 8765
 PAGE_SIZE = 40
+# Keep in sync with Node SCORE_LIMITS (lib/fasta.js) for the public Express UI.
+SCORE_MAX_SEQUENCES = 25
+SCORE_MIN_LENGTH = 20
+SCORE_MAX_LENGTH = 8000
+SCORE_MAX_TOTAL_RESIDUES = 50_000
 
 
 def _esc(s: Any) -> str:
@@ -76,7 +82,7 @@ def _stress_expr_html(expr_stress: Any) -> str:
             f' · {_esc(info.get("title") or "")}</h4>'
             f'<p class="muted">{_esc(info.get("stress") or "")}'
             f' · {_esc(info.get("n_significant") or 0)} significant contrast(s)</p>'
-            f'<div class="features">{"".join(rows) or "<span class=\\"muted\\">no contrasts</span>"}</div>'
+            f'<div class="features">{"".join(rows) or "<span class=muted>no contrasts</span>"}</div>'
         )
     if not blocks:
         return ""
@@ -206,6 +212,7 @@ class AppState:
         self.db_path = Path(db_path)
         self.model_path = model_path
         self._model = None
+        self._grape_scores: Optional[List[float]] = None
 
     def conn(self):
         return connect(self.db_path)
@@ -219,6 +226,17 @@ class AppState:
             else:
                 self._model = ensure_trained_model(PACKAGE_ROOT)
         return self._model
+
+    def grape_scores(self) -> List[float]:
+        if self._grape_scores is None:
+            with self.conn() as conn:
+                rows = conn.execute(
+                    "SELECT score FROM proteins WHERE score IS NOT NULL"
+                ).fetchall()
+            self._grape_scores = sorted(
+                float(r[0]) for r in rows if r[0] is not None
+            )
+        return self._grape_scores
 
 
 def make_handler(state: AppState) -> Callable:
@@ -491,15 +509,20 @@ def make_handler(state: AppState) -> Callable:
         def _score_form(self, result_html: str = "") -> None:
             body = f"""
             <div class="card">
-              <h2>Score a sequence</h2>
-              <p class="muted">Paste FASTA or raw amino-acid sequence. Uses the local PlantLLPS model
-              (not written to the proteome DB unless you use the CLI).</p>
+              <h2>Score FASTA</h2>
+              <p class="muted">Paste multi-FASTA or a raw amino-acid sequence. Uses the same
+              PlantLLPS v13 weights / {len(FEATURE_NAMES)} features as the CLI
+              (tool <span class="mono">v{_esc(__version__)}</span>; not written to the proteome DB).
+              Caps: ≤{SCORE_MAX_SEQUENCES} sequences, {SCORE_MIN_LENGTH}–{SCORE_MAX_LENGTH} aa,
+              ≤{SCORE_MAX_TOTAL_RESIDUES:,} total residues.
+              Prefer the Node UI (<span class="mono">npm start</span> → <span class="mono">/score</span>)
+              for progress UI + live disorder tracks.</p>
               <form method="post" action="/score">
-                <p><label>Optional ID<br/>
-                  <input type="text" name="protein_id" placeholder="QUERY1" style="min-width:12rem"/>
+                <p><label>Optional default ID<br/>
+                  <input type="text" name="protein_id" placeholder="QUERY" style="min-width:12rem"/>
                 </label></p>
-                <p><label>Sequence<br/>
-                  <textarea name="sequence" placeholder=">QUERY1&#10;MKT..."></textarea>
+                <p><label>Sequence(s)<br/>
+                  <textarea name="sequence" placeholder=">QUERY1&#10;MKT...&#10;>QUERY2&#10;..."></textarea>
                 </label></p>
                 <button type="submit">Score</button>
               </form>
@@ -510,21 +533,25 @@ def make_handler(state: AppState) -> Callable:
 
         def _score_submit(self, form: Dict[str, List[str]]) -> None:
             raw = (form.get("sequence") or [""])[0]
-            pid = (form.get("protein_id") or ["QUERY"])[0].strip() or "QUERY"
-            seq = _extract_sequence(raw)
-            if len(seq) < 20:
+            default_id = (form.get("protein_id") or ["QUERY"])[0].strip() or "QUERY"
+            records = _parse_fasta_records(raw, default_id=default_id)
+            err = _validate_score_batch(records)
+            if err:
                 return self._score_form(
-                    '<div class="card err"><p>Need a protein sequence of at least 20 amino acids.</p></div>'
+                    f'<div class="card err"><p>{_esc(err)}</p></div>'
                 )
             model = state.model()
-            scored = model.score(seq)
-            feat_html = "".join(
-                f'<div><span class="k">{_esc(k)}</span><span class="v">{_esc(scored.get(k))}</span></div>'
-                for k in sorted(k for k in scored.keys() if k not in {
-                    "score_plantllps", "score_companion", "score_logistic", "tier"
-                })
-            )
-            result = f"""
+            bg = state.grape_scores()
+            blocks: List[str] = []
+            for pid, seq in records:
+                scored = model.score(seq)
+                pct = _empirical_percentile(bg, float(scored.get("score_plantllps") or 0.0))
+                feat_html = "".join(
+                    f'<div><span class="k">{_esc(k)}</span><span class="v">{_esc(scored.get(k))}</span></div>'
+                    for k in FEATURE_NAMES
+                )
+                blocks.append(
+                    f"""
             <div class="card" style="margin-top:1rem">
               <h3>Result for <span class="mono">{_esc(pid)}</span></h3>
               <p>Length {len(seq)} · Tier
@@ -532,23 +559,94 @@ def make_handler(state: AppState) -> Callable:
               <p>PlantLLPS: <strong>{_fmt_score(scored.get('score_plantllps'))}</strong>
                  · companion {_fmt_score(scored.get('score_companion'))}
                  · logistic {_fmt_score(scored.get('score_logistic'))}</p>
+              <p>Grape background percentile: <strong>{_fmt_pct(pct)}</strong>
+                 <span class="muted">(n={len(bg)})</span></p>
               <div class="features">{feat_html}</div>
             </div>
             """
-            self._score_form(result)
+                )
+            self._score_form("".join(blocks))
 
     return Handler
 
 
-def _extract_sequence(raw: str) -> str:
-    lines = []
-    for line in raw.splitlines():
-        line = line.strip()
-        if not line or line.startswith(">"):
-            continue
-        lines.append(line)
-    seq = "".join(lines) if lines else raw.strip()
-    return re.sub(r"[^A-Za-z]", "", seq).upper()
+def _parse_fasta_records(raw: str, *, default_id: str = "QUERY") -> List[Tuple[str, str]]:
+    text = raw or ""
+    if not text.strip():
+        return []
+    records: List[Tuple[str, str]] = []
+    cur_id: Optional[str] = None
+    chunks: List[str] = []
+    saw_header = False
+
+    def flush() -> None:
+        nonlocal cur_id, chunks
+        if cur_id is None:
+            return
+        seq = re.sub(r"[^A-Za-z]", "", "".join(chunks)).upper()
+        records.append((cur_id, seq))
+        cur_id = None
+        chunks = []
+
+    for line in text.splitlines():
+        if line.startswith(">"):
+            flush()
+            saw_header = True
+            token = line[1:].strip().split()[0] if line[1:].strip() else ""
+            m = re.match(r"^(?:sp|tr)\|([^|]+)\|", token, flags=re.I)
+            cur_id = (m.group(1) if m else token) or f"{default_id}{len(records) + 1}"
+            chunks = []
+        else:
+            t = line.strip()
+            if not t:
+                continue
+            if cur_id is None:
+                cur_id = default_id
+            chunks.append(t)
+    flush()
+    if not saw_header and not records:
+        seq = re.sub(r"[^A-Za-z]", "", text).upper()
+        if seq:
+            records.append((default_id, seq))
+    return records
+
+
+def _validate_score_batch(records: List[Tuple[str, str]]) -> Optional[str]:
+    if not records:
+        return "No sequences found. Paste FASTA or a raw amino-acid sequence."
+    if len(records) > SCORE_MAX_SEQUENCES:
+        return (
+            f"At most {SCORE_MAX_SEQUENCES} sequences per request "
+            f"(got {len(records)}). Use the CLI for larger batches."
+        )
+    total = 0
+    for pid, seq in records:
+        n = len(seq)
+        if n < SCORE_MIN_LENGTH:
+            return f"Sequence {pid} is too short ({n} aa; minimum {SCORE_MIN_LENGTH})."
+        if n > SCORE_MAX_LENGTH:
+            return f"Sequence {pid} exceeds {SCORE_MAX_LENGTH} aa (got {n})."
+        total += n
+    if total > SCORE_MAX_TOTAL_RESIDUES:
+        return (
+            f"Total residues {total:,} exceed cap {SCORE_MAX_TOTAL_RESIDUES:,}."
+        )
+    return None
+
+
+def _empirical_percentile(sorted_asc: List[float], score: float) -> Optional[float]:
+    n = len(sorted_asc)
+    if not n:
+        return None
+    # 100 * (# background ≤ query) / N
+    lo, hi = 0, n
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if sorted_asc[mid] <= score:
+            lo = mid + 1
+        else:
+            hi = mid
+    return 100.0 * lo / n
 
 
 def run_server(

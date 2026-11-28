@@ -45,7 +45,10 @@ import {
   DEFAULT_DB,
 } from "./lib/db.js";
 import { loadModel, scoreSequence } from "./lib/model.js";
+import { FEATURE_NAMES, disorderProxyTrajectory } from "./lib/features.js";
 import { explainFeatures } from "./lib/explain.js";
+import { parseFasta, validateScoreBatch, SCORE_LIMITS } from "./lib/fasta.js";
+import { loadSortedScores, empiricalPercentile } from "./lib/percentile.js";
 import {
   openTracksDb,
   loadInterproEntries,
@@ -180,7 +183,11 @@ const seqById = new Map();
 let explainById = new Map();
 const app = express();
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+app.use(express.json({ limit: "2mb" }));
 app.use(express.static(join(__dirname, "public")));
+
+/** @type {number[]|null} */
+let grapeScoresSorted = null;
 
 async function loadExplainability(path = EXPLAIN_PATH) {
   if (!existsSync(path)) {
@@ -589,11 +596,15 @@ function layout(title, body, query = "") {
       <a href="/rbp">RBP / RG</a>
       <a href="/download">Download</a>
       <a href="/score">Score FASTA</a>
+      <a href="/methods">Methods</a>
+      <a href="/limitations">Limits</a>
     </nav>
   </header>
   <div class="banner">
-    PlantLLPS hybrid model (v13). Disorder: composition proxy by default; metapredict trajectories +
+    PlantLLPS hybrid model (v13) · tool <span class="mono">v${esc(APP_VERSION)}</span>.
+    Disorder: composition proxy by default; metapredict trajectories +
     AlphaFold pLDDT tracks deposited under <span class="mono">data/tracks/</span> and plotted on protein pages.
+    Paste-FASTA live scoring on <a href="/score">/score</a> (same features/weights as CLI).
     Curated LLPS gold badges + reconstructed MAP-screen ρ on /gold and /map.
     Orthologs (Ath/rice + soybean via OrthoDB), STRING Vitis neighborhoods (/network),
     stress DE × condensatome enrichment + modules (/modules), atlas analyses
@@ -602,6 +613,7 @@ function layout(title, body, query = "") {
     and side-by-side PSAP/LLPhyScore/PLAAC-approx on gold (+ proteome PLAAC).
     Soybean + tomato + multi-species fruit-crop condensatomes, fruit cross-species high-score
     comparison, and conserved grape↔soy↔Ath overlap on /hooks. Treat ranks as hypotheses.
+    See <a href="/methods">methods</a> · <a href="/limitations">limitations</a>.
   </div>
   <form class="inline card" method="get" action="/search" style="margin-bottom:1.25rem">
     <label for="q" class="muted">Search UniProt ID, gene name, GO, or keyword</label>
@@ -610,7 +622,9 @@ function layout(title, body, query = "") {
   </form>
   ${body}
   <footer class="site-footer">
-    PlantLLPS + GrapeCondensatome · ${esc(model.train_note?.slice(0, 160) || "")}…
+    PlantLLPS + GrapeCondensatome <span class="mono">v${esc(APP_VERSION)}</span>
+    · ${esc(model.train_note?.slice(0, 140) || "")}…
+    · <a href="/methods">Methods</a> · <a href="/limitations">Limitations</a>
   </footer>
 </div>
 </body>
@@ -832,6 +846,10 @@ app.get("/api/health", (_req, res) => {
     version: APP_VERSION,
     db: DB_PATH,
     n: summarize(db).n_proteins,
+    feature_names: FEATURE_NAMES,
+    n_features: FEATURE_NAMES.length,
+    score_limits: SCORE_LIMITS,
+    grape_score_background_n: grapeScoresSorted?.length ?? 0,
     residue_tracks: residueTracksMeta,
     interpro_entries: interproEntriesMeta,
     second_crop: secondCropMeta(),
@@ -2978,84 +2996,434 @@ app.get("/api/fruit-cross-species", (req, res) => {
   });
 });
 
-function scoreForm(resultHtml = "") {
-  return `
-    <div class="card">
-      <h2>Score a sequence</h2>
-      <p class="muted">Paste FASTA or raw amino-acid sequence. Scored with the bundled PlantLLPS v13 model
-      (not written back to the proteome DB).</p>
-      <form method="post" action="/score">
-        <p><label>Optional ID<br/>
-          <input type="text" name="protein_id" placeholder="QUERY1" style="min-width:12rem"/>
-        </label></p>
-        <p><label>Sequence<br/>
-          <textarea name="sequence" placeholder=">QUERY1&#10;MKT..."></textarea>
-        </label></p>
-        <button type="submit">Score</button>
-      </form>
-    </div>
-    ${resultHtml}`;
+function ensureGrapeScoreBackground() {
+  if (grapeScoresSorted) return grapeScoresSorted;
+  try {
+    grapeScoresSorted = loadSortedScores(db);
+    console.log(`Grape score background: ${grapeScoresSorted.length} deposited scores`);
+  } catch (err) {
+    console.warn("Failed to load grape score background:", err);
+    grapeScoresSorted = [];
+  }
+  return grapeScoresSorted;
 }
 
-app.get("/score", (_req, res) => {
-  res.type("html").send(layout("Score FASTA", scoreForm()));
+function scoreOneRecord(rec) {
+  const scored = scoreSequence(rec.sequence, model);
+  const bg = ensureGrapeScoreBackground();
+  const percentile_grape = empiricalPercentile(bg, scored.score_plantllps);
+  const liveExpl = explainFeatures(model, scored);
+  const disorder = disorderProxyTrajectory(rec.sequence);
+  const features = {};
+  for (const name of FEATURE_NAMES) features[name] = scored[name];
+  return {
+    protein_id: rec.id,
+    length: rec.sequence.length,
+    score_plantllps: scored.score_plantllps,
+    score_companion: scored.score_companion,
+    score_logistic: scored.score_logistic,
+    tier: scored.tier,
+    percentile_grape,
+    background_n: bg.length,
+    features,
+    disorder_proxy_track: downsample(disorder, 900),
+    explain: {
+      grammar_axes: liveExpl.grammar?.axes || liveExpl.grammar,
+      top_features: liveExpl.top_features,
+      method_summary:
+        "Logistic: exact linear SHAP (φ=w·z). Companion terms shown beside bars. Live paste-score.",
+    },
+  };
+}
+
+function runScoreRequest({ fasta, protein_id }) {
+  const raw = String(fasta || "");
+  const defaultId = String(protein_id || "QUERY").trim() || "QUERY";
+  const parsed = parseFasta(raw, { defaultId });
+  const check = validateScoreBatch(parsed, { fastaChars: raw.length });
+  if (!check.ok) {
+    return { ok: false, status: 400, error: check.error, code: check.code, limits: SCORE_LIMITS };
+  }
+  const t0 = Date.now();
+  const results = check.records.map((rec) => scoreOneRecord(rec));
+  // Within-batch rank percentile (CLI `plantllps score` style) when n>1.
+  if (results.length > 1) {
+    const scores = results.map((r) => r.score_plantllps);
+    const order = scores
+      .map((s, i) => [s, i])
+      .sort((a, b) => a[0] - b[0]);
+    const ranks = new Array(results.length);
+    let i = 0;
+    while (i < order.length) {
+      let j = i;
+      while (j < order.length && order[j][0] === order[i][0]) j++;
+      const avg = (i + j - 1) / 2;
+      for (let k = i; k < j; k++) ranks[order[k][1]] = avg;
+      i = j;
+    }
+    for (let idx = 0; idx < results.length; idx++) {
+      results[idx].percentile_batch = (100.0 * ranks[idx]) / results.length;
+    }
+  }
+  return {
+    ok: true,
+    version: APP_VERSION,
+    model_mode: model.mode || "hybrid",
+    model_note: model.train_note || null,
+    n_features: FEATURE_NAMES.length,
+    feature_names: FEATURE_NAMES,
+    limits: SCORE_LIMITS,
+    background: {
+      source: "grape_condensatome.sqlite PlantLLPS scores (UP000009183)",
+      n: ensureGrapeScoreBackground().length,
+      percentile_definition:
+        "100 × (# deposited grape scores ≤ query score) / N",
+    },
+    elapsed_ms: Date.now() - t0,
+    n: results.length,
+    results,
+  };
+}
+
+function renderScoreResultCard(r) {
+  const featHtml = Object.keys(r.features || {})
+    .sort()
+    .map(
+      (k) =>
+        `<div><span class="k">${esc(k)}</span><span class="v">${esc(r.features[k])}</span></div>`
+    )
+    .join("");
+  const disorderSpark = residueSparklineHtml(r.disorder_proxy_track, {
+    title: "Composition-proxy disorder (live)",
+    ymin: 0,
+    ymax: 1,
+    stroke: "#b86b2a",
+    thr: 0.5,
+  });
+  const pctGrape =
+    r.percentile_grape != null && Number.isFinite(Number(r.percentile_grape))
+      ? Number(r.percentile_grape).toFixed(2)
+      : "—";
+  const pctBatch =
+    r.percentile_batch != null && Number.isFinite(Number(r.percentile_batch))
+      ? ` · batch %ile ${Number(r.percentile_batch).toFixed(2)}`
+      : "";
+  return `
+    <div class="card score-result" style="margin-top:1rem" id="result-${esc(r.protein_id)}">
+      <h3>Result for <span class="mono">${esc(r.protein_id)}</span></h3>
+      <p>Length ${esc(r.length)} · Tier
+         <span class="tier ${esc(r.tier)}">${esc(r.tier)}</span></p>
+      <p>PlantLLPS: <strong>${fmtScore(r.score_plantllps)}</strong>
+         · companion ${fmtScore(r.score_companion)}
+         · logistic ${fmtScore(r.score_logistic)}</p>
+      <p>Grape background percentile: <strong>${esc(pctGrape)}</strong>
+         <span class="muted">(n=${esc(r.background_n ?? "—")}${esc(pctBatch)})</span></p>
+      <p class="muted">Live track uses the same composition-proxy disorder heuristic as the model
+         feature <span class="mono">frac_disorder_proxy</span>. Deposited metapredict / AF pLDDT
+         dual-rails remain on atlas protein pages when available — not recomputed in-browser.</p>
+      ${disorderSpark}
+      <h4 style="margin-top:0.85rem;font-family:var(--font-display)">Features (${esc(
+        Object.keys(r.features || {}).length
+      )} · CLI vector)</h4>
+      <div class="features">${featHtml}</div>
+    </div>
+    ${explainabilityHtml(
+      {
+        grammar_axes: r.explain?.grammar_axes,
+        top_features: r.explain?.top_features,
+        method_summary: r.explain?.method_summary,
+      },
+      { length: r.length, live: true }
+    )}`;
+}
+
+function scoreForm(resultHtml = "", { preset = "" } = {}) {
+  const L = SCORE_LIMITS;
+  return `
+    <div class="card">
+      <h2>Score FASTA</h2>
+      <p class="muted">Paste multi-FASTA or upload a <span class="mono">.fasta</span> file.
+         Scored with the bundled PlantLLPS v13 weights — the same
+         <span class="mono">${esc(FEATURE_NAMES.length)}</span> features + hybrid logistic/companion
+         logic as <span class="mono">plantllps score</span> (tool
+         <span class="mono">v${esc(APP_VERSION)}</span>). Results are <em>not</em> written back to the proteome DB.</p>
+      <p class="muted">Caps: ≤${esc(L.max_sequences)} sequences · ${esc(L.min_length)}–${esc(
+        L.max_length
+      )} aa each · ≤${esc(L.max_total_residues.toLocaleString())} total residues ·
+         suggested browser timeout ${esc(L.suggested_timeout_ms / 1000)}s.
+         Larger jobs → CLI. <a href="/examples/score_demo.fasta">Sample FASTA</a> ·
+         <a href="/methods">Methods</a> · <a href="/limitations">Limitations</a>.</p>
+      <div id="score-ui">
+        <p><label>Optional default ID (used when paste has no <span class="mono">&gt;</span> header)<br/>
+          <input id="score-id" type="text" name="protein_id" placeholder="QUERY" value="" style="min-width:12rem"/>
+        </label></p>
+        <p><label>Upload FASTA
+          <input id="score-file" type="file" accept=".fa,.fasta,.txt,text/plain"/>
+        </label></p>
+        <p><label>Sequence(s)<br/>
+          <textarea id="score-fasta" name="sequence" placeholder=">QUERY1&#10;MKT...&#10;>QUERY2&#10;...">${esc(
+            preset
+          )}</textarea>
+        </label></p>
+        <p style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+          <button type="button" id="score-run">Score</button>
+          <a class="btn secondary" href="/score?example=1">Load sample</a>
+          <span id="score-status" class="muted" aria-live="polite"></span>
+        </p>
+        <div id="score-progress" class="score-progress" hidden>
+          <div class="score-progress-bar"><span id="score-progress-fill"></span></div>
+        </div>
+      </div>
+      <noscript>
+        <form method="post" action="/score">
+          <p class="muted">JavaScript is off — using synchronous form POST (no live progress).</p>
+          <p><label>Optional ID<br/>
+            <input type="text" name="protein_id" placeholder="QUERY" style="min-width:12rem"/>
+          </label></p>
+          <p><label>Sequence<br/>
+            <textarea name="sequence" placeholder=">QUERY1&#10;MKT..."></textarea>
+          </label></p>
+          <button type="submit">Score</button>
+        </form>
+      </noscript>
+    </div>
+    <div id="score-results">${resultHtml}</div>
+    <script>
+    (function () {
+      const fastaEl = document.getElementById("score-fasta");
+      const idEl = document.getElementById("score-id");
+      const fileEl = document.getElementById("score-file");
+      const runBtn = document.getElementById("score-run");
+      const statusEl = document.getElementById("score-status");
+      const prog = document.getElementById("score-progress");
+      const fill = document.getElementById("score-progress-fill");
+      const out = document.getElementById("score-results");
+      if (!fastaEl || !runBtn) return;
+      const TIMEOUT_MS = ${SCORE_LIMITS.suggested_timeout_ms};
+
+      fileEl?.addEventListener("change", async () => {
+        const f = fileEl.files && fileEl.files[0];
+        if (!f) return;
+        if (f.size > ${SCORE_LIMITS.max_fasta_chars}) {
+          statusEl.textContent = "File too large for browser paste caps.";
+          return;
+        }
+        fastaEl.value = await f.text();
+        statusEl.textContent = "Loaded " + f.name;
+      });
+
+      async function runScore() {
+        const fasta = fastaEl.value || "";
+        if (!fasta.trim()) {
+          statusEl.textContent = "Paste or upload a FASTA first.";
+          return;
+        }
+        runBtn.disabled = true;
+        statusEl.textContent = "Scoring…";
+        prog.hidden = false;
+        fill.style.width = "15%";
+        out.innerHTML = "";
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+        const tick = setInterval(() => {
+          const w = parseFloat(fill.style.width) || 15;
+          if (w < 90) fill.style.width = Math.min(90, w + 4) + "%";
+        }, 400);
+        try {
+          const res = await fetch("/api/score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ fasta, protein_id: idEl?.value || "QUERY" }),
+            signal: ctrl.signal,
+          });
+          const data = await res.json();
+          fill.style.width = "100%";
+          if (!data.ok) {
+            statusEl.textContent = "";
+            out.innerHTML = '<div class="card err"><p>' + escapeHtml(data.error || "Score failed") +
+              "</p><p class=\\"muted\\">code=" + escapeHtml(data.code || res.status) + "</p></div>";
+            return;
+          }
+          statusEl.textContent =
+            "Done · " + data.n + " sequence(s) · " + data.elapsed_ms + " ms · v" + data.version;
+          // Re-render via HTML endpoint fragment for track/explain parity
+          const htmlRes = await fetch("/score/render", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+            signal: ctrl.signal,
+          });
+          out.innerHTML = await htmlRes.text();
+        } catch (err) {
+          const msg =
+            err && err.name === "AbortError"
+              ? "Timed out after " + TIMEOUT_MS / 1000 +
+                "s. Try fewer/shorter sequences, or use the CLI."
+              : String(err.message || err);
+          statusEl.textContent = "";
+          out.innerHTML = '<div class="card err"><p>' + escapeHtml(msg) + "</p></div>";
+        } finally {
+          clearTimeout(timer);
+          clearInterval(tick);
+          runBtn.disabled = false;
+          setTimeout(() => { prog.hidden = true; fill.style.width = "0%"; }, 600);
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      runBtn.addEventListener("click", runScore);
+    })();
+    </script>`;
+}
+
+app.get("/score", async (req, res) => {
+  let preset = "";
+  if (String(req.query.example || "") === "1") {
+    try {
+      preset = readFileSync(
+        join(__dirname, "public", "examples", "score_demo.fasta"),
+        "utf8"
+      );
+    } catch {
+      preset = "";
+    }
+  }
+  res.type("html").send(layout("Score FASTA", scoreForm("", { preset })));
 });
 
 app.post("/score", (req, res) => {
   const raw = String(req.body.sequence || "");
   const pid = String(req.body.protein_id || "QUERY").trim() || "QUERY";
-  const lines = [];
-  for (const line of raw.split(/\r?\n/)) {
-    const t = line.trim();
-    if (!t || t.startsWith(">")) continue;
-    lines.push(t);
-  }
-  const seq = (lines.length ? lines.join("") : raw).replace(/[^A-Za-z]/g, "").toUpperCase();
-  if (seq.length < 20) {
+  const payload = runScoreRequest({ fasta: raw, protein_id: pid });
+  if (!payload.ok) {
     return res
+      .status(payload.status || 400)
       .type("html")
       .send(
         layout(
           "Score FASTA",
           scoreForm(
-            `<div class="card err"><p>Need a protein sequence of at least 20 amino acids.</p></div>`
+            `<div class="card err"><p>${esc(payload.error)}</p></div>`,
+            { preset: raw }
           )
         )
       );
   }
-  const scored = scoreSequence(seq, model);
-  const liveExpl = explainFeatures(model, scored);
-  const featHtml = Object.keys(scored)
-    .filter(
-      (k) =>
-        !["score_plantllps", "score_companion", "score_logistic", "tier"].includes(k)
-    )
-    .sort()
-    .map(
-      (k) =>
-        `<div><span class="k">${esc(k)}</span><span class="v">${esc(scored[k])}</span></div>`
-    )
-    .join("");
-  const result = `
-    <div class="card" style="margin-top:1rem">
-      <h3>Result for <span class="mono">${esc(pid)}</span></h3>
-      <p>Length ${seq.length} · Tier
-         <span class="tier ${esc(scored.tier)}">${esc(scored.tier)}</span></p>
-      <p>PlantLLPS: <strong>${fmtScore(scored.score_plantllps)}</strong>
-         · companion ${fmtScore(scored.score_companion)}
-         · logistic ${fmtScore(scored.score_logistic)}</p>
-      <div class="features">${featHtml}</div>
-    </div>
-    ${explainabilityHtml(
-      {
-        grammar_axes: liveExpl.grammar.axes,
-        top_features: liveExpl.top_features,
-        method_summary:
-          "Logistic: exact linear SHAP (φ=w·z). Companion terms shown beside bars.",
-      },
-      { length: seq.length, live: true }
-    )}`;
-  res.type("html").send(layout("Score FASTA", scoreForm(result)));
+  const resultHtml = payload.results.map(renderScoreResultCard).join("");
+  res.type("html").send(layout("Score FASTA", scoreForm(resultHtml, { preset: raw })));
+});
+
+app.post("/api/score", (req, res) => {
+  const body = req.body || {};
+  const fasta =
+    body.fasta != null
+      ? String(body.fasta)
+      : Array.isArray(body.sequences)
+        ? body.sequences
+            .map((s) => `>${s.id || "QUERY"}\n${s.sequence || ""}`)
+            .join("\n")
+        : String(body.sequence || "");
+  const payload = runScoreRequest({
+    fasta,
+    protein_id: body.protein_id || body.id || "QUERY",
+  });
+  if (!payload.ok) {
+    return res.status(payload.status || 400).json(payload);
+  }
+  res.json(payload);
+});
+
+/** HTML fragment for scored results (used by the browser UI after /api/score). */
+app.post("/score/render", (req, res) => {
+  const results = req.body?.results;
+  if (!Array.isArray(results) || !results.length) {
+    return res.status(400).type("html").send(`<div class="card err"><p>No results to render.</p></div>`);
+  }
+  res.type("html").send(results.map(renderScoreResultCard).join(""));
+});
+
+function methodsPage() {
+  const L = SCORE_LIMITS;
+  const bgN = ensureGrapeScoreBackground().length;
+  return `
+    <div class="card">
+      <h2>Methods — PlantLLPS web scoring</h2>
+      <p>Tool version <span class="mono">v${esc(APP_VERSION)}</span> (identical
+         <span class="mono">VERSION</span> file, Node UI, and
+         <span class="mono">plantllps</span> package). Model: bundled
+         <span class="mono">data/model_formal.json</span> (v13 hybrid logistic + companion).</p>
+      <h3>What is computed</h3>
+      <ul>
+        <li><strong>${esc(FEATURE_NAMES.length)} sequence features</strong> matching the CLI vector:
+          <span class="mono">${esc(FEATURE_NAMES.join(", "))}</span>.</li>
+        <li><strong>Scores:</strong> companion composite, logistic head, PlantLLPS hybrid
+          (<span class="mono">0.5 × companion + 0.5 × logistic</span> when trained), plus tier A–D
+          using deposited proteome cutoffs.</li>
+        <li><strong>Grammar / disorder tracks:</strong> live composition-proxy disorder trajectory
+          (same window rule as <span class="mono">frac_disorder_proxy</span>) and logistic SHAP
+          grammar axes (Ser-rich / charge-block / IDR). Deposited metapredict + AF pLDDT dual-rails
+          are atlas-only (not run in the browser).</li>
+        <li><strong>Reference percentile:</strong> empirical CDF vs deposited grape proteome PlantLLPS
+          scores (n=${esc(bgN)}):
+          <span class="mono">100 × (# scores ≤ query) / N</span>. Multi-sequence pastes also report a
+          within-batch rank percentile (CLI <span class="mono">plantllps score</span> style).</li>
+      </ul>
+      <h3>Batch limits &amp; browser expectations</h3>
+      <ul>
+        <li>≤ ${esc(L.max_sequences)} sequences; ${esc(L.min_length)}–${esc(L.max_length)} aa each;
+            ≤ ${esc(L.max_total_residues.toLocaleString())} total residues;
+            paste ≤ ${esc(L.max_fasta_chars.toLocaleString())} characters.</li>
+        <li>Suggested client timeout ${esc(L.suggested_timeout_ms / 1000)}s; progress bar is
+            UX-only (server scores synchronously per request).</li>
+        <li>Endpoints: UI <span class="mono">/score</span>, JSON
+            <span class="mono">POST /api/score</span>.</li>
+      </ul>
+      <p><a href="/score">Open scoring UI</a> ·
+         <a href="/examples/score_demo.fasta">Sample FASTA</a> ·
+         <a href="/limitations">Limitations</a></p>
+    </div>`;
+}
+
+function limitationsPage() {
+  const L = SCORE_LIMITS;
+  return `
+    <div class="card">
+      <h2>Limitations</h2>
+      <p>PlantLLPS / GrapeCondensatome is a <strong>hypothesis generator</strong>, not a wet-lab
+         condensate assay. Tool <span class="mono">v${esc(APP_VERSION)}</span>.</p>
+      <ul>
+        <li>Default disorder is a <strong>composition proxy</strong>, not metapredict or pLDDT.
+            Live paste-score tracks use that proxy; deposited dual-rails are shown only for atlas
+            accessions with sidecars under <span class="mono">data/tracks/</span>.</li>
+        <li>Scores and tiers are relative to the grape-trained v13 model and UP000009183 background.
+            High percentile ≠ experimental LLPS proof.</li>
+        <li>Plant positives remain scarce; benchmarks are leakage-controlled but not a substitute for
+            microscopy / FRAP / in vitro phase separation.</li>
+        <li>Browser scoring caps (≤${esc(L.max_sequences)} seq / ${esc(
+          L.max_length
+        )} aa) exist for responsiveness — use the CLI for proteome-scale jobs.</li>
+        <li>External hosts may add Cursor apps-gate latency; long pastes can hit reverse-proxy body
+            limits. Prefer local <span class="mono">npm start</span> for demos.</li>
+        <li>Zenodo DOI and independent long-term hosting are out of scope for this web-scoring release.</li>
+      </ul>
+      <p><a href="/score">Score FASTA</a> · <a href="/methods">Methods</a> ·
+         <a href="/">Atlas home</a></p>
+    </div>`;
+}
+
+app.get("/methods", (_req, res) => {
+  res.type("html").send(layout("Methods", methodsPage()));
+});
+
+app.get("/limitations", (_req, res) => {
+  res.type("html").send(layout("Limitations", limitationsPage()));
 });
 
 Promise.all([
@@ -3081,16 +3449,19 @@ Promise.all([
   loadInterproEntries().catch((err) => {
     console.error("InterPro entries cache failed:", err);
   }),
+  Promise.resolve().then(() => ensureGrapeScoreBackground()),
 ]).finally(() => {
   app.listen(PORT, HOST, () => {
     console.log(
       `GrapeCondensatome → http://${HOST === "0.0.0.0" ? "127.0.0.1" : HOST}:${PORT}/`
     );
     console.log(`Bound ${HOST}:${PORT}`);
+    console.log(`Version: ${APP_VERSION}`);
     console.log(`SQLite: ${DB_PATH}`);
     console.log(`Model: ${MODEL_PATH}`);
     console.log(`FASTA sequences indexed: ${seqById.size}`);
     console.log(`Explainability attributions: ${explainById.size}`);
+    console.log(`Grape score background: ${grapeScoresSorted?.length ?? 0}`);
     const tc = getTracksCoverage();
     if (tc) console.log(`Residue tracks coverage: ${JSON.stringify(tc)}`);
   });

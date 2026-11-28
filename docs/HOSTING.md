@@ -23,6 +23,12 @@ Cursor publish security review flagged **resource_exhaustion** and **data_exposu
 ```bash
 npm install && npm start
 # → http://127.0.0.1:8765/
+# Paste-FASTA scoring (NAR Web Server path):
+#   open http://127.0.0.1:8765/score  (sample: /score?example=1)
+#   curl -s -X POST http://127.0.0.1:8765/api/score \
+#     -H 'Content-Type: application/json' \
+#     -d @<(python3 -c "import json; print(json.dumps({'fasta': open('public/examples/score_demo.fasta').read()}))")
+# Methods / limits: /methods · /limitations · docs/WEB_SCORING.md
 # Browse /download or call:
 #   curl 'http://127.0.0.1:8765/api/download?tier=A&format=tsv' -o tierA.tsv
 #   curl 'http://127.0.0.1:8765/api/download?family=MAP65&format=fasta' -o map65.fasta
