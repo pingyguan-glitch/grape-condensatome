@@ -97,12 +97,50 @@ PROTEINS_PARQUET_COLS = [
 CORE_FILES = [
     ("CITATION.cff", "CITATION.cff"),
     ("LICENSE", "LICENSE"),
+    ("VERSION", "VERSION"),
     ("README.md", "REPO_README.md"),
+    ("docs/ZENODO.md", "docs/ZENODO.md"),
+    ("docs/WEB_SCORING.md", "docs/WEB_SCORING.md"),
     ("data/model_formal.json", "model_formal.json"),
     ("data/model_formal.metrics.v13.json", "model_formal.metrics.v13.json"),
     ("data/train_formal_v13.csv", "train_formal_v13.csv"),
     ("data/proteome_summary.json", "proteome_summary.json"),
     ("data/cross_crop_hooks.json", "cross_crop_hooks.json"),
+    # NAR Web Server path: sample FASTA for /score paste demo (v1.11.0+)
+    ("public/examples/score_demo.fasta", "examples/score_demo.fasta"),
+]
+
+# Runnable scoring-server snapshot (Node Express + Python plantllps web/CLI).
+# Paths are (src_rel, dst_rel under code/). Globs expand at build time.
+CODE_SNAPSHOT_FILES = [
+    ("package.json", "code/package.json"),
+    ("package-lock.json", "code/package-lock.json"),
+    ("requirements.txt", "code/requirements.txt"),
+    ("Dockerfile", "code/Dockerfile"),
+    ("server.js", "code/server.js"),
+    ("lib/db.js", "code/lib/db.js"),
+    ("lib/explain.js", "code/lib/explain.js"),
+    ("lib/fasta.js", "code/lib/fasta.js"),
+    ("lib/features.js", "code/lib/features.js"),
+    ("lib/model.js", "code/lib/model.js"),
+    ("lib/percentile.js", "code/lib/percentile.js"),
+    ("lib/tracks.js", "code/lib/tracks.js"),
+    ("public/style.css", "code/public/style.css"),
+    ("public/examples/score_demo.fasta", "code/public/examples/score_demo.fasta"),
+    ("plantllps/__init__.py", "code/plantllps/__init__.py"),
+    ("plantllps/__main__.py", "code/plantllps/__main__.py"),
+    ("plantllps/cli.py", "code/plantllps/cli.py"),
+    ("plantllps/db.py", "code/plantllps/db.py"),
+    ("plantllps/explain.py", "code/plantllps/explain.py"),
+    ("plantllps/fasta.py", "code/plantllps/fasta.py"),
+    ("plantllps/features.py", "code/plantllps/features.py"),
+    ("plantllps/metapredict_bridge.py", "code/plantllps/metapredict_bridge.py"),
+    ("plantllps/metrics.py", "code/plantllps/metrics.py"),
+    ("plantllps/model.py", "code/plantllps/model.py"),
+    ("plantllps/plaac_approx.py", "code/plantllps/plaac_approx.py"),
+    ("plantllps/prox_features.py", "code/plantllps/prox_features.py"),
+    ("plantllps/web/__init__.py", "code/plantllps/web/__init__.py"),
+    ("plantllps/web/server.py", "code/plantllps/web/server.py"),
 ]
 
 OPTIONAL_FILES = [
@@ -182,27 +220,54 @@ This folder is the **deposit package** prepared by
 | `grape_condensatome.sqlite` | *Vitis vinifera* UP000009183 atlas (**{n_proteins}** proteins) |
 | `grape_condensatome.proteins.tsv.gz` | Slim proteins-table export (TSV) |
 | `grape_condensatome.proteins.parquet` | Same slim table (optional; needs pyarrow at export) |
+| `examples/score_demo.fasta` | Sample multi-FASTA for paste-FASTA `/score` (NAR Web Server) |
+| `code/` | Scoring-server snapshot (Node Express + `plantllps` CLI/web) |
+| `docs/WEB_SCORING.md` | Paste-FASTA methods / caps |
 | `second_crop/` | Soybean/tomato condensatome SQLite + join JSON (when present) |
 | `fruit_crops/` | Multi-species fruit-crop condensatome deposits (when present) |
 | `CITATION.cff` | Citation metadata (**DOI field empty until you publish**) |
+| `VERSION` | Software tip mirrored from the GitHub release |
 | `LICENSE` | MIT |
 | `SHA256SUMS.txt` | Checksums of every file in this bundle |
 | `bundle_manifest.json` | Machine-readable inventory |
+
+## Scoring-server snapshot (`code/`)
+
+Minimal runnable stack aligned with tip **v{version}**:
+
+```bash
+# From the extracted deposit root (or after unpacking the archive):
+cp model_formal.json code/data/model_formal.json   # or symlink
+cp grape_condensatome.sqlite code/data/             # needed for grape percentiles
+cp -r examples code/public/                         # sample FASTA already under code/public/examples/
+cd code && npm install && npm start                 # http://127.0.0.1:8765/score
+```
+
+Weights live at deposit-root `model_formal.json`; the Node server expects
+`data/model_formal.json` relative to `code/` (copy or symlink as above).
 
 ## Honesty
 
 - PlantLLPS gold-panel AUCs are **partially in-sample** — prefer family hold-out / transfer metrics.
 - Default disorder in model weights is a **composition proxy** (metapredict is an annotation track).
 - MAP-screen Spearman ρ in this deposit is from an **annotation reconstruction**, not the unpublished companion Supplemental Data S1 table.
+- Live paste scoring does **not** write rows back into the atlas SQLite.
 - No fabricated public hosted URL ships with this deposit; see `docs/HOSTING.md` in the GitHub repo.
 
 ## How to get a real DOI
 
-Follow **`docs/ZENODO.md`** in the repository:
+Follow **`docs/ZENODO.md`** in the repository (also copied here under `docs/ZENODO.md`):
 
 1. Upload this folder (or the `.zip` / `.tar.gz` archive) to Zenodo.
 2. Publish the record — Zenodo mints `10.5281/zenodo.<id>`.
 3. Paste that DOI into `CITATION.cff` → `identifiers` and re-tag the GitHub release if needed.
+
+Optional one-shot API publish (requires your personal Zenodo token — never commit it):
+
+```bash
+export ZENODO_ACCESS_TOKEN=…   # or ZENODO_TOKEN
+python3 scripts/zenodo_publish.py --archive dist/grape-condensatome-zenodo-v{version}.zip
+```
 
 **Do not invent a DOI.** Until Zenodo publishes the record, cite the GitHub tag `v{version}`
 and this software release via `CITATION.cff` without a Zenodo identifier.
@@ -332,12 +397,20 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"Missing model: {args.model}")
 
     planned: list[tuple[Path, Path]] = []
-    for src_rel, dst_rel in CORE_FILES + OPTIONAL_FILES + _fruit_crop_optional_files():
+    required = set(CORE_FILES) | set(CODE_SNAPSHOT_FILES)
+    for src_rel, dst_rel in (
+        CORE_FILES + CODE_SNAPSHOT_FILES + OPTIONAL_FILES + _fruit_crop_optional_files()
+    ):
         src = ROOT / src_rel
         if src.is_file():
             planned.append((src, out_dir / dst_rel))
-        elif (src_rel, dst_rel) in CORE_FILES:
+        elif (src_rel, dst_rel) in required:
             raise SystemExit(f"Missing required file: {src}")
+
+    # Optional Python web static CSS (present in tree)
+    web_css = ROOT / "plantllps" / "web" / "static" / "style.css"
+    if web_css.is_file():
+        planned.append((web_css, out_dir / "code" / "plantllps" / "web" / "static" / "style.css"))
 
     # Always include grape SQLite under a stable name
     planned.append((args.db.resolve(), out_dir / "grape_condensatome.sqlite"))
@@ -407,6 +480,8 @@ def main(argv: list[str] | None = None) -> int:
             "proteins_tsv_gz": "grape_condensatome.proteins.tsv.gz",
             "proteins_parquet": "grape_condensatome.proteins.parquet" if parquet_path else None,
             "model": "model_formal.json",
+            "sample_fasta": "examples/score_demo.fasta",
+            "scoring_server": "code/",
         },
     }
     (out_dir / "bundle_manifest.json").write_text(

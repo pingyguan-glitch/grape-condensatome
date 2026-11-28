@@ -38,7 +38,7 @@ Author: Pingyin Guan (College of Horticulture, China Agricultural University; OR
 | Atlas analyses family/comparator/structure (v1.5.1) | `data/family_enrichment/`, `data/comparator_disagreement/`, `data/structure_score/` | Domain enrichment + comparator disagreement + structure–score; UI `/analyses` |
 | Deploy (NAR host) | [`docs/DEPLOY.md`](./docs/DEPLOY.md) | **Fly.io recommended**; owner credentials required |
 | Hosting notes | [`docs/HOSTING.md`](./docs/HOSTING.md) | Fly pending owner deploy; Cursor preview gated |
-| Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Weights + SQLite/TSV(+Parquet); **no invented DOI** |
+| Zenodo deposit | [`docs/ZENODO.md`](./docs/ZENODO.md) + `scripts/export_zenodo_bundle.py` | Scoring-server snapshot + sample FASTA + weights + SQLite/TSV; **no invented DOI** |
 | Explainability | `data/explainability/` + `plantllps/explain.py` | SHAP-equivalent Ser-rich / charge-block / IDR attributions (gold ∪ Tier A; F6HET4 example) |
 | Cross-crop conserved (v1.5.2) | `data/cross_crop/` | Grape↔soy↔Ath Tier A∪B OrthoDB overlap + Ath score deposit |
 | Tomato third crop (v1.5.2) | `data/second_crop/tomato_*` | UP000004994 scores + grape `ortholog_sly*`; UI `/hooks` |
@@ -207,7 +207,7 @@ npm start
 
 Public hosting: **https://grape-condensatome.apps.grok.bot** (see [`docs/HOSTING.md`](./docs/HOSTING.md)). Local `npm start` still works. **GitHub Pages will not work** (needs a SQLite server). Deploy configs: `render.yaml`, `railway.toml`, `fly.toml`, `Dockerfile`.
 
-Data/model deposit for Zenodo: [`docs/ZENODO.md`](./docs/ZENODO.md) (`python3 scripts/export_zenodo_bundle.py [--parquet]`). Archives land under gitignored `dist/` — upload to Zenodo; paste the real DOI into `CITATION.cff` after publish — do not invent one.
+Code/weights/example deposit for Zenodo (tip **v1.11.0**): [`docs/ZENODO.md`](./docs/ZENODO.md) (`python3 scripts/export_zenodo_bundle.py [--parquet]`). Archives land under gitignored `dist/` — upload to Zenodo (or `scripts/zenodo_publish.py` with `ZENODO_ACCESS_TOKEN`); paste the real DOI into `CITATION.cff` after publish — do not invent one.
 
 ## Benchmarks vs PSAP / LLPhyScore / PLAAC / ProX-style
 
@@ -267,7 +267,7 @@ Tag **`v0.3.0`** = hard negatives + LLPhyScore + UniProt joins + packaging.
 ## Still open (not claimed done)
 
 - Exact RBGD4 AGI  
-- Zenodo DOI (bundle verified for v1.1.1 under `dist/`; mint on Zenodo then paste DOI — `docs/ZENODO.md`)  
+- Zenodo DOI (bundle ready for tip **v1.11.0** under `dist/`; mint on Zenodo then paste DOI — `docs/ZENODO.md`)  
 - Host hardening follow-up (publish review: resource exhaustion / data exposure — noted in `docs/HOSTING.md`)  
 - Broader splice-isoform annotation (UP000009183 is nearly 1:1 VIT↔accession; v1.5 deposits the rare multi-accession deltas); coexpression-only track  
 
