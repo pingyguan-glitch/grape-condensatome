@@ -51,3 +51,7 @@ Larger jobs: `python3 -m plantllps score …`.
 
 - Methods: `/methods`
 - Limitations / wet-lab caveats: `/limitations`
+- License (MIT full text): `/license`
+- Privacy (FASTA retention / no public job listing): `/privacy`
+
+Independent HTTPS deploy (Fly.io recommended): [`DEPLOY.md`](./DEPLOY.md).
